@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MetroTime Pro v69</title>
+    <style>
+        :root {
+            --primary: #37474f;
+            --accent: #ffab00;
+            --bg: #f5f7fa;
+            --card: #ffffff;
+            --text: #263238;
+            --nav-border: #e0e0e0;
+            --nav-inactive: #90a4ae;
+            
+            /* ЦВЕТА СМЕН */
+            --col-work-bg: #e8f5e9;  --col-work-txt: #2e7d32;
+            --col-sick-bg: #fff9c4;  --col-sick-txt: #fbc02d; --col-sick-border: #fff59d;
+            --col-donor-bg: #f3e5f5; --col-donor-txt: #ab47bc; --col-donor-border: #e1bee7;
+            --col-train-bg: #e0f7fa; --col-train-txt: #006064; --col-train-border: #b2ebf2;
+            --col-weekend-txt: #e53935;
+            --col-holiday-bg: #ffebee; --col-holiday-border: #ef5350; 
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Roboto", sans-serif;
+            background-color: var(--bg);
+            margin: 0; padding: 0; color: var(--text);
+            padding-bottom: 80px; padding-top: 60px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* HEADER */
+        header {
+            background-color: var(--card); color: var(--text); height: 60px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+        }
+        h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; margin: 0; color: var(--primary); }
+        .header-btn { background: #f0f2f5; border: none; cursor: pointer; color: var(--primary); padding: 10px; border-radius: 12px; transition: 0.2s; }
+        .header-btn:active { transform: scale(0.95); }
+        .header-btn svg { width: 24px; height: 24px; fill: currentColor; }
+
+        /* PAGES */
+        .page { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* CIRCULAR CHART */
+        .chart-container {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 20px 0; position: relative;
+        }
+        .circular-chart {
+            display: block; margin: 0 auto; max-width: 80%; max-height: 250px;
+        }
+        .circle-bg {
+            fill: none; stroke: #eee; stroke-width: 3.8;
+        }
+        .circle {
+            fill: none; stroke-width: 2.8; stroke-linecap: round;
+            transition: stroke-dasharray 0.6s ease;
+        }
+        .chart-text-group {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -40%);
+            text-align: center;
+        }
+        .chart-val { font-size: 32px; font-weight: 800; color: var(--primary); display: block; line-height: 1;}
+        .chart-label { font-size: 12px; color: #90a4ae; font-weight: 600; text-transform: uppercase; margin-top: 5px; display: block;}
+
+        /* WIDGETS */
+        .hero-widget { border-radius: 24px; padding: 25px; color: white; box-shadow: 0 15px 30px rgba(0,0,0,0.15); margin-bottom: 20px; position: relative; overflow: hidden; }
+        .theme-work { background: linear-gradient(135deg, #263238 0%, #37474f 100%); }
+        .theme-rest { background: linear-gradient(135deg, #0288d1 0%, #26c6da 100%); }
+        .widget-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; opacity: 0.9; }
+        .widget-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .widget-main-value { font-size: 52px; font-weight: 800; letter-spacing: -1px; line-height: 1; margin-bottom: 5px; }
+        .widget-sub-value { font-size: 15px; opacity: 0.9; font-weight: 600; background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 8px; display: inline-block; margin-bottom: 15px;}
+        .progress-track { background: rgba(255,255,255,0.2); height: 6px; border-radius: 4px; margin-top: 20px; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 4px; transition: width 1s linear; background: white; }
+        .theme-work .progress-fill { background: var(--accent); }
+        .progress-labels { display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; font-weight: 600; opacity: 0.9; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .info-card { background: white; padding: 15px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; }
+        .info-label { font-size: 11px; color: #90a4ae; font-weight: 700; text-transform: uppercase; margin-bottom: 6px; }
+        .info-val { font-size: 17px; font-weight: 700; color: var(--primary); }
+
+        /* LIST */
+        .month-header { font-size: 14px; font-weight: 800; color: var(--nav-inactive); margin: 10px 0 15px 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .shift-card { background: white; border-radius: 16px; padding: 15px; margin-bottom: 12px; display: flex; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04); cursor: pointer; transition: transform 0.1s; position: relative; overflow: hidden;}
+        .shift-card:active { transform: scale(0.98); }
+        .shift-card.today { border: 2px solid var(--accent); background-color: #fffde7; }
+        .today-badge { position: absolute; top: 0; right: 0; background: var(--accent); color: white; font-size: 10px; padding: 3px 8px; border-bottom-left-radius: 10px; font-weight: bold; z-index: 10; }
+        .date-box { background: #f0f2f5; min-width: 50px; height: 50px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-right: 16px; color: var(--primary); }
+        .date-day { font-size: 20px; font-weight: 800; line-height: 1; }
+        .date-dow { font-size: 11px; text-transform: uppercase; margin-top: 3px; font-weight: 600; color: #78909c;}
+        .shift-info { flex-grow: 1; min-width: 0; }
+        .shift-title { font-weight: 700; font-size: 16px; display: flex; align-items: center; gap: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .shift-sub { font-size: 13px; color: #78909c; margin-top: 4px; font-weight: 500; }
+        
+        /* ДЕНЬГИ */
+        .money-val { color: #2e7d32; font-weight: 800; font-size: 16px; }
+        .money-val.future { color: #90a4ae; font-weight: 600; }
+
+        /* FAB */
+        .fab-container { position: fixed; bottom: 90px; right: 20px; display: flex; align-items: center; gap: 15px; z-index: 90; }
+        .fab-main { background: var(--accent); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 8px 20px rgba(255, 171, 0, 0.4); cursor: pointer; border: none; transition: transform 0.2s;}
+        .fab-main:active { transform: scale(0.9); }
+        .fab-main svg { width: 30px; height: 30px; fill: white; }
+        .fab-secondary { background: white; color: var(--primary); width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1); cursor: pointer; border: none; transition: transform 0.2s;}
+        .fab-secondary:active { transform: scale(0.9); }
+        .fab-secondary svg { width: 24px; height: 24px; fill: currentColor; }
+
+        /* NAV */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: white; border-top: 1px solid #f0f0f0; display: flex; justify-content: space-around; align-items: center; z-index: 100; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -5px 20px rgba(0,0,0,0.03); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--nav-inactive); font-size: 10px; font-weight: 600; width: 100%; height: 100%; cursor: pointer; transition: all 0.2s; }
+        .nav-item.active { color: var(--primary); transform: translateY(-2px); }
+        .nav-item svg { width: 26px; height: 26px; fill: currentColor; margin-bottom: 4px; }
+
+        /* STATS */
+        .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px;}
+        .stat-row:last-child { border-bottom: none; }
+        .stat-val { font-weight: 700; color: var(--primary); }
+        .stat-sub-val { font-size: 12px; color:#90a4ae; font-weight: 600; margin-right: 8px;}
+        .card { background: var(--card); border-radius: 20px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        
+        .month-selector {
+            display: flex; align-items: center; background: #f0f2f5; border-radius: 12px; padding: 2px;
+        }
+        .month-btn {
+            background: none; border: none; padding: 8px 12px; cursor: pointer; color: var(--primary); font-size: 16px; font-weight: bold;
+        }
+        .month-display {
+            padding: 0 10px; font-size: 14px; font-weight: 700; min-width: 100px; text-align: center;
+        }
+
+        /* CALENDAR GRID */
+        .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .cal-title { font-size: 18px; font-weight: 700; }
+        .cal-btn { background: none; border: none; font-size: 24px; color: var(--primary); cursor: pointer; padding: 5px 15px; }
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; touch-action: pan-y pinch-zoom; }
+        .cal-day-name { text-align: center; font-size: 11px; color: #b0bec5; font-weight: 700; padding-bottom: 10px; }
+        .cal-cell { background: #f7f9fc; border-radius: 10px; height: 55px; display: flex; flex-direction: column; align-items: center; padding-top: 4px; font-size: 12px; position: relative; border: 2px solid transparent; cursor: pointer; }
+        .cal-num { font-weight: 700; font-size: 12px; margin-bottom: 2px; color: #546e7a; }
+        .cal-shift { font-size: 9px; text-align: center; line-height: 1.1; width: 100%; overflow: hidden; text-overflow: ellipsis; padding: 0 2px; font-weight: 600;}
+        .cal-cell.today { border-color: var(--accent); background: #fff; }
+        .cal-cell.today .cal-num { color: var(--accent); }
+        .cal-cell.weekend .cal-num { color: var(--col-weekend-txt); }
+        .cal-cell.type-work { background: var(--col-work-bg); color: var(--col-work-txt); }
+        .cal-cell.type-off { background: white; color: #cfd8dc; }
+        .cal-cell.type-sick { background: var(--col-sick-bg) !important; color: #f9a825 !important; border-color: var(--col-sick-border); }
+        .cal-cell.type-train { background: var(--col-train-bg) !important; color: var(--col-train-txt) !important; border-color: var(--col-train-border); }
+        .cal-cell.type-donor { background: var(--col-donor-bg) !important; color: var(--col-donor-txt) !important; border-color: var(--col-donor-border); }
+        .cal-cell.holiday { background: var(--col-holiday-bg); border-color: var(--col-holiday-border); }
+        .cal-cell.holiday .cal-num { color: var(--col-weekend-txt); } 
+        .cal-cell.holiday.has-shift.type-work { background: var(--col-work-bg); border-color: var(--col-holiday-border); }
+        .cal-cell.holiday.has-shift.type-work .cal-num { color: var(--col-weekend-txt); font-weight: 900; }
+        .cal-cell.empty { background: transparent; cursor: default; }
+
+        .tag { font-size: 9px; padding: 3px 8px; border-radius: 6px; color: white; font-weight: bold; letter-spacing: 0.5px; display:inline-block; margin-left:2px;}
+        .tag.gray { background: #90a4ae; } 
+        .tag.orange { background: var(--accent); }
+        .tag.teal { background: #009688; }
+        
+        /* INPUTS */
+        input[type="text"], input[type="number"], textarea, select { width: 100%; padding: 14px; border: 1px solid #e0e0e0; border-radius: 12px; box-sizing: border-box; font-size: 16px; margin-top: 8px; background: #f9f9f9; font-family: inherit; font-weight: 500;}
+        input:focus, textarea:focus, select:focus { outline: none; border-color: var(--primary); background: white; }
+        label { font-size: 11px; color: #78909c; font-weight: 800; text-transform: uppercase; margin-top: 18px; display: block; letter-spacing: 0.5px;}
+        
+        /* MODALS */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(38, 50, 56, 0.8); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        #addModal { z-index: 2000; } 
+        .modal-overlay.open { display: flex; animation: fadeIn 0.2s; }
+        .modal-box { background: white; padding: 25px; border-radius: 24px; width: 90%; max-width: 360px; box-shadow: 0 20px 60px rgba(0,0,0,0.4); max-height: 85vh; overflow-y: auto;}
+        .btn-row { display: flex; justify-content: flex-end; margin-top: 25px; gap: 10px; }
+        .btn { padding: 12px 24px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; font-size: 15px; transition: 0.2s;}
+        .btn:active { transform: scale(0.96); }
+        .btn-cancel { background: transparent; color: #78909c; }
+        .btn-save { background: var(--primary); color: white; }
+        .btn-delete { background: #ffebee; color: #d32f2f; }
+        .btn-text { background: none; border: none; color: var(--accent); font-size: 11px; font-weight: bold; cursor: pointer; text-decoration: underline; margin-top: 5px; display: block; text-align: right;}
+        
+        details { margin-top: 15px; border: 1px solid #eee; border-radius: 12px; padding: 15px; }
+        summary { font-size: 13px; font-weight: 700; color: var(--primary); cursor: pointer; outline: none; }
+        .detail-row { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+        .detail-row label { margin: 0; font-size: 13px; color: #455a64; font-weight: 500;}
+        .detail-row input[type="checkbox"] { width: 24px; height: 24px; margin: 0; accent-color: var(--accent);}
+        .detail-row input[type="text"] { width: 90px; padding: 8px; font-size: 14px; margin: 0; }
+        .line-input-row { display: flex; gap: 10px; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 id="headerTitle">Мои смены</h1>
+        <button class="header-btn" onclick="openImportModal()" title="Импорт">
+            <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+        </button>
+    </header>
+
+    <div id="tab-today" class="page">
+        <div id="todayContent"></div>
+    </div>
+
+    <div id="tab-home" class="page active">
+        <div id="shiftList"></div>
+        <div class="fab-container">
+            <button class="fab-secondary" onclick="openCalendarModal()">
+                <svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2zm-8 4H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z"/></svg>
+            </button>
+            <button class="fab-main" onclick="openModal()">
+                <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6V13z"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <div id="tab-stats" class="page">
+        <div class="card">
+            <h3 style="margin-top:0; color:var(--primary); display:flex; justify-content:space-between; align-items:center;">
+                <span>📊 Сводка</span>
+                <div class="month-selector">
+                    <button class="month-btn" onclick="changeStatsMonth(-1)">&#8249;</button>
+                    <div class="month-display" id="statsMonthDisplay"></div>
+                    <button class="month-btn" onclick="changeStatsMonth(1)">&#8250;</button>
+                </div>
+            </h3>
+            
+            <div class="chart-container">
+                <svg viewBox="0 0 36 36" class="circular-chart">
+                    <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="circle" stroke="#ffab00" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" id="circlePath" />
+                </svg>
+                <div class="chart-text-group">
+                    <span class="chart-val" id="chartValue">0</span>
+                    <span class="chart-label">Часов</span>
+                </div>
+            </div>
+
+            <div class="stat-row"><span>Норма (36ч):</span> <span class="stat-val" id="st_norm">0</span></div>
+            <div class="stat-row"><span>Отработано:</span> <span class="stat-val" id="st_hours">0</span></div>
+            
+            <div class="stat-row" style="background:#fff3e0; margin:0 -10px; padding:10px; border-radius:8px; margin-bottom:5px;">
+                <span>Переработка:</span> 
+                <span class="stat-val" id="st_over" style="font-size:16px;">0</span>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3 style="margin-top:0; color:var(--primary)">💰 Расчет за месяц</h3>
+            
+            <div class="stat-row">
+                <span>Вечерние (20%):</span> 
+                <div style="text-align:right"><span class="stat-sub-val" id="st_ev_hours">0ч</span><span class="stat-val" id="st_ev_money">0 ₽</span></div>
+            </div>
+            <div class="stat-row">
+                <span>Ночные (40%):</span> 
+                <div style="text-align:right"><span class="stat-sub-val" id="st_night_hours">0ч</span><span class="stat-val" id="st_night_money">0 ₽</span></div>
+            </div>
+            <div class="stat-row">
+                <span>Разрывные (30%):</span> 
+                <div style="text-align:right"><span class="stat-sub-val" id="st_split_hours">0ч</span><span class="stat-val" id="st_split_money">0 ₽</span></div>
+            </div>
+            
+            <div class="stat-row">
+                <span>Переработка (первые 2ч, 1.5х):</span> 
+                <div style="text-align:right"><span class="stat-sub-val" id="st_ot15_hours">0ч</span><span class="stat-val" id="st_ot15_money">0 ₽</span></div>
+            </div>
+            <div class="stat-row">
+                <span>Переработка (далее, 2.0х):</span> 
+                <div style="text-align:right"><span class="stat-sub-val" id="st_ot20_hours">0ч</span><span class="stat-val" id="st_ot20_money">0 ₽</span></div>
+            </div>
+
+            <div style="border-top:1px solid #eee; margin:10px 0;"></div>
+            
+            <div class="stat-row">
+                <span id="lbl_class">Классность:</span> <span class="stat-val" id="st_class_money">0 ₽</span>
+            </div>
+            <div class="stat-row">
+                <span id="lbl_sen">Выслуга:</span> <span class="stat-val" id="st_sen_money">0 ₽</span>
+            </div>
+            <div class="stat-row">
+                <span id="lbl_prem">Премия (общая):</span> <span class="stat-val" id="st_prem_money">0 ₽</span>
+            </div>
+            
+            <div class="stat-row" id="row_tech" style="display:none;">
+                <span>Тех. учеба:</span> <span class="stat-val" id="st_tech_money">0 ₽</span>
+            </div>
+
+            <div class="stat-row" id="row_senior" style="display:none;">
+                <span id="lbl_senior">Ст. машинист:</span> <span class="stat-val" id="st_senior_money">0 ₽</span>
+            </div>
+            <div class="stat-row" id="row_mentor" style="display:none;">
+                <span id="lbl_mentor">Наставник (15%):</span> 
+                <div style="text-align:right">
+                    <span class="stat-sub-val" id="st_mentor_hours">0ч</span>
+                    <span class="stat-val" id="st_mentor_money">0 ₽</span>
+                </div>
+            </div>
+
+            <div style="border-top:2px solid #eee; margin:10px 0;"></div>
+
+            <div class="stat-row"><span>Начислено:</span> <span class="stat-val" id="st_dirty">0 ₽</span></div>
+            <div class="stat-row"><span>Профсоюз (1%):</span> <span class="stat-val" id="st_union" style="color:#e53935">0 ₽</span></div>
+            <div class="stat-row"><span>Налог (13%):</span> <span class="stat-val" id="st_tax" style="color:#e57373">0 ₽</span></div>
+            <div class="stat-row" style="font-size:20px; border-top:2px solid #eee; margin-top:10px; padding-top:15px">
+                <span>На руки:</span> <span class="stat-val" id="st_net" style="color:#2e7d32">0 ₽</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-settings" class="page">
+        <div class="card">
+            <h3 style="margin-top:0; color:var(--primary)">⚙️ Профиль</h3>
+            <p style="font-size:13px; color:#90a4ae; margin-bottom:20px;">Настройки для новых смен</p>
+            <label>Тариф (Основной)</label>
+            <input type="text" inputmode="decimal" id="set_rate" onchange="saveSettings()">
+            <label>Класс квалификации</label>
+            <select id="set_class" onchange="saveSettings()">
+                <option value="0">Без класса</option>
+                <option value="30">1 класс (30%)</option>
+                <option value="20">2 класс (20%)</option>
+                <option value="10">3 класс (10%)</option>
+            </select>
+            <label>Дата трудоустройства</label>
+            <input type="date" id="set_start_date" onchange="saveSettings()">
+            <div style="font-size:13px; color:var(--primary); margin-top:8px; text-align:right; font-weight:600;" id="set_exp_text"></div>
+            <label>Премия (%)</label>
+            <input type="text" inputmode="decimal" id="set_prem" onchange="saveSettings()">
+            
+            <div style="margin-top:25px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;">
+                <input type="checkbox" id="set_mentor" style="width:24px; height:24px; margin:0;" onchange="saveSettings()">
+                <span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Наставник (+15%)</span>
+            </div>
+            <div style="margin-top:10px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;">
+                <input type="checkbox" id="set_senior" style="width:24px; height:24px; margin:0;" onchange="saveSettings()">
+                <span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Ст. машинист (+10%)</span>
+            </div>
+            <div style="margin-top:10px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;">
+                <input type="checkbox" id="set_union" style="width:24px; height:24px; margin:0;" onchange="saveSettings()">
+                <span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Член профсоюза (-1%)</span>
+            </div>
+        </div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v69.0 (Clean & Precise)</div>
+    </div>
+
+    <div class="modal-overlay" id="addModal">
+        <div class="modal-box">
+            <h3 style="margin-top:0; color:var(--primary)" id="modalTitle">Новая смена</h3>
+            <label>Дата</label>
+            <input type="date" id="inpDate">
+            <label>Текст из графика</label>
+            <input type="text" id="inpText" placeholder="Например: м75 14:00-22:00" oninput="checkShiftText()">
+            
+            <details id="shiftDetailsBox">
+                <summary>⚙️ Параметры этой смены</summary>
+                <div class="detail-row">
+                    <label>Ставка (₽/час)</label>
+                    <input type="text" inputmode="decimal" id="shiftRate">
+                </div>
+                <div class="detail-row">
+                    <label>Премия (%)</label>
+                    <div style="text-align:right">
+                        <input type="text" inputmode="decimal" id="shiftPrem" style="width:60px">
+                        <button class="btn-text" onclick="applyPremToCurrentMonth()">На весь месяц</button>
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <label>Класс</label>
+                    <select id="shiftClassSelect">
+                        <option value="0">Без класса</option>
+                        <option value="30">1 класс</option>
+                        <option value="20">2 класс</option>
+                        <option value="10">3 класс</option>
+                    </select>
+                </div>
+                <div id="lineWorkContainer" style="display:none;">
+                    <div class="line-input-row" style="margin-top:15px;">
+                        <input type="time" id="lineStart">
+                        <span style="align-self:center">-</span>
+                        <input type="time" id="lineEnd">
+                    </div>
+                    <div style="font-size:10px; color:#90a4ae; margin-top:5px;">Время работы на линии</div>
+                </div>
+                
+                <div class="detail-row" style="margin-top:15px;">
+                    <label style="flex:1;">Тех. учеба (+2ч)</label>
+                    <input type="checkbox" id="shiftTech">
+                </div>
+                <div class="detail-row">
+                    <label style="flex:1;">Послерейсовый (+10 мин)</label>
+                    <input type="checkbox" id="shiftPostTrip">
+                </div>
+
+                <div class="detail-row" style="margin-top:15px;">
+                    <label>Наставник (+15%)</label>
+                    <input type="checkbox" id="shiftMentor">
+                </div>
+                <div class="detail-row">
+                    <label>Ст. Машинист (+10%)</label>
+                    <input type="checkbox" id="shiftSenior">
+                </div>
+                <input type="hidden" id="shiftSeniority">
+            </details>
+            <div class="btn-row">
+                <button class="btn btn-delete" id="btnDeleteShift" onclick="deleteCurrentShift()" style="display:none; margin-right:auto;">Удалить</button>
+                <button class="btn btn-cancel" onclick="closeModal('addModal')">Отмена</button>
+                <button class="btn btn-save" id="btnSaveShift" onclick="addShift()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="importModal">
+        <div class="modal-box">
+            <h3 style="margin-top:0; color:var(--primary)">Импорт смен</h3>
+            <label>Вставьте текст списка:</label>
+            <textarea id="importText" rows="8" placeholder="1.01.25 м61 20:22-2:46&#10;2.01.25 рез 8:00-15:00..."></textarea>
+            <div class="btn-row">
+                <button class="btn btn-cancel" onclick="closeModal('importModal')">Отмена</button>
+                <button class="btn btn-save" onclick="processImport()">Распознать</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="calendarModal">
+        <div class="modal-box" style="max-width: 400px;" id="calModalBox">
+            <div class="cal-header">
+                <button class="cal-btn" onclick="changeMonth(-1)">&#8249;</button>
+                <div class="cal-title" id="calTitle">Ноябрь 2025</div>
+                <button class="cal-btn" onclick="changeMonth(1)">&#8250;</button>
+            </div>
+            <div class="cal-grid" id="calGrid"></div>
+            <div class="btn-row">
+                <button class="btn btn-cancel" onclick="closeModal('calendarModal')">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <div class="nav-item" id="nav-today" onclick="switchTab('today')">
+            <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+            <span>Сегодня</span>
+        </div>
+        <div class="nav-item active" id="nav-home" onclick="switchTab('home')">
+            <svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2zm-8 4H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z"/></svg>
+            <span>Календарь</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('stats')">
+            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+            <span>Сводка</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('settings')">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+            <span>Профиль</span>
+        </div>
+    </nav>
+
+<script>
+    let shifts = JSON.parse(localStorage.getItem('metro_shifts')) || [];
+    let settings = JSON.parse(localStorage.getItem('metro_settings')) || { rate: 546.18, classP: 30, premP: 35, mentor: false, senior: false, startDate: "", union: true };
+    let calDate = new Date();
+    let statsDate = new Date();
+
+    const holidaysData = {
+        fixed: ["01-01", "01-02", "01-03", "01-04", "01-05", "01-06", "01-07", "01-08", "02-23", "03-08", "05-01", "05-09", "06-12", "11-04"],
+        workOnWeekend: ["2024-04-27", "2024-11-02", "2024-12-28", "2025-11-01"],
+        restOnWorkday: [
+            "2024-04-29", "2024-04-30", "2024-05-10", "2024-12-30", "2024-12-31", 
+            "2025-05-02", "2025-05-08", "2025-06-13", "2025-11-03", "2025-12-31", 
+            "2026-03-09", "2026-05-11"
+        ],
+        short: [
+            "2024-02-22", "2024-03-07", "2024-05-08", "2024-06-11", "2024-11-02", 
+            "2025-03-07", "2025-04-30", "2025-06-11", "2025-11-01",
+            "2026-04-30", "2026-05-08", "2026-06-11", "2026-11-03", "2026-12-31"
+        ]
+    };
+
+    function fmtMoney(val) {
+        if (isNaN(val)) return "0 ₽";
+        return Math.round(val).toLocaleString() + ' ₽';
+    }
+
+    function safeFloat(val) {
+        if(!val) return 0;
+        let str = String(val).replace(/\s/g, '').replace(',', '.');
+        let num = parseFloat(str);
+        return isNaN(num) ? 0 : num;
+    }
+
+    function getHolidays(year) {
+        return holidaysData.fixed.map(d => `${year}-${d}`);
+    }
+
+    function isHoliday(dateObj) {
+        const isoDate = dateObj.toISOString().split('T')[0];
+        const md = isoDate.slice(5); 
+        const day = dateObj.getDay();
+        const year = dateObj.getFullYear();
+
+        if (year >= 2024 && year <= 2026) {
+            if (holidaysData.workOnWeekend.includes(isoDate)) return false;
+            if (holidaysData.restOnWorkday.includes(isoDate)) return true;
+            if (holidaysData.fixed.includes(md)) return true;
+            if (day === 0 || day === 6) return true;
+            return false;
+        }
+
+        if (day === 0 || day === 6) return true;
+        if (holidaysData.fixed.includes(md)) return true;
+        return false;
+    }
+
+    function getMonthNorm(year, month) {
+        let workDays = 0;
+        let shortDays = 0;
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        
+        for (let d = 1; d <= daysInMonth; d++) {
+            const current = new Date(year, month, d);
+            if (!isHoliday(current)) {
+                workDays++;
+                const iso = current.toISOString().split('T')[0];
+                if (year >= 2024 && year <= 2026) {
+                    if (holidaysData.short.includes(iso)) shortDays++;
+                    else {
+                        const tomorrow = new Date(year, month, d + 1);
+                        const tomIso = tomorrow.toISOString().split('T')[0].slice(5);
+                        if (holidaysData.fixed.includes(tomIso)) shortDays++;
+                    }
+                } else {
+                    const tomorrow = new Date(year, month, d + 1);
+                    const tomIso = tomorrow.toISOString().split('T')[0].slice(5);
+                    if (holidaysData.fixed.includes(tomIso)) shortDays++;
+                }
+            }
+        }
+        let totalHours = (workDays * 7.2) - shortDays;
+        return parseFloat(totalHours.toFixed(1));
+    }
+
+    function init() {
+        document.getElementById('set_rate').value = String(settings.rate).replace('.',',');
+        document.getElementById('set_class').value = settings.classP;
+        document.getElementById('set_prem').value = String(settings.premP).replace('.',',');
+        document.getElementById('set_mentor').checked = settings.mentor;
+        document.getElementById('set_senior').checked = settings.senior || false;
+        document.getElementById('set_start_date').value = settings.startDate || "";
+        document.getElementById('set_union').checked = settings.union !== false;
+        calcExpDisplay();
+        render();
+        setInterval(updateTodayTab, 1000);
+        scrollToToday();
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "Escape") {
+                closeModal('addModal');
+                closeModal('importModal');
+                closeModal('calendarModal');
+            }
+        });
+
+        const calBox = document.getElementById('calModalBox');
+        let tsX = 0;
+        calBox.addEventListener('touchstart', e => tsX = e.changedTouches[0].screenX);
+        calBox.addEventListener('touchend', e => {
+            let teX = e.changedTouches[0].screenX;
+            if(teX < tsX - 50) changeMonth(1);
+            if(teX > tsX + 50) changeMonth(-1);
+        });
+    }
+
+    function scrollToToday() {
+        setTimeout(() => {
+            const todayEl = document.querySelector('.shift-card.today');
+            if (todayEl) todayEl.scrollIntoView({ block: 'center', behavior: 'auto' });
+        }, 100);
+    }
+
+    function switchTab(tabName) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('tab-' + tabName).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        
+        if(tabName==='today') document.getElementById('nav-today').classList.add('active');
+        else if(tabName==='home') {
+            document.getElementById('nav-home').classList.add('active');
+            scrollToToday();
+        }
+        else event.currentTarget.classList.add('active');
+
+        const titles = { 'today':'Сегодня', 'home': 'Мои смены', 'stats': 'Статистика', 'settings': 'Профиль' };
+        document.getElementById('headerTitle').innerText = titles[tabName];
+        document.querySelector('header .header-btn').style.display = (tabName === 'home') ? 'flex' : 'none';
+        if(tabName==='today') updateTodayTab();
+        if(tabName==='stats') renderStats();
+    }
+
+    function updateTodayTab() {
+        if(!document.getElementById('tab-today').classList.contains('active')) return;
+        const now = new Date();
+        const nowTs = now.getTime();
+        let currentShift = null, nextShift = null, prevShiftEnd = 0;
+        const sorted = [...shifts].sort((a,b) => new Date(a.date) - new Date(b.date));
+
+        for (let i = 0; i < sorted.length; i++) {
+            const s = sorted[i];
+            let times = [...s.text.matchAll(/(\d{1,2}[:\.]\d{2})/g)];
+            if (times.length < 2) continue;
+            const baseDate = new Date(s.date);
+            const [sh, sm] = times[0][0].replace('.',':').split(':').map(Number);
+            const [eh, em] = times[1][0].replace('.',':').split(':').map(Number);
+            const startDate = new Date(baseDate); startDate.setHours(sh, sm, 0, 0);
+            const endDate = new Date(baseDate); if (eh < sh) endDate.setDate(endDate.getDate() + 1); endDate.setHours(eh, em, 0, 0);
+            if (nowTs >= startDate.getTime() && nowTs < endDate.getTime()) { currentShift = { data: s, start: startDate, end: endDate }; }
+            if (!currentShift && !nextShift && startDate.getTime() > nowTs) { nextShift = { data: s, start: startDate }; }
+            if (endDate.getTime() < nowTs) { prevShiftEnd = endDate.getTime(); }
+        }
+
+        const container = document.getElementById('todayContent');
+        let html = '';
+        if (currentShift) {
+            const totalMs = currentShift.end - currentShift.start; const elapsedMs = now - currentShift.start; const percent = Math.min(100, (elapsedMs / totalMs) * 100);
+            const res = calcShift(currentShift.data); let unionFee = settings.union ? (res.dirty * 0.01) : 0; let tax = res.dirty * 0.13; let netTotal = res.dirty - tax - unionFee; const currentEarned = (elapsedMs / totalMs) * netTotal;
+            html = `<div class="hero-widget theme-work"><div class="widget-header"><div class="widget-title">СЕЙЧАС НА СМЕНЕ</div><div class="widget-icon">🚅</div></div><div class="widget-main-value">${Math.floor(currentEarned)} ₽</div><div class="widget-sub-value">из ${Math.round(netTotal)} ₽</div><div class="progress-track"><div class="progress-fill" style="width: ${percent}%"></div></div><div class="progress-labels"><span>${currentShift.start.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span><span>Конец: ${currentShift.end.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span></div></div><div class="info-grid"><div class="info-card"><div class="info-label">Маршрут</div><div class="info-val">${currentShift.data.text.split(' ')[0]}</div></div><div class="info-card"><div class="info-label">Осталось</div><div class="info-val">${msToTime(currentShift.end - now)}</div></div></div>`;
+        } else {
+            let restText = "Н/Д", percentRest = 0, label = "ОТДЫХ", fullRestDesc = "";
+            if (prevShiftEnd > 0) {
+                if (nextShift) { 
+                    label = "МЕЖСМЕННЫЙ ОТДЫХ"; const totalRestMs = nextShift.start.getTime() - prevShiftEnd; const passedRestMs = nowTs - prevShiftEnd; percentRest = Math.min(100, (passedRestMs / totalRestMs) * 100); restText = msToTime(totalRestMs); const prevEndDate = new Date(prevShiftEnd); const prevEndStr = prevEndDate.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) + ` (${prevEndDate.getDate()}.${prevEndDate.getMonth()+1})`; const nextStartStr = nextShift.start.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) + ` (${nextShift.start.getDate()}.${nextShift.start.getMonth()+1})`; fullRestDesc = `<div class="widget-sub-value" style="font-size:13px; margin-top:10px;">С ${prevEndStr}</div><div class="widget-sub-value" style="font-size:13px;">До ${nextStartStr}</div><div style="margin-top:20px; font-size:12px; opacity:0.8">Уже прошло: ${msToTime(passedRestMs)}</div>`; 
+                } else { const passed = nowTs - prevShiftEnd; restText = msToTime(passed); fullRestDesc = `<div class="widget-sub-value">прошло с прошлой смены</div>`; }
+            }
+            html = `<div class="hero-widget theme-rest"><div class="widget-header"><div class="widget-title">${label}</div><div class="widget-icon">🛋️</div></div><div class="widget-main-value">${restText}</div>${fullRestDesc}${nextShift ? `<div class="progress-track"><div class="progress-fill" style="width: ${percentRest}%"></div></div>` : ''}</div>`;
+            if (nextShift) { const timeToStart = nextShift.start - now; html += `<div class="info-grid"><div class="info-card"><div class="info-label">Следующая</div><div class="info-val">${nextShift.start.getDate()}.${nextShift.start.getMonth()+1}</div></div><div class="info-card"><div class="info-label">До смены</div><div class="info-val" style="color:var(--accent)">${msToTime(timeToStart)}</div></div></div>`; }
+        }
+        container.innerHTML = html;
+    }
+    function msToTime(duration) { let minutes = Math.floor((duration / (1000 * 60)) % 60); let hours = Math.floor((duration / (1000 * 60 * 60))); return hours + "ч " + minutes + "м"; }
+
+    function getSeniorityPercent(d) { if(!d) return 0; const s = new Date(d); const n = new Date(); if (s > n) return 0; const y = (n - s) / (1000 * 60 * 60 * 24 * 365.25); if (y >= 20) return 30; if (y >= 15) return 25; if (y >= 10) return 20; if (y >= 5) return 15; if (y >= 3) return 10; if (y >= 1) return 5; return 0; }
+    function calcExpDisplay() { const d = document.getElementById('set_start_date').value; const t = document.getElementById('set_exp_text'); if(!d) { t.innerText = "Стаж не указан"; return; } const s = new Date(d); const n = new Date(); const y = Math.floor((n - s) / (1000 * 60 * 60 * 24 * 365.25)); const p = getSeniorityPercent(d); t.innerText = `Стаж: ~${y} лет (Выслуга ${p}%)`; }
+    function parseTime(s) { let m = s.match(/(\d{1,2})[:\.](\d{2})/); return m ? parseInt(m[1])*60 + parseInt(m[2]) : null; }
+    
+    function getShiftTimes(shift) {
+        let times = [...shift.text.matchAll(/(\d{1,2}[:\.]\d{2})/g)];
+        if (times.length < 2) return null;
+        let startHM = times[0][0].replace('.',':').split(':').map(Number);
+        let endHM = times[1][0].replace('.',':').split(':').map(Number);
+        let start = new Date(shift.date); start.setHours(startHM[0], startHM[1], 0, 0);
+        let end = new Date(shift.date); end.setHours(endHM[0], endHM[1], 0, 0);
+        if (end <= start) { end.setDate(end.getDate() + 1); }
+        return { start, end };
+    }
+
+    // НОВАЯ ФУНКЦИЯ: Расчет разрывных смен на основе интервала < 8ч
+    // Теперь помечает ОБЕ смены (текущую и следующую)
+    function calculateRestIntervals() {
+        shifts.sort((a,b) => {
+            let tA = getShiftTimes(a), tB = getShiftTimes(b);
+            if(!tA) return 1; if(!tB) return -1;
+            return tA.start - tB.start;
+        });
+
+        // Сбрасываем флаг autoSplit перед пересчетом
+        shifts.forEach(s => s.autoSplit = false);
+
+        for (let i = 0; i < shifts.length - 1; i++) {
+            let curr = shifts[i];
+            let next = shifts[i+1];
+            
+            let tCurr = getShiftTimes(curr);
+            let tNext = getShiftTimes(next);
+            
+            if (tCurr && tNext) {
+                let diffMs = tNext.start - tCurr.end;
+                let diffHours = diffMs / (1000 * 60 * 60);
+                
+                // Если отдых меньше 8 часов -> ОБЕ смены считаются разделенными на части
+                if (diffHours > 0 && diffHours < 8) {
+                    curr.autoSplit = true;
+                    next.autoSplit = true;
+                }
+            }
+        }
+    }
+
+    function calcShift(shift) {
+        let text = shift.text.toLowerCase();
+        
+        let rateStr = (shift.customRate !== undefined) ? shift.customRate : settings.rate;
+        let rate = safeFloat(rateStr);
+        if (rate === 0) rate = 546.18; 
+
+        let sClass = (shift.customClass !== undefined) ? shift.customClass : settings.classP;
+        let sSen = (shift.customSen !== undefined) ? shift.customSen : getSeniorityPercent(settings.startDate);
+        let sPremStr = (shift.customPrem !== undefined) ? shift.customPrem : settings.premP;
+        let sPrem = safeFloat(sPremStr);
+        let k = (1 + sPrem / 100);
+
+        // --- HANDLING TRAINING (UPC) ---
+        if (text.includes('упц') || text.includes('учеба')) {
+            let hours = 8;
+            // Logic change: Rate is assumed to be "Line Rate" (Base + ~24.5%). 
+            // Tech study is paid at Base Rate only.
+            let baseRate = rate / 1.245; 
+            let total = baseRate * hours; // NO PREMIUM for Tech Study (as per request)
+
+            return {
+                net: Math.round(total * 0.87), dirty: total, hours: hours,
+                isRes: false, isFull: false, night: 0, ev: 0, isSplit: false, isTrain: true,
+                evBonus: 0, nightBonus: 0, splitBonus: 0, techBonus: 0,
+                valClass: 0, valSen: 0, valPrem: 0, valSenior: 0, valMentor: 0
+            };
+        }
+
+        if(text.includes('бл') || text.includes('донор') || text.includes('вых')) return null;
+
+        let isMentor = (shift.customMentor !== undefined) ? shift.customMentor : settings.mentor;
+        let isSenior = (shift.customSenior !== undefined) ? shift.customSenior : (settings.senior || false);
+        let isTech = (shift.isTech === true);
+        let isPostTrip = (shift.isPostTrip === true);
+
+        let isSplit = (shift.autoSplit === true);
+        let isRes = text.includes('рез');
+        if (isRes && shift.customRate === undefined) { rate = (rate / 1.12) * 1.08; }
+        
+        let times = [...text.matchAll(/(\d{1,2}[:\.]\d{2})/g)];
+        if (times.length < 2) return null;
+        let s = parseTime(times[0][0]), e = parseTime(times[1][0]); if (e < s) e += 24*60;
+        
+        if (isPostTrip) { e += 10; }
+
+        let totalHours = (e - s) / 60;
+        let lineHours = 0; 
+        
+        let totalNight = 0; let totalEv = 0;
+        for (let m=s; m<e; m++) { let t=m%1440; if(t>=1320||t<360) totalNight++; else if(t>=960&&t<1320) totalEv++; }
+        
+        let payAsFullNight = (totalNight / (e-s)) >= 0.5;
+        let nightHoursToPay = payAsFullNight ? totalHours : (totalNight / 60);
+        let evHoursToPay = payAsFullNight ? 0 : (totalEv / 60);
+
+        let nakedTariff = totalHours * rate;
+        
+        let bonusClass = nakedTariff * (sClass / 100); 
+        let bonusSen = nakedTariff * (sSen / 100); 
+        let bonusSenior = 0; if(isSenior) bonusSenior = nakedTariff * 0.10;
+        let bonusMentor = 0; if (isMentor) { if (isRes) bonusMentor = nakedTariff * 0.15; else bonusMentor = nakedTariff * 0.15; }
+        
+        let bonusSplit = 0;
+        if (isSplit) { bonusSplit = nakedTariff * 0.30; }
+        
+        // TECH STUDY (+2 HOURS RAW BASE RATE)
+        // Same logic: strip line coefficient from rate to get base rate
+        let bonusTech = 0;
+        if (isTech) {
+            let baseRate = rate / 1.245;
+            bonusTech = baseRate * 2; 
+        }
+
+        let evMoney = evHoursToPay * rate * 0.20;
+        let nightMoney = nightHoursToPay * rate * 0.40;
+
+        let totalAccrued = nakedTariff + bonusClass + bonusSen + bonusSenior + bonusMentor + bonusSplit + evMoney + nightMoney;
+        
+        let final = totalAccrued * k;
+        
+        final += bonusTech;
+
+        return { 
+            net: Math.round(final*0.87), dirty: final, hours: totalHours, isRes: isRes, isFull: payAsFullNight, 
+            night: nightHoursToPay, ev: evHoursToPay, isSplit: isSplit, isTrain: false, isTech: isTech,
+            
+            splitBonus: bonusSplit * k, 
+            evBonus: evMoney * k, 
+            nightBonus: nightMoney * k,
+            techBonus: bonusTech, 
+            
+            valClass: bonusClass * k,
+            valSen: bonusSen * k,
+            valSenior: bonusSenior * k,
+            valMentor: bonusMentor * k,
+            valPrem: totalAccrued * (sPrem / 100),
+            
+            mentorHours: isMentor ? totalHours : 0
+        };
+    }
+
+    function drawProgress(percent, labelValue) {
+        const circle = document.getElementById('circlePath');
+        const textVal = document.getElementById('chartValue');
+        let drawPercent = percent;
+        if (drawPercent < 0) drawPercent = 0;
+        if (drawPercent > 100) drawPercent = 100;
+        circle.style.strokeDasharray = `${drawPercent}, 100`;
+        textVal.innerText = labelValue.toFixed(1);
+    }
+
+    function changeStatsMonth(dir) {
+        statsDate.setMonth(statsDate.getMonth() + dir);
+        renderStats();
+    }
+
+    function renderStats() {
+        calculateRestIntervals();
+
+        const year = statsDate.getFullYear();
+        const month = statsDate.getMonth();
+        const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+        document.getElementById('statsMonthDisplay').innerText = `${monthNames[month]} ${year}`;
+
+        const monthlyShifts = shifts.filter(s => {
+            const d = new Date(s.date);
+            return d.getFullYear() === year && d.getMonth() === month;
+        });
+
+        let st = { 
+            count: 0, hours: 0, night: 0, ev: 0, res: 0, dirty: 0, sick: 0, donor: 0, net: 0, union: 0, tax: 0, 
+            splitBonus: 0, evBonus: 0, nightBonus: 0, techBonus: 0, splitHours: 0,
+            sumClass: 0, sumSen: 0, sumPrem: 0, sumSenior: 0, sumMentor: 0,
+            ot15Hours: 0, ot15Money: 0, ot20Hours: 0, ot20Money: 0,
+            mentorHours: 0
+        };
+        let sickDeduction = 0;
+
+        monthlyShifts.forEach(s => {
+            let text = s.text.toLowerCase();
+            if (text.includes('бл') || text.includes('отпуск')) {
+                const d = new Date(s.date);
+                if (!isHoliday(d)) { sickDeduction += 7.2; }
+                if (text.includes('бл')) st.sick++;
+            }
+            if (text.includes('донор')) st.donor++;
+
+            let res = calcShift(s);
+            if (res) {
+                st.count++;
+                st.hours += res.hours;
+                st.night += res.night;
+                st.ev += (res.ev || 0);
+                if (res.isRes) st.res++;
+                st.dirty += res.dirty;
+                st.splitBonus += (res.splitBonus || 0);
+                st.evBonus += (res.evBonus || 0);
+                st.nightBonus += (res.nightBonus || 0);
+                st.techBonus += (res.techBonus || 0);
+                if(res.isSplit) st.splitHours += res.hours;
+                
+                st.sumClass += (res.valClass || 0);
+                st.sumSen += (res.valSen || 0);
+                st.sumSenior += (res.valSenior || 0);
+                st.sumMentor += (res.valMentor || 0);
+                st.sumPrem += (res.valPrem || 0);
+                st.mentorHours += (res.mentorHours || 0);
+            }
+        });
+
+        // NORM & OVERTIME
+        let norm = getMonthNorm(year, month);
+        let displayNorm = norm + ' ч';
+        if (sickDeduction > 0) {
+            norm -= sickDeduction;
+            norm = parseFloat(norm.toFixed(1));
+            displayNorm = `${norm} ч (снижена на ${sickDeduction.toFixed(1)})`;
+        }
+
+        const overtime = st.hours - norm;
+        let percent = (norm > 0) ? (st.hours / norm) * 100 : 0;
+        drawProgress(percent, st.hours);
+
+        if (overtime > 0) {
+            let rate = settings.rate;
+            let premRate = settings.premP;
+            if (overtime <= 2) {
+                st.ot15Hours = overtime;
+                let base15 = st.ot15Hours * rate * 0.5;
+                st.ot15Money = base15 * (1 + premRate / 100);
+            } else {
+                st.ot15Hours = 2;
+                let base15 = 2 * rate * 0.5;
+                st.ot15Money = base15 * (1 + premRate / 100);
+                st.ot20Hours = overtime - 2;
+                let base20 = st.ot20Hours * rate * 1.0;
+                st.ot20Money = base20 * (1 + premRate / 100);
+            }
+            st.dirty += st.ot15Money + st.ot20Money;
+        }
+
+        st.union = settings.union ? (st.dirty * 0.01) : 0;
+        st.tax = st.dirty * 0.13;
+        st.net = st.dirty - st.tax - st.union;
+
+        document.getElementById('st_norm').innerText = displayNorm;
+        document.getElementById('st_hours').innerText = st.hours.toFixed(1) + ' ч';
+        
+        const overEl = document.getElementById('st_over');
+        if (overtime > 0) {
+            overEl.innerText = "+" + overtime.toFixed(1) + " ч";
+            overEl.style.color = "#2e7d32"; 
+        } else if (overtime < 0) {
+            overEl.innerText = overtime.toFixed(1) + " ч";
+            overEl.style.color = "#c62828"; 
+        } else {
+            overEl.innerText = "0 ч";
+            overEl.style.color = "var(--primary)";
+        }
+
+        document.getElementById('st_ev_hours').innerText = st.ev.toFixed(1) + 'ч';
+        document.getElementById('st_ev_money').innerText = '+' + fmtMoney(st.evBonus);
+        document.getElementById('st_night_hours').innerText = st.night.toFixed(1) + 'ч';
+        document.getElementById('st_night_money').innerText = '+' + fmtMoney(st.nightBonus);
+        document.getElementById('st_split_hours').innerText = st.splitHours.toFixed(1) + 'ч';
+        document.getElementById('st_split_money').innerText = '+' + fmtMoney(st.splitBonus);
+        
+        document.getElementById('st_ot15_hours').innerText = (st.ot15Hours > 0 ? '+' : '') + st.ot15Hours.toFixed(1) + 'ч';
+        document.getElementById('st_ot15_money').innerText = '+' + fmtMoney(st.ot15Money);
+        document.getElementById('st_ot20_hours').innerText = (st.ot20Hours > 0 ? '+' : '') + st.ot20Hours.toFixed(1) + 'ч';
+        document.getElementById('st_ot20_money').innerText = '+' + fmtMoney(st.ot20Money);
+
+        let currentSen = getSeniorityPercent(settings.startDate);
+        document.getElementById('lbl_class').innerText = `Классность (${settings.classP}%):`;
+        document.getElementById('lbl_sen').innerText = `Выслуга (${currentSen}%):`;
+        document.getElementById('lbl_prem').innerText = `Премия (${settings.premP}%):`;
+        
+        let seniorPct = settings.senior ? 10 : 0;
+        document.getElementById('lbl_senior').innerText = `Ст. машинист (${seniorPct}%):`;
+
+        document.getElementById('st_class_money').innerText = '+' + fmtMoney(st.sumClass);
+        document.getElementById('st_sen_money').innerText = '+' + fmtMoney(st.sumSen);
+        document.getElementById('st_prem_money').innerText = '+' + fmtMoney(st.sumPrem);
+        
+        if (st.techBonus > 0) {
+            document.getElementById('row_tech').style.display = 'flex';
+            document.getElementById('st_tech_money').innerText = '+' + fmtMoney(st.techBonus);
+        } else {
+            document.getElementById('row_tech').style.display = 'none';
+        }
+        
+        if (st.sumSenior > 0) {
+            document.getElementById('row_senior').style.display = 'flex';
+            document.getElementById('st_senior_money').innerText = '+' + fmtMoney(st.sumSenior);
+        } else {
+            document.getElementById('row_senior').style.display = 'none';
+        }
+        
+        if (st.sumMentor > 0) {
+            document.getElementById('row_mentor').style.display = 'flex';
+            document.getElementById('st_mentor_hours').innerText = st.mentorHours.toFixed(1) + 'ч'; 
+            document.getElementById('st_mentor_money').innerText = '+' + fmtMoney(st.sumMentor);
+        } else {
+            document.getElementById('row_mentor').style.display = 'none';
+        }
+
+        document.getElementById('st_dirty').innerText = fmtMoney(st.dirty);
+        document.getElementById('st_union').innerText = '-' + fmtMoney(st.union);
+        document.getElementById('st_tax').innerText = '-' + fmtMoney(st.tax);
+        document.getElementById('st_net').innerText = fmtMoney(st.net);
+    }
+
+    function render() {
+        calculateRestIntervals();
+        const list = document.getElementById('shiftList'); list.innerHTML = '';
+        shifts.sort((a,b) => new Date(a.date) - new Date(b.date));
+        const todayStr = new Date().toISOString().split('T')[0];
+        let currentMonthStr = "";
+
+        shifts.forEach((s, idx) => {
+            const shiftDate = new Date(s.date);
+            const monthYear = shiftDate.toLocaleString('ru', { month: 'long', year: 'numeric' });
+            const monthYearCap = monthYear.charAt(0).toUpperCase() + monthYear.slice(1);
+            if(monthYearCap !== currentMonthStr) { currentMonthStr = monthYearCap; const divider = document.createElement('div'); divider.className = 'month-header'; divider.innerText = currentMonthStr; list.appendChild(divider); }
+
+            let res = calcShift(s); let text = s.text.toLowerCase();
+            let d = new Date(s.date); let day = d.getDate(); let dow = d.toLocaleString('ru',{weekday:'short'});
+            let timeMatch = s.text.match(/(\d{1,2}[:\.]\d{2})/); let title = "", details = "";
+            if (timeMatch && timeMatch.index > 0) { title = s.text.substring(0, timeMatch.index).trim(); details = s.text.substring(timeMatch.index).trim(); } else { title = s.text.split(' ')[0]; details = s.text.substring(title.length).trim(); }
+
+            let tags = ''; 
+            if (res) { 
+                if (res.isTrain) tags += '<span class="tag teal">ОБУЧЕНИЕ 8ч</span> '; 
+                
+                if (res.isRes) tags += '<span class="tag gray">РЕЗЕРВ</span> '; 
+                if (s.lineStart) tags += '<span class="tag orange">ВЫЕЗД</span> ';
+                
+                if (res.isTech) tags += '<span class="tag teal">+УЧЕБА</span> ';
+            }
+            let div = document.createElement('div'); div.className = 'shift-card';
+            if(s.date === todayStr) { div.classList.add('today'); div.innerHTML = `<div class="today-badge">СЕГОДНЯ</div>`; }
+            
+            div.dataset.date = s.date;
+            div.onclick = (e) => openDayModal(e.currentTarget.dataset.date);
+
+            let moneyHTML = '';
+            if (res) {
+                const moneyClass = (new Date(s.date) > new Date()) ? 'money-val future' : 'money-val';
+                moneyHTML = `<div class="${moneyClass}">+${res.net}</div>`;
+            }
+            div.innerHTML += `<div class="date-box"><span class="date-day">${day}</span><span class="date-dow">${dow}</span></div><div class="shift-info"><div class="shift-title">${title} ${tags}</div><div class="shift-sub">${details}</div></div><div style="text-align:right">${moneyHTML}</div>`;
+            list.appendChild(div);
+        });
+        
+        const statsSelect = document.getElementById('statMonthSelect');
+        if(statsSelect) statsSelect.style.display = 'none';
+        
+        renderStats();
+    }
+
+    function openModal() { document.getElementById('addModal').classList.add('open'); setAutoDate(); document.getElementById('inpText').value = ''; document.getElementById('modalTitle').innerText = 'Новая смена'; document.getElementById('btnSaveShift').innerText = 'Добавить'; document.getElementById('btnDeleteShift').style.display = 'none'; document.getElementById('shiftRate').value = String(settings.rate).replace('.',','); document.getElementById('shiftMentor').checked = settings.mentor; document.getElementById('shiftSenior').checked = settings.senior || false; document.getElementById('shiftTech').checked = false; document.getElementById('shiftPostTrip').checked = false; document.getElementById('shiftClassSelect').value = settings.classP; document.getElementById('shiftPrem').value = String(settings.premP).replace('.',','); checkShiftText(); document.getElementById('inpText').focus(); }
+    function openDayModal(dateStr) { document.getElementById('inpDate').value = dateStr; const shift = shifts.find(s => s.date === dateStr); const delBtn = document.getElementById('btnDeleteShift'); const saveBtn = document.getElementById('btnSaveShift'); const title = document.getElementById('modalTitle'); document.getElementById('lineStart').value = ''; document.getElementById('lineEnd').value = ''; if (shift) { document.getElementById('inpText').value = shift.text; let effectiveRate = shift.customRate; if(effectiveRate === undefined) { effectiveRate = shift.text.toLowerCase().includes('рез') ? (settings.rate / 1.12) * 1.08 : settings.rate; } document.getElementById('shiftRate').value = String(effectiveRate).replace('.',','); document.getElementById('shiftMentor').checked = shift.customMentor !== undefined ? shift.customMentor : settings.mentor; document.getElementById('shiftSenior').checked = shift.customSenior !== undefined ? shift.customSenior : (settings.senior || false); document.getElementById('shiftTech').checked = shift.isTech !== undefined ? shift.isTech : false; document.getElementById('shiftPostTrip').checked = shift.isPostTrip !== undefined ? shift.isPostTrip : false; document.getElementById('shiftClassSelect').value = (shift.customClass !== undefined) ? shift.customClass : settings.classP; document.getElementById('shiftPrem').value = (shift.customPrem !== undefined) ? shift.customPrem : settings.premP; if (shift.customPrem === undefined) document.getElementById('shiftPrem').value = String(settings.premP).replace('.',','); else document.getElementById('shiftPrem').value = String(shift.customPrem).replace('.',','); if (shift.lineStart) document.getElementById('lineStart').value = shift.lineStart; if (shift.lineEnd) document.getElementById('lineEnd').value = shift.lineEnd; title.innerText = 'Редактирование'; saveBtn.innerText = 'Сохранить'; delBtn.style.display = 'block'; } else { document.getElementById('inpText').value = ''; document.getElementById('shiftRate').value = String(settings.rate).replace('.',','); document.getElementById('shiftMentor').checked = settings.mentor; document.getElementById('shiftSenior').checked = settings.senior || false; document.getElementById('shiftTech').checked = false; document.getElementById('shiftPostTrip').checked = false; document.getElementById('shiftClassSelect').value = settings.classP; document.getElementById('shiftPrem').value = String(settings.premP).replace('.',','); title.innerText = 'Новая смена'; saveBtn.innerText = 'Добавить'; delBtn.style.display = 'none'; } checkShiftText(); document.getElementById('addModal').classList.add('open'); document.getElementById('inpText').focus(); }
+    function checkShiftText() { const txt = document.getElementById('inpText').value.toLowerCase(); const details = document.getElementById('shiftDetailsBox'); const lineBlock = document.getElementById('lineWorkContainer'); if (txt.includes('вых') || txt.includes('бл') || txt.includes('донор')) { details.style.display = 'none'; } else { details.style.display = 'block'; } const rateInput = document.getElementById('shiftRate'); const mainRate = safeFloat(settings.rate); if (txt.includes('рез')) { const resRate = (mainRate / 1.12) * 1.08; if(document.activeElement.id === 'inpText') { rateInput.value = String(resRate.toFixed(2)).replace('.',','); } lineBlock.style.display = 'block'; } else { if (details.style.display !== 'none' && document.activeElement.id === 'inpText') { rateInput.value = String(mainRate).replace('.',','); } lineBlock.style.display = 'none'; } }
+    function applyPremToCurrentMonth() { const newPrem = safeFloat(document.getElementById('shiftPrem').value); const dateStr = document.getElementById('inpDate').value; if (!dateStr) return; const targetDate = new Date(dateStr); const targetMonth = targetDate.getMonth(); const targetYear = targetDate.getFullYear(); let count = 0; shifts.forEach(s => { const d = new Date(s.date); if (d.getMonth() === targetMonth && d.getFullYear() === targetYear) { s.customPrem = newPrem; count++; } }); localStorage.setItem('metro_shifts', JSON.stringify(shifts)); alert(`Премия ${newPrem}% применена к ${count} сменам.`); render(); }
+    function deleteCurrentShift() { const d = document.getElementById('inpDate').value; if(confirm('Удалить эту смену?')) { shifts = shifts.filter(s => s.date !== d); localStorage.setItem('metro_shifts', JSON.stringify(shifts)); render(); renderCalendar(); closeModal('addModal'); } }
+    function openImportModal() { document.getElementById('importModal').classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+    function saveSettings() { settings.rate = safeFloat(document.getElementById('set_rate').value); settings.classP = parseInt(document.getElementById('set_class').value); settings.premP = safeFloat(document.getElementById('set_prem').value); settings.mentor = document.getElementById('set_mentor').checked; settings.senior = document.getElementById('set_senior').checked; settings.startDate = document.getElementById('set_start_date').value; settings.union = document.getElementById('set_union').checked; localStorage.setItem('metro_settings', JSON.stringify(settings)); calcExpDisplay(); render(); }
+    function processImport() { const text = document.getElementById('importText').value; if(!text) return; const lines = text.split('\n'); let addedCount = 0; const defRate = settings.rate; const defMent = settings.mentor; const defSen = settings.senior || false; const defClass = settings.classP; const defExp = getSeniorityPercent(settings.startDate); const defPrem = settings.premP; lines.forEach(line => { line = line.trim(); if(!line) return; const dateMatch = line.match(/^(\d{1,2})\.(\d{2})\.(\d{2})/); if(dateMatch) { const day = dateMatch[1].padStart(2, '0'); const month = dateMatch[2]; const year = '20' + dateMatch[3]; const isoDate = `${year}-${month}-${day}`; let desc = line.replace(dateMatch[0], '').trim(); shifts = shifts.filter(s => s.date !== isoDate); let impRate = defRate; if(desc.toLowerCase().includes('рез')) { impRate = (safeFloat(defRate) / 1.12) * 1.08; } shifts.push({ date: isoDate, text: desc, customRate: impRate, customMentor: defMent, customSenior: defSen, customClass: defClass, customSen: defExp, customPrem: defPrem }); addedCount++; } }); if(addedCount > 0) { localStorage.setItem('metro_shifts', JSON.stringify(shifts)); render(); closeModal('importModal'); alert(`Успешно обработано: ${addedCount}`); } else { alert('Ошибка формата.'); } }
+    function addShift() { let d = document.getElementById('inpDate').value; let t = document.getElementById('inpText').value; let sRate = safeFloat(document.getElementById('shiftRate').value); let sMentor = document.getElementById('shiftMentor').checked; let sSenior = document.getElementById('shiftSenior').checked; let lStart = document.getElementById('lineStart').value; let lEnd = document.getElementById('lineEnd').value; let sClass = parseInt(document.getElementById('shiftClassSelect').value); let sSen = getSeniorityPercent(settings.startDate); let sPrem = safeFloat(document.getElementById('shiftPrem').value); let sTech = document.getElementById('shiftTech').checked; let sPost = document.getElementById('shiftPostTrip').checked; if(d && t) { shifts = shifts.filter(s => s.date !== d); shifts.push({ date:d, text:t, customRate: sRate, customMentor: sMentor, customSenior: sSenior, customClass: sClass, customSen: sSen, customPrem: sPrem, lineStart: lStart, lineEnd: lEnd, isTech: sTech, isPostTrip: sPost }); localStorage.setItem('metro_shifts', JSON.stringify(shifts)); render(); if(document.getElementById('calendarModal').classList.contains('open')) renderCalendar(); closeModal('addModal'); } }
+    function renderCalendar() { const grid = document.getElementById('calGrid'); grid.innerHTML = ''; ['ПН','ВТ','СР','ЧТ','ПТ','СБ','ВС'].forEach(d => grid.innerHTML += `<div class="cal-day-name">${d}</div>`); const year = calDate.getFullYear(); const month = calDate.getMonth(); const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"]; document.getElementById('calTitle').innerText = `${monthNames[month]} ${year}`; const currentYearHolidays = getHolidays(year); let firstDay = new Date(year, month, 1).getDay(); firstDay = (firstDay === 0 ? 6 : firstDay - 1); const daysInMonth = new Date(year, month + 1, 0).getDate(); const todayStr = new Date().toISOString().split('T')[0]; for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div class="cal-cell empty"></div>`; for (let d = 1; d <= daysInMonth; d++) { const currentIso = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; const shift = shifts.find(s => s.date === currentIso); const dateObj = new Date(currentIso); const dayOfWeek = dateObj.getDay(); const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6); const isHoliday = isHolidayFunc(dateObj); let cellClass = ''; if (isWeekend || isHoliday) cellClass += ' weekend'; if (isHoliday) cellClass += ' holiday'; let content = `<div class="cal-num">${d}</div>`; if (shift) { let text = shift.text.toLowerCase(); let typeClass = 'type-work'; if(text.includes('бл')) typeClass = 'type-sick'; else if(text.includes('донор')) typeClass = 'type-donor'; else if(text.includes('вых')) typeClass = 'type-off'; else if(text.includes('упц') || text.includes('учеба')) typeClass = 'type-train'; cellClass += ` has-shift ${typeClass}`; let title = shift.text.split(' ')[0]; if(title.length > 5) title = title.substr(0,4)+'.'; content += `<div class="cal-shift">${title}</div>`; } if (currentIso === todayStr) cellClass += ' today'; let cellHTML = `<div class="cal-cell ${cellClass}" onclick="openDayModal('${currentIso}')">${content}</div>`; grid.innerHTML += cellHTML; } }
+    
+    function isHolidayFunc(d) { return isHoliday(d); }
+    
+    function changeMonth(dir) { calDate.setMonth(calDate.getMonth() + dir); renderCalendar(); }
+    function openCalendarModal() { document.getElementById('calendarModal').classList.add('open'); renderCalendar(); }
+    function setAutoDate() { if (shifts.length === 0) { document.getElementById('inpDate').valueAsDate = new Date(); return; } let maxTime = 0; shifts.forEach(s => { let time = new Date(s.date).getTime(); if (time > maxTime) maxTime = time; }); let nextDay = new Date(maxTime); nextDay.setDate(nextDay.getDate() + 1); document.getElementById('inpDate').valueAsDate = nextDay; }
+
+    init();
+</script>
+
+</body>
+</html>
