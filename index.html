@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MetroTime Pro v69</title>
+    <title>MetroTime Pro v73</title>
     <style>
         :root {
             --primary: #37474f;
@@ -126,23 +126,62 @@
         .stat-sub-val { font-size: 12px; color:#90a4ae; font-weight: 600; margin-right: 8px;}
         .card { background: var(--card); border-radius: 20px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 15px; }
         
+        /* FIXED BUTTONS ALIGNMENT */
         .month-selector {
-            display: flex; align-items: center; background: #f0f2f5; border-radius: 12px; padding: 2px;
+            display: flex; 
+            align-items: center; 
+            justify-content: center; /* Center everything */
+            background: #f0f2f5; 
+            border-radius: 12px; 
+            padding: 4px 8px;
+            min-width: 160px; 
+            gap: 15px; /* Add spacing between arrows and text */
         }
         .month-btn {
-            background: none; border: none; padding: 8px 12px; cursor: pointer; color: var(--primary); font-size: 16px; font-weight: bold;
+            background: none; 
+            border: none; 
+            padding: 8px; 
+            cursor: pointer; 
+            color: var(--primary); 
+            font-size: 20px; 
+            font-weight: bold;
+            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
         }
         .month-display {
-            padding: 0 10px; font-size: 14px; font-weight: 700; min-width: 100px; text-align: center;
+            font-size: 14px; 
+            font-weight: 700; 
+            text-align: center;
+            white-space: nowrap;
+            min-width: 110px;
         }
 
         /* CALENDAR GRID */
         .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .cal-title { font-size: 18px; font-weight: 700; }
         .cal-btn { background: none; border: none; font-size: 24px; color: var(--primary); cursor: pointer; padding: 5px 15px; }
-        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; touch-action: pan-y pinch-zoom; }
+        
+        .cal-grid { 
+            display: grid; 
+            grid-template-columns: repeat(7, 1fr); 
+            gap: 6px; 
+            width: 100%; 
+        }
         .cal-day-name { text-align: center; font-size: 11px; color: #b0bec5; font-weight: 700; padding-bottom: 10px; }
-        .cal-cell { background: #f7f9fc; border-radius: 10px; height: 55px; display: flex; flex-direction: column; align-items: center; padding-top: 4px; font-size: 12px; position: relative; border: 2px solid transparent; cursor: pointer; }
+        .cal-cell { 
+            background: #f7f9fc; 
+            border-radius: 10px; 
+            height: 55px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding-top: 4px; 
+            font-size: 12px; 
+            position: relative; 
+            border: 2px solid transparent; 
+            cursor: pointer;
+            min-width: 0; 
+        }
         .cal-num { font-weight: 700; font-size: 12px; margin-bottom: 2px; color: #546e7a; }
         .cal-shift { font-size: 9px; text-align: center; line-height: 1.1; width: 100%; overflow: hidden; text-overflow: ellipsis; padding: 0 2px; font-weight: 600;}
         .cal-cell.today { border-color: var(--accent); background: #fff; }
@@ -163,6 +202,7 @@
         .tag.gray { background: #90a4ae; } 
         .tag.orange { background: var(--accent); }
         .tag.teal { background: #009688; }
+        .tag.indigo { background: #5c6bc0; }
         
         /* INPUTS */
         input[type="text"], input[type="number"], textarea, select { width: 100%; padding: 14px; border: 1px solid #e0e0e0; border-radius: 12px; box-sizing: border-box; font-size: 16px; margin-top: 8px; background: #f9f9f9; font-family: inherit; font-weight: 500;}
@@ -173,7 +213,7 @@
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(38, 50, 56, 0.8); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 1000; }
         #addModal { z-index: 2000; } 
         .modal-overlay.open { display: flex; animation: fadeIn 0.2s; }
-        .modal-box { background: white; padding: 25px; border-radius: 24px; width: 90%; max-width: 360px; box-shadow: 0 20px 60px rgba(0,0,0,0.4); max-height: 85vh; overflow-y: auto;}
+        .modal-box { background: white; padding: 25px; border-radius: 24px; width: 90%; max-width: 360px; min-width: 300px; box-shadow: 0 20px 60px rgba(0,0,0,0.4); max-height: 85vh; overflow-y: auto;}
         .btn-row { display: flex; justify-content: flex-end; margin-top: 25px; gap: 10px; }
         .btn { padding: 12px 24px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; font-size: 15px; transition: 0.2s;}
         .btn:active { transform: scale(0.96); }
@@ -342,7 +382,7 @@
                 <span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Член профсоюза (-1%)</span>
             </div>
         </div>
-        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v69.0 (Clean & Precise)</div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v73.0 (Final Fix)</div>
     </div>
 
     <div class="modal-overlay" id="addModal">
@@ -477,6 +517,14 @@
         ]
     };
 
+    // FIX FOR UTC DATES
+    function getIsoDate(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
+
     function fmtMoney(val) {
         if (isNaN(val)) return "0 ₽";
         return Math.round(val).toLocaleString() + ' ₽';
@@ -494,7 +542,7 @@
     }
 
     function isHoliday(dateObj) {
-        const isoDate = dateObj.toISOString().split('T')[0];
+        const isoDate = getIsoDate(dateObj); // USE LOCAL DATE
         const md = isoDate.slice(5); 
         const day = dateObj.getDay();
         const year = dateObj.getFullYear();
@@ -521,17 +569,17 @@
             const current = new Date(year, month, d);
             if (!isHoliday(current)) {
                 workDays++;
-                const iso = current.toISOString().split('T')[0];
+                const iso = getIsoDate(current);
                 if (year >= 2024 && year <= 2026) {
                     if (holidaysData.short.includes(iso)) shortDays++;
                     else {
                         const tomorrow = new Date(year, month, d + 1);
-                        const tomIso = tomorrow.toISOString().split('T')[0].slice(5);
+                        const tomIso = getIsoDate(tomorrow).slice(5);
                         if (holidaysData.fixed.includes(tomIso)) shortDays++;
                     }
                 } else {
                     const tomorrow = new Date(year, month, d + 1);
-                    const tomIso = tomorrow.toISOString().split('T')[0].slice(5);
+                    const tomIso = getIsoDate(tomorrow).slice(5);
                     if (holidaysData.fixed.includes(tomIso)) shortDays++;
                 }
             }
@@ -653,30 +701,21 @@
         return { start, end };
     }
 
-    // НОВАЯ ФУНКЦИЯ: Расчет разрывных смен на основе интервала < 8ч
-    // Теперь помечает ОБЕ смены (текущую и следующую)
     function calculateRestIntervals() {
         shifts.sort((a,b) => {
             let tA = getShiftTimes(a), tB = getShiftTimes(b);
             if(!tA) return 1; if(!tB) return -1;
             return tA.start - tB.start;
         });
-
-        // Сбрасываем флаг autoSplit перед пересчетом
         shifts.forEach(s => s.autoSplit = false);
-
         for (let i = 0; i < shifts.length - 1; i++) {
             let curr = shifts[i];
             let next = shifts[i+1];
-            
             let tCurr = getShiftTimes(curr);
             let tNext = getShiftTimes(next);
-            
             if (tCurr && tNext) {
                 let diffMs = tNext.start - tCurr.end;
                 let diffHours = diffMs / (1000 * 60 * 60);
-                
-                // Если отдых меньше 8 часов -> ОБЕ смены считаются разделенными на части
                 if (diffHours > 0 && diffHours < 8) {
                     curr.autoSplit = true;
                     next.autoSplit = true;
@@ -698,14 +737,12 @@
         let sPrem = safeFloat(sPremStr);
         let k = (1 + sPrem / 100);
 
-        // --- HANDLING TRAINING (UPC) ---
         if (text.includes('упц') || text.includes('учеба')) {
             let hours = 8;
-            // Logic change: Rate is assumed to be "Line Rate" (Base + ~24.5%). 
-            // Tech study is paid at Base Rate only.
+            // 546.18 / 1.245 = 438.70 (base rate) * 2 = 877.40
             let baseRate = rate / 1.245; 
-            let total = baseRate * hours; // NO PREMIUM for Tech Study (as per request)
-
+            let total = baseRate * 2; 
+            
             return {
                 net: Math.round(total * 0.87), dirty: total, hours: hours,
                 isRes: false, isFull: false, night: 0, ev: 0, isSplit: false, isTrain: true,
@@ -751,8 +788,7 @@
         let bonusSplit = 0;
         if (isSplit) { bonusSplit = nakedTariff * 0.30; }
         
-        // TECH STUDY (+2 HOURS RAW BASE RATE)
-        // Same logic: strip line coefficient from rate to get base rate
+        // TECH STUDY: Base Rate * 2
         let bonusTech = 0;
         if (isTech) {
             let baseRate = rate / 1.245;
@@ -856,7 +892,6 @@
             }
         });
 
-        // NORM & OVERTIME
         let norm = getMonthNorm(year, month);
         let displayNorm = norm + ' ч';
         if (sickDeduction > 0) {
@@ -978,7 +1013,7 @@
 
             let tags = ''; 
             if (res) { 
-                if (res.isTrain) tags += '<span class="tag teal">ОБУЧЕНИЕ 8ч</span> '; 
+                if (res.isTrain) tags += '<span class="tag teal">ОБУЧЕНИЕ</span> '; 
                 
                 if (res.isRes) tags += '<span class="tag gray">РЕЗЕРВ</span> '; 
                 if (s.lineStart) tags += '<span class="tag orange">ВЫЕЗД</span> ';
