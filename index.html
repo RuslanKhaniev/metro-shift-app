@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MetroTime Pro v78</title>
+    <title>MetroTime Pro v79</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -17,7 +17,6 @@
         }
         body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Roboto", sans-serif; background-color: var(--bg); margin: 0; padding: 0; color: var(--text); padding-bottom: 90px; padding-top: 60px; -webkit-tap-highlight-color: transparent; }
         
-        /* IPHONE SCROLL FIX */
         body.modal-open { overflow: hidden; height: 100vh; position: fixed; width: 100%; touch-action: none; }
 
         /* HEADER */
@@ -93,7 +92,6 @@
         .tag { font-size: 9px; padding: 3px 8px; border-radius: 6px; color: white; font-weight: bold; letter-spacing: 0.5px; display:inline-block; margin-left:2px;}
         .tag.gray { background: #90a4ae; } .tag.orange { background: var(--accent); } .tag.teal { background: #009688; } .tag.indigo { background: #5c6bc0; }
         
-        /* UI FIXES FOR MODAL CLICKS */
         .fab-container { position: fixed; bottom: 90px; right: 20px; display: flex; align-items: center; gap: 15px; z-index: 2000; pointer-events: auto; }
         .fab-main { background: var(--accent); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 8px 20px rgba(255, 171, 0, 0.4); cursor: pointer; border: none; transition: transform 0.2s; -webkit-tap-highlight-color: transparent; } .fab-main:active { transform: scale(0.9); } .fab-main svg { width: 30px; height: 30px; fill: white; pointer-events: none; }
         .fab-secondary { background: white; color: var(--primary); width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1); cursor: pointer; border: none; transition: transform 0.2s; -webkit-tap-highlight-color: transparent;} .fab-secondary:active { transform: scale(0.9); } .fab-secondary svg { width: 24px; height: 24px; fill: currentColor; pointer-events: none; }
@@ -101,7 +99,6 @@
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: white; border-top: 1px solid #f0f0f0; display: flex; justify-content: space-around; align-items: center; z-index: 1000; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -5px 20px rgba(0,0,0,0.03); }
         .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--nav-inactive); font-size: 10px; font-weight: 600; width: 100%; height: 100%; cursor: pointer; transition: all 0.2s; } .nav-item.active { color: var(--primary); transform: translateY(-2px); } .nav-item svg { width: 26px; height: 26px; fill: currentColor; margin-bottom: 4px; }
 
-        /* STATS & SETTINGS */
         .chart-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 0; position: relative; }
         .circular-chart { display: block; margin: 0 auto; max-width: 80%; max-height: 250px; }
         .circle-bg { fill: none; stroke: #eee; stroke-width: 3.8; }
@@ -121,7 +118,6 @@
         input:focus, textarea:focus, select:focus { outline: none; border-color: var(--primary); background: white; }
         label { font-size: 11px; color: #78909c; font-weight: 800; text-transform: uppercase; margin-top: 18px; display: block; letter-spacing: 0.5px;}
         
-        /* MODALS - FIXED SCROLLING ISSUE */
         .modal-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(38, 50, 56, 0.8); backdrop-filter: blur(4px); 
@@ -225,7 +221,7 @@
                 <div style="font-size:10px; color:#8d6e63; margin-top:5px;">Нажми, если данные на телефоне есть, а на ПК нет.</div>
             </div>
         </div>
-        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v78.0 (Stable)</div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v79.0 (Hours Visible)</div>
     </div>
 
     <div class="modal-overlay" id="addModal"><div class="modal-box"><h3 style="margin-top:0; color:var(--primary)" id="modalTitle">Новая смена</h3><label>Дата</label><input type="date" id="inpDate"><label>Текст из графика</label><input type="text" id="inpText" placeholder="Например: м75 14:00-22:00" oninput="checkShiftText()"><details id="shiftDetailsBox"><summary>⚙️ Параметры этой смены</summary><div class="detail-row"><label>Ставка (₽/час)</label><input type="text" inputmode="decimal" id="shiftRate"></div><div class="detail-row"><label>Премия (%)</label><div style="text-align:right"><input type="text" inputmode="decimal" id="shiftPrem" style="width:60px"><button class="btn-text" onclick="applyPremToCurrentMonth()">На весь месяц</button></div></div><div class="detail-row"><label>Класс</label><select id="shiftClassSelect"><option value="0">Без класса</option><option value="30">1 класс</option><option value="20">2 класс</option><option value="10">3 класс</option></select></div><div id="lineWorkContainer" style="display:none;"><div class="line-input-row" style="margin-top:15px;"><input type="time" id="lineStart"><span style="align-self:center">-</span><input type="time" id="lineEnd"></div><div style="font-size:10px; color:#90a4ae; margin-top:5px;">Время работы на линии</div></div><div class="detail-row" style="margin-top:15px;"><label style="flex:1;">Тех. учеба (+2ч)</label><input type="checkbox" id="shiftTech"></div><div class="detail-row"><label style="flex:1;">Послерейсовый (+10 мин)</label><input type="checkbox" id="shiftPostTrip"></div><div class="detail-row" style="margin-top:15px;"><label>Наставник (+15%)</label><input type="checkbox" id="shiftMentor"></div><div class="detail-row"><label>Ст. Машинист (+10%)</label><input type="checkbox" id="shiftSenior"></div></details><div class="btn-row"><button class="btn btn-delete" id="btnDeleteShift" onclick="deleteCurrentShift()" style="display:none; margin-right:auto;">Удалить</button><button class="btn btn-cancel" onclick="closeModal('addModal')">Отмена</button><button class="btn btn-save" id="btnSaveShift" onclick="addShift()">Сохранить</button></div></div></div>
@@ -540,6 +536,7 @@
             const shiftDate = new Date(s.date); const monthYear = shiftDate.toLocaleString('ru', { month: 'long', year: 'numeric' }); const monthYearCap = monthYear.charAt(0).toUpperCase() + monthYear.slice(1);
             if(monthYearCap !== currentMonthStr) { currentMonthStr = monthYearCap; const divider = document.createElement('div'); divider.className = 'month-header'; divider.innerText = currentMonthStr; list.appendChild(divider); }
             let res = calcShift(s); let title = s.text.split(' ')[0]; let details = s.text.substring(title.length).trim();
+            if (res && res.hours > 0) details += ` (${res.hours.toFixed(1)}ч)`;
             let tags = ''; if (res) { if (res.isTrain) tags += '<span class="tag teal">ОБУЧЕНИЕ</span> '; if (res.isRes) tags += '<span class="tag gray">РЕЗЕРВ</span> '; if (s.lineStart) tags += '<span class="tag orange">ВЫЕЗД</span> '; if (res.isTech) tags += '<span class="tag teal">+УЧЕБА</span> '; }
             let div = document.createElement('div'); div.className = 'shift-card'; if(s.date === todayStr) { div.classList.add('today'); div.innerHTML = `<div class="today-badge">СЕГОДНЯ</div>`; }
             div.onclick = () => openDayModal(s.date);
@@ -560,7 +557,10 @@
     function deleteCurrentShift() { const d = document.getElementById('inpDate').value; if(confirm('Удалить эту смену?')) { shifts = shifts.filter(s => s.date !== d); saveData(); render(); renderCalendar(); closeModal('addModal'); } }
     function openImportModal() { document.body.classList.add('modal-open'); document.getElementById('importModal').classList.add('open'); }
     function closeModal(id) { document.body.classList.remove('modal-open'); document.getElementById(id).classList.remove('open'); }
-    
+    function saveAllSettings() { settings.rate = safeFloat(document.getElementById('set_rate').value); settings.classP = parseInt(document.getElementById('set_class').value); settings.premP = safeFloat(document.getElementById('set_prem').value); settings.mentor = document.getElementById('set_mentor').checked; settings.senior = document.getElementById('set_senior').checked; settings.startDate = document.getElementById('set_start_date').value; settings.union = document.getElementById('set_union').checked; saveData(); calcExpDisplay(); render(); }
+    // Fix function name reference in HTML
+    window.saveAll = saveAllSettings;
+
     function processImport() { const text = document.getElementById('importText').value; if(!text) return; const lines = text.split('\n'); let addedCount = 0; const defRate = settings.rate; const defMent = settings.mentor; const defSen = settings.senior || false; const defClass = settings.classP; const defExp = getSeniorityPercent(settings.startDate); const defPrem = settings.premP; lines.forEach(line => { line = line.trim(); if(!line) return; const dateMatch = line.match(/^(\d{1,2})\.(\d{2})\.(\d{2})/); if(dateMatch) { const day = dateMatch[1].padStart(2, '0'); const month = dateMatch[2]; const year = '20' + dateMatch[3]; const isoDate = `${year}-${month}-${day}`; let desc = line.replace(dateMatch[0], '').trim(); shifts = shifts.filter(s => s.date !== isoDate); let impRate = defRate; if(desc.toLowerCase().includes('рез')) { impRate = (safeFloat(defRate) / 1.12) * 1.08; } shifts.push({ date: isoDate, text: desc, customRate: impRate, customMentor: defMent, customSenior: defSen, customClass: defClass, customSen: defExp, customPrem: defPrem }); addedCount++; } }); if(addedCount > 0) { saveData(); render(); closeModal('importModal'); alert(`Успешно обработано: ${addedCount}`); } else { alert('Ошибка формата.'); } }
     function addShift() { let d = document.getElementById('inpDate').value; let t = document.getElementById('inpText').value; let sRate = safeFloat(document.getElementById('shiftRate').value); let sMentor = document.getElementById('shiftMentor').checked; let sSenior = document.getElementById('shiftSenior').checked; let lStart = document.getElementById('lineStart').value; let lEnd = document.getElementById('lineEnd').value; let sClass = parseInt(document.getElementById('shiftClassSelect').value); let sSen = getSeniorityPercent(settings.startDate); let sPrem = safeFloat(document.getElementById('shiftPrem').value); let sTech = document.getElementById('shiftTech').checked; let sPost = document.getElementById('shiftPostTrip').checked; if(d && t) { shifts = shifts.filter(s => s.date !== d); shifts.push({ date:d, text:t, customRate: sRate, customMentor: sMentor, customSenior: sSenior, customClass: sClass, customSen: sSen, customPrem: sPrem, lineStart: lStart, lineEnd: lEnd, isTech: sTech, isPostTrip: sPost }); saveData(); render(); if(document.getElementById('calendarModal').classList.contains('open')) renderCalendar(); closeModal('addModal'); } }
     function renderCalendar() { const grid = document.getElementById('calGrid'); grid.innerHTML = ''; ['ПН','ВТ','СР','ЧТ','ПТ','СБ','ВС'].forEach(d => grid.innerHTML += `<div class="cal-day-name">${d}</div>`); const year = calDate.getFullYear(); const month = calDate.getMonth(); const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"]; document.getElementById('calTitle').innerText = `${monthNames[month]} ${year}`; const currentYearHolidays = getHolidays(year); let firstDay = new Date(year, month, 1).getDay(); firstDay = (firstDay === 0 ? 6 : firstDay - 1); const daysInMonth = new Date(year, month + 1, 0).getDate(); const todayStr = new Date().toISOString().split('T')[0]; for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div class="cal-cell empty"></div>`; for (let d = 1; d <= daysInMonth; d++) { const currentIso = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; const shift = shifts.find(s => s.date === currentIso); const dateObj = new Date(currentIso); const dayOfWeek = dateObj.getDay(); const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6); const isHoliday = isHolidayFunc(dateObj); let cellClass = ''; if (isWeekend || isHoliday) cellClass += ' weekend'; if (isHoliday) cellClass += ' holiday'; let content = `<div class="cal-num">${d}</div>`; if (shift) { let text = shift.text.toLowerCase(); let typeClass = 'type-work'; if(text.includes('бл')) typeClass = 'type-sick'; else if(text.includes('донор')) typeClass = 'type-donor'; else if(text.includes('вых')) typeClass = 'type-off'; else if(text.includes('упц') || text.includes('учеба')) typeClass = 'type-train'; cellClass += ` has-shift ${typeClass}`; let title = shift.text.split(' ')[0]; if(title.length > 5) title = title.substr(0,4)+'.'; content += `<div class="cal-shift">${title}</div>`; } if (currentIso === todayStr) cellClass += ' today'; let cellHTML = `<div class="cal-cell ${cellClass}" onclick="openDayModal('${currentIso}')">${content}</div>`; grid.innerHTML += cellHTML; } }
