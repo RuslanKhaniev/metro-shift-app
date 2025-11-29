@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MetroTime Pro v77</title>
+    <title>MetroTime Pro v78</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -18,7 +18,7 @@
         body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Roboto", sans-serif; background-color: var(--bg); margin: 0; padding: 0; color: var(--text); padding-bottom: 90px; padding-top: 60px; -webkit-tap-highlight-color: transparent; }
         
         /* IPHONE SCROLL FIX */
-        body.modal-open { overflow: hidden; height: 100vh; position: fixed; width: 100%; }
+        body.modal-open { overflow: hidden; height: 100vh; position: fixed; width: 100%; touch-action: none; }
 
         /* HEADER */
         header { background-color: var(--card); color: var(--text); height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); position: fixed; top: 0; left: 0; right: 0; z-index: 100; }
@@ -137,8 +137,8 @@
             box-shadow: 0 20px 60px rgba(0,0,0,0.4); 
             max-height: 85vh; overflow-y: auto;
             position: relative;
-            z-index: 6001; /* Ensure above overlay */
-            transform: translate3d(0,0,0); /* Hardware accel */
+            z-index: 6001; 
+            transform: translate3d(0,0,0);
         }
         
         .btn-row { display: flex; justify-content: flex-end; margin-top: 25px; gap: 10px; }
@@ -210,14 +210,14 @@
     <div id="tab-settings" class="page">
         <div class="card">
             <h3 style="margin-top:0; color:var(--primary)">⚙️ Профиль</h3>
-            <label>Тариф (Основной)</label><input type="text" inputmode="decimal" id="set_rate" onchange="saveAll()">
-            <label>Класс квалификации</label><select id="set_class" onchange="saveAll()"><option value="0">Без класса</option><option value="30">1 класс (30%)</option><option value="20">2 класс (20%)</option><option value="10">3 класс (10%)</option></select>
-            <label>Дата трудоустройства</label><input type="date" id="set_start_date" onchange="saveAll()">
+            <label>Тариф (Основной)</label><input type="text" inputmode="decimal" id="set_rate" onchange="updateProfile()">
+            <label>Класс квалификации</label><select id="set_class" onchange="updateProfile()"><option value="0">Без класса</option><option value="30">1 класс (30%)</option><option value="20">2 класс (20%)</option><option value="10">3 класс (10%)</option></select>
+            <label>Дата трудоустройства</label><input type="date" id="set_start_date" onchange="updateProfile()">
             <div style="font-size:13px; color:var(--primary); margin-top:8px; text-align:right; font-weight:600;" id="set_exp_text"></div>
-            <label>Премия (%)</label><input type="text" inputmode="decimal" id="set_prem" onchange="saveAll()">
-            <div style="margin-top:25px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;"><input type="checkbox" id="set_mentor" style="width:24px; height:24px; margin:0;" onchange="saveAll()"><span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Наставник (+15%)</span></div>
-            <div style="margin-top:10px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;"><input type="checkbox" id="set_senior" style="width:24px; height:24px; margin:0;" onchange="saveAll()"><span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Ст. машинист (+10%)</span></div>
-            <div style="margin-top:10px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;"><input type="checkbox" id="set_union" style="width:24px; height:24px; margin:0;" onchange="saveAll()"><span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Член профсоюза (-1%)</span></div>
+            <label>Премия (%)</label><input type="text" inputmode="decimal" id="set_prem" onchange="updateProfile()">
+            <div style="margin-top:25px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;"><input type="checkbox" id="set_mentor" style="width:24px; height:24px; margin:0;" onchange="updateProfile()"><span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Наставник (+15%)</span></div>
+            <div style="margin-top:10px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;"><input type="checkbox" id="set_senior" style="width:24px; height:24px; margin:0;" onchange="updateProfile()"><span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Ст. машинист (+10%)</span></div>
+            <div style="margin-top:10px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;"><input type="checkbox" id="set_union" style="width:24px; height:24px; margin:0;" onchange="updateProfile()"><span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Член профсоюза (-1%)</span></div>
             
             <div style="margin-top:30px; padding:15px; background:#fff3e0; border-radius:12px; text-align:center;">
                 <div id="cloudStatus" style="font-size:12px; font-weight:bold; color:#f57c00; margin-bottom:10px;">Статус облака: Проверка...</div>
@@ -225,7 +225,7 @@
                 <div style="font-size:10px; color:#8d6e63; margin-top:5px;">Нажми, если данные на телефоне есть, а на ПК нет.</div>
             </div>
         </div>
-        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v77.0 (Scroll Block)</div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v78.0 (Stable)</div>
     </div>
 
     <div class="modal-overlay" id="addModal"><div class="modal-box"><h3 style="margin-top:0; color:var(--primary)" id="modalTitle">Новая смена</h3><label>Дата</label><input type="date" id="inpDate"><label>Текст из графика</label><input type="text" id="inpText" placeholder="Например: м75 14:00-22:00" oninput="checkShiftText()"><details id="shiftDetailsBox"><summary>⚙️ Параметры этой смены</summary><div class="detail-row"><label>Ставка (₽/час)</label><input type="text" inputmode="decimal" id="shiftRate"></div><div class="detail-row"><label>Премия (%)</label><div style="text-align:right"><input type="text" inputmode="decimal" id="shiftPrem" style="width:60px"><button class="btn-text" onclick="applyPremToCurrentMonth()">На весь месяц</button></div></div><div class="detail-row"><label>Класс</label><select id="shiftClassSelect"><option value="0">Без класса</option><option value="30">1 класс</option><option value="20">2 класс</option><option value="10">3 класс</option></select></div><div id="lineWorkContainer" style="display:none;"><div class="line-input-row" style="margin-top:15px;"><input type="time" id="lineStart"><span style="align-self:center">-</span><input type="time" id="lineEnd"></div><div style="font-size:10px; color:#90a4ae; margin-top:5px;">Время работы на линии</div></div><div class="detail-row" style="margin-top:15px;"><label style="flex:1;">Тех. учеба (+2ч)</label><input type="checkbox" id="shiftTech"></div><div class="detail-row"><label style="flex:1;">Послерейсовый (+10 мин)</label><input type="checkbox" id="shiftPostTrip"></div><div class="detail-row" style="margin-top:15px;"><label>Наставник (+15%)</label><input type="checkbox" id="shiftMentor"></div><div class="detail-row"><label>Ст. Машинист (+10%)</label><input type="checkbox" id="shiftSenior"></div></details><div class="btn-row"><button class="btn btn-delete" id="btnDeleteShift" onclick="deleteCurrentShift()" style="display:none; margin-right:auto;">Удалить</button><button class="btn btn-cancel" onclick="closeModal('addModal')">Отмена</button><button class="btn btn-save" id="btnSaveShift" onclick="addShift()">Сохранить</button></div></div></div>
@@ -240,6 +240,7 @@
     </nav>
 
 <script>
+    // --- ГИБРИДНАЯ СИСТЕМА v78 (FIXED RECURSION) ---
     let shifts = JSON.parse(localStorage.getItem('metro_shifts')) || [];
     let settings = JSON.parse(localStorage.getItem('metro_settings')) || { rate: 546.18, classP: 30, premP: 35, mentor: false, senior: false, startDate: "", union: true };
     let calDate = new Date();
@@ -295,7 +296,10 @@
                     shifts.forEach(s => shiftMap.set(s.date, s));
                     cloudShifts.forEach(s => { let norm = s.d ? normalizeOne(s) : s; shiftMap.set(norm.date, norm); });
                     shifts = Array.from(shiftMap.values());
-                    saveLocal(); render();
+                    // НЕ ВЫЗЫВАЕМ saveAll ЗДЕСЬ, ЧТОБЫ ИЗБЕЖАТЬ ЦИКЛА, ПРОСТО СОХРАНЯЕМ ЛОКАЛЬНО
+                    localStorage.setItem('metro_shifts', JSON.stringify(shifts));
+                    localStorage.setItem('metro_settings', JSON.stringify(settings));
+                    render();
                 }
                 updateCloudStatus("Подключено");
             });
@@ -308,7 +312,28 @@
         saveAllToCloud(() => { hideLoader(); alert('Данные успешно отправлены в Облако!'); updateCloudStatus("Отправлено вручную"); });
     }
 
-    function saveAll() { saveSettings(); saveLocal(); saveAllToCloud(); }
+    // --- ИСПРАВЛЕННАЯ ЛОГИКА СОХРАНЕНИЯ (БЕЗ РЕКУРСИИ) ---
+    
+    // 1. Главная функция сохранения (БЕЗ чтения инпутов)
+    function saveData() {
+        localStorage.setItem('metro_shifts', JSON.stringify(shifts));
+        localStorage.setItem('metro_settings', JSON.stringify(settings));
+        saveAllToCloud();
+    }
+
+    // 2. Функция обновления настроек из полей (вызывает сохранение)
+    function updateProfile() {
+        settings.rate = safeFloat(document.getElementById('set_rate').value);
+        settings.classP = parseInt(document.getElementById('set_class').value);
+        settings.premP = safeFloat(document.getElementById('set_prem').value);
+        settings.mentor = document.getElementById('set_mentor').checked;
+        settings.senior = document.getElementById('set_senior').checked;
+        settings.startDate = document.getElementById('set_start_date').value;
+        settings.union = document.getElementById('set_union').checked;
+        saveData(); // Сохраняем
+        calcExpDisplay();
+        render();
+    }
 
     function saveAllToCloud(cb) {
         if (!tg.CloudStorage) { if(cb) cb(); return; }
@@ -336,7 +361,6 @@
         keys.forEach(k => { tg.CloudStorage.setItem(k, JSON.stringify(grouped[k]), (err) => { completed++; if (completed === keys.length) { updateCloudStatus("Сохранено"); if(cb) cb(); } }); });
     }
 
-    function saveLocal() { localStorage.setItem('metro_shifts', JSON.stringify(shifts)); localStorage.setItem('metro_settings', JSON.stringify(settings)); }
     function showLoader() { document.getElementById('loader').classList.add('loader-active'); }
     function hideLoader() { document.getElementById('loader').classList.remove('loader-active'); }
 
@@ -532,15 +556,13 @@
     function checkShiftText() { const txt = document.getElementById('inpText').value.toLowerCase(); const details = document.getElementById('shiftDetailsBox'); const lineBlock = document.getElementById('lineWorkContainer'); if (txt.includes('вых') || txt.includes('бл') || txt.includes('донор')) { details.style.display = 'none'; } else { details.style.display = 'block'; } const rateInput = document.getElementById('shiftRate'); const mainRate = safeFloat(settings.rate); if (txt.includes('рез')) { const resRate = (mainRate / 1.12) * 1.08; if(document.activeElement.id === 'inpText') { rateInput.value = String(resRate.toFixed(2)).replace('.',','); } lineBlock.style.display = 'block'; } else { if (details.style.display !== 'none' && document.activeElement.id === 'inpText') { rateInput.value = String(mainRate).replace('.',','); } lineBlock.style.display = 'none'; } }
     
     // SAVE WRAPPERS
-    function applyPremToCurrentMonth() { const newPrem = safeFloat(document.getElementById('shiftPrem').value); const dateStr = document.getElementById('inpDate').value; if (!dateStr) return; const targetDate = new Date(dateStr); const targetMonth = targetDate.getMonth(); const targetYear = targetDate.getFullYear(); let count = 0; shifts.forEach(s => { const d = new Date(s.date); if (d.getMonth() === targetMonth && d.getFullYear() === targetYear) { s.customPrem = newPrem; count++; } }); saveAll(); alert(`Премия ${newPrem}% применена к ${count} сменам.`); render(); }
-    function deleteCurrentShift() { const d = document.getElementById('inpDate').value; if(confirm('Удалить эту смену?')) { shifts = shifts.filter(s => s.date !== d); saveAll(); render(); renderCalendar(); closeModal('addModal'); } }
+    function applyPremToCurrentMonth() { const newPrem = safeFloat(document.getElementById('shiftPrem').value); const dateStr = document.getElementById('inpDate').value; if (!dateStr) return; const targetDate = new Date(dateStr); const targetMonth = targetDate.getMonth(); const targetYear = targetDate.getFullYear(); let count = 0; shifts.forEach(s => { const d = new Date(s.date); if (d.getMonth() === targetMonth && d.getFullYear() === targetYear) { s.customPrem = newPrem; count++; } }); saveData(); alert(`Премия ${newPrem}% применена к ${count} сменам.`); render(); }
+    function deleteCurrentShift() { const d = document.getElementById('inpDate').value; if(confirm('Удалить эту смену?')) { shifts = shifts.filter(s => s.date !== d); saveData(); render(); renderCalendar(); closeModal('addModal'); } }
     function openImportModal() { document.body.classList.add('modal-open'); document.getElementById('importModal').classList.add('open'); }
     function closeModal(id) { document.body.classList.remove('modal-open'); document.getElementById(id).classList.remove('open'); }
-    function saveAllSettings() { settings.rate = safeFloat(document.getElementById('set_rate').value); settings.classP = parseInt(document.getElementById('set_class').value); settings.premP = safeFloat(document.getElementById('set_prem').value); settings.mentor = document.getElementById('set_mentor').checked; settings.senior = document.getElementById('set_senior').checked; settings.startDate = document.getElementById('set_start_date').value; settings.union = document.getElementById('set_union').checked; saveAll(); calcExpDisplay(); render(); }
-    window.saveAll = saveAllSettings;
-
-    function processImport() { const text = document.getElementById('importText').value; if(!text) return; const lines = text.split('\n'); let addedCount = 0; const defRate = settings.rate; const defMent = settings.mentor; const defSen = settings.senior || false; const defClass = settings.classP; const defExp = getSeniorityPercent(settings.startDate); const defPrem = settings.premP; lines.forEach(line => { line = line.trim(); if(!line) return; const dateMatch = line.match(/^(\d{1,2})\.(\d{2})\.(\d{2})/); if(dateMatch) { const day = dateMatch[1].padStart(2, '0'); const month = dateMatch[2]; const year = '20' + dateMatch[3]; const isoDate = `${year}-${month}-${day}`; let desc = line.replace(dateMatch[0], '').trim(); shifts = shifts.filter(s => s.date !== isoDate); let impRate = defRate; if(desc.toLowerCase().includes('рез')) { impRate = (safeFloat(defRate) / 1.12) * 1.08; } shifts.push({ date: isoDate, text: desc, customRate: impRate, customMentor: defMent, customSenior: defSen, customClass: defClass, customSen: defExp, customPrem: defPrem }); addedCount++; } }); if(addedCount > 0) { saveAll(); render(); closeModal('importModal'); alert(`Успешно обработано: ${addedCount}`); } else { alert('Ошибка формата.'); } }
-    function addShift() { let d = document.getElementById('inpDate').value; let t = document.getElementById('inpText').value; let sRate = safeFloat(document.getElementById('shiftRate').value); let sMentor = document.getElementById('shiftMentor').checked; let sSenior = document.getElementById('shiftSenior').checked; let lStart = document.getElementById('lineStart').value; let lEnd = document.getElementById('lineEnd').value; let sClass = parseInt(document.getElementById('shiftClassSelect').value); let sSen = getSeniorityPercent(settings.startDate); let sPrem = safeFloat(document.getElementById('shiftPrem').value); let sTech = document.getElementById('shiftTech').checked; let sPost = document.getElementById('shiftPostTrip').checked; if(d && t) { shifts = shifts.filter(s => s.date !== d); shifts.push({ date:d, text:t, customRate: sRate, customMentor: sMentor, customSenior: sSenior, customClass: sClass, customSen: sSen, customPrem: sPrem, lineStart: lStart, lineEnd: lEnd, isTech: sTech, isPostTrip: sPost }); saveAll(); render(); if(document.getElementById('calendarModal').classList.contains('open')) renderCalendar(); closeModal('addModal'); } }
+    
+    function processImport() { const text = document.getElementById('importText').value; if(!text) return; const lines = text.split('\n'); let addedCount = 0; const defRate = settings.rate; const defMent = settings.mentor; const defSen = settings.senior || false; const defClass = settings.classP; const defExp = getSeniorityPercent(settings.startDate); const defPrem = settings.premP; lines.forEach(line => { line = line.trim(); if(!line) return; const dateMatch = line.match(/^(\d{1,2})\.(\d{2})\.(\d{2})/); if(dateMatch) { const day = dateMatch[1].padStart(2, '0'); const month = dateMatch[2]; const year = '20' + dateMatch[3]; const isoDate = `${year}-${month}-${day}`; let desc = line.replace(dateMatch[0], '').trim(); shifts = shifts.filter(s => s.date !== isoDate); let impRate = defRate; if(desc.toLowerCase().includes('рез')) { impRate = (safeFloat(defRate) / 1.12) * 1.08; } shifts.push({ date: isoDate, text: desc, customRate: impRate, customMentor: defMent, customSenior: defSen, customClass: defClass, customSen: defExp, customPrem: defPrem }); addedCount++; } }); if(addedCount > 0) { saveData(); render(); closeModal('importModal'); alert(`Успешно обработано: ${addedCount}`); } else { alert('Ошибка формата.'); } }
+    function addShift() { let d = document.getElementById('inpDate').value; let t = document.getElementById('inpText').value; let sRate = safeFloat(document.getElementById('shiftRate').value); let sMentor = document.getElementById('shiftMentor').checked; let sSenior = document.getElementById('shiftSenior').checked; let lStart = document.getElementById('lineStart').value; let lEnd = document.getElementById('lineEnd').value; let sClass = parseInt(document.getElementById('shiftClassSelect').value); let sSen = getSeniorityPercent(settings.startDate); let sPrem = safeFloat(document.getElementById('shiftPrem').value); let sTech = document.getElementById('shiftTech').checked; let sPost = document.getElementById('shiftPostTrip').checked; if(d && t) { shifts = shifts.filter(s => s.date !== d); shifts.push({ date:d, text:t, customRate: sRate, customMentor: sMentor, customSenior: sSenior, customClass: sClass, customSen: sSen, customPrem: sPrem, lineStart: lStart, lineEnd: lEnd, isTech: sTech, isPostTrip: sPost }); saveData(); render(); if(document.getElementById('calendarModal').classList.contains('open')) renderCalendar(); closeModal('addModal'); } }
     function renderCalendar() { const grid = document.getElementById('calGrid'); grid.innerHTML = ''; ['ПН','ВТ','СР','ЧТ','ПТ','СБ','ВС'].forEach(d => grid.innerHTML += `<div class="cal-day-name">${d}</div>`); const year = calDate.getFullYear(); const month = calDate.getMonth(); const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"]; document.getElementById('calTitle').innerText = `${monthNames[month]} ${year}`; const currentYearHolidays = getHolidays(year); let firstDay = new Date(year, month, 1).getDay(); firstDay = (firstDay === 0 ? 6 : firstDay - 1); const daysInMonth = new Date(year, month + 1, 0).getDate(); const todayStr = new Date().toISOString().split('T')[0]; for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div class="cal-cell empty"></div>`; for (let d = 1; d <= daysInMonth; d++) { const currentIso = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; const shift = shifts.find(s => s.date === currentIso); const dateObj = new Date(currentIso); const dayOfWeek = dateObj.getDay(); const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6); const isHoliday = isHolidayFunc(dateObj); let cellClass = ''; if (isWeekend || isHoliday) cellClass += ' weekend'; if (isHoliday) cellClass += ' holiday'; let content = `<div class="cal-num">${d}</div>`; if (shift) { let text = shift.text.toLowerCase(); let typeClass = 'type-work'; if(text.includes('бл')) typeClass = 'type-sick'; else if(text.includes('донор')) typeClass = 'type-donor'; else if(text.includes('вых')) typeClass = 'type-off'; else if(text.includes('упц') || text.includes('учеба')) typeClass = 'type-train'; cellClass += ` has-shift ${typeClass}`; let title = shift.text.split(' ')[0]; if(title.length > 5) title = title.substr(0,4)+'.'; content += `<div class="cal-shift">${title}</div>`; } if (currentIso === todayStr) cellClass += ' today'; let cellHTML = `<div class="cal-cell ${cellClass}" onclick="openDayModal('${currentIso}')">${content}</div>`; grid.innerHTML += cellHTML; } }
     
     function isHolidayFunc(d) { return isHoliday(d); }
