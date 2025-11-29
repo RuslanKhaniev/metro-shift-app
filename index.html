@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MetroTime Pro v79</title>
+    <title>MetroTime Pro v81</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -221,7 +221,7 @@
                 <div style="font-size:10px; color:#8d6e63; margin-top:5px;">Нажми, если данные на телефоне есть, а на ПК нет.</div>
             </div>
         </div>
-        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v79.0 (Hours Visible)</div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v81.0 (Average Pay Fix)</div>
     </div>
 
     <div class="modal-overlay" id="addModal"><div class="modal-box"><h3 style="margin-top:0; color:var(--primary)" id="modalTitle">Новая смена</h3><label>Дата</label><input type="date" id="inpDate"><label>Текст из графика</label><input type="text" id="inpText" placeholder="Например: м75 14:00-22:00" oninput="checkShiftText()"><details id="shiftDetailsBox"><summary>⚙️ Параметры этой смены</summary><div class="detail-row"><label>Ставка (₽/час)</label><input type="text" inputmode="decimal" id="shiftRate"></div><div class="detail-row"><label>Премия (%)</label><div style="text-align:right"><input type="text" inputmode="decimal" id="shiftPrem" style="width:60px"><button class="btn-text" onclick="applyPremToCurrentMonth()">На весь месяц</button></div></div><div class="detail-row"><label>Класс</label><select id="shiftClassSelect"><option value="0">Без класса</option><option value="30">1 класс</option><option value="20">2 класс</option><option value="10">3 класс</option></select></div><div id="lineWorkContainer" style="display:none;"><div class="line-input-row" style="margin-top:15px;"><input type="time" id="lineStart"><span style="align-self:center">-</span><input type="time" id="lineEnd"></div><div style="font-size:10px; color:#90a4ae; margin-top:5px;">Время работы на линии</div></div><div class="detail-row" style="margin-top:15px;"><label style="flex:1;">Тех. учеба (+2ч)</label><input type="checkbox" id="shiftTech"></div><div class="detail-row"><label style="flex:1;">Послерейсовый (+10 мин)</label><input type="checkbox" id="shiftPostTrip"></div><div class="detail-row" style="margin-top:15px;"><label>Наставник (+15%)</label><input type="checkbox" id="shiftMentor"></div><div class="detail-row"><label>Ст. Машинист (+10%)</label><input type="checkbox" id="shiftSenior"></div></details><div class="btn-row"><button class="btn btn-delete" id="btnDeleteShift" onclick="deleteCurrentShift()" style="display:none; margin-right:auto;">Удалить</button><button class="btn btn-cancel" onclick="closeModal('addModal')">Отмена</button><button class="btn btn-save" id="btnSaveShift" onclick="addShift()">Сохранить</button></div></div></div>
@@ -423,7 +423,31 @@
         let sPrem = safeFloat(sPremStr);
         let k = (1 + sPrem / 100);
 
-        if (text.includes('упц') || text.includes('учеба')) { let baseRate = rate / 1.245; let total = baseRate * 2; return { net: Math.round(total * 0.87), dirty: total, hours: 8, isRes: false, isFull: false, night: 0, ev: 0, isSplit: false, isTrain: true, evBonus: 0, nightBonus: 0, splitBonus: 0, techBonus: 0, valClass: 0, valSen: 0, valPrem: 0, valSenior: 0, valMentor: 0 }; }
+        if (text.includes('упц') || text.includes('учеба')) {
+            let hours = 8;
+            let nakedTariff = hours * rate; // Full rate * 8 hours
+            
+            // Calculate bonuses manually to emulate "Average Pay" structure
+            let valClass = nakedTariff * (sClass / 100);
+            let valSen = nakedTariff * (sSen / 100);
+            // Include Senior bonus if applicable (optional, usually Average includes everything)
+            let valSenior = 0;
+            // let valSenior = isSenior ? nakedTariff * 0.10 : 0; 
+
+            let baseSum = nakedTariff + valClass + valSen + valSenior;
+            let valPrem = baseSum * (sPrem / 100);
+            
+            let total = baseSum + valPrem;
+
+            return {
+                net: Math.round(total * 0.87), dirty: total, hours: hours,
+                isRes: false, isFull: false, night: 0, ev: 0, isSplit: false, isTrain: true,
+                evBonus: 0, nightBonus: 0, splitBonus: 0, techBonus: 0,
+                valClass: valClass, valSen: valSen, valPrem: valPrem, valSenior: valSenior, valMentor: 0,
+                mentorHours: 0
+            };
+        }
+
         if(text.includes('бл') || text.includes('донор') || text.includes('вых')) return null;
 
         let isMentor = (shift.customMentor !== undefined) ? shift.customMentor : settings.mentor;
