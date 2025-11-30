@@ -33,6 +33,7 @@
         }
         body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Roboto", sans-serif; background-color: var(--bg); margin: 0; padding: 0; color: var(--text); padding-bottom: 90px; padding-top: 60px; -webkit-tap-highlight-color: transparent; }
         
+        /* IPHONE SCROLL FIX */
         body.modal-open { overflow: hidden; height: 100vh; position: fixed; width: 100%; touch-action: none; }
 
         /* HEADER */
@@ -252,7 +253,7 @@
     </nav>
 
 <script>
-    // --- ГИБРИДНАЯ СИСТЕМА v78 (FIXED RECURSION) ---
+    // --- ГИБРИДНАЯ СИСТЕМА v82 (FINAL: METRIKA + FIXED RECURSION) ---
     let shifts = JSON.parse(localStorage.getItem('metro_shifts')) || [];
     let settings = JSON.parse(localStorage.getItem('metro_settings')) || { rate: 546.18, classP: 30, premP: 35, mentor: false, senior: false, startDate: "", union: true };
     let calDate = new Date();
@@ -445,7 +446,7 @@
         let sPrem = safeFloat(sPremStr);
         let k = (1 + sPrem / 100);
 
-        if (text.includes('упц') || text.includes('учеба')) { let baseRate = rate / 1.245; let total = baseRate * 8; return { net: Math.round(total * 0.87), dirty: total, hours: 8, isRes: false, isFull: false, night: 0, ev: 0, isSplit: false, isTrain: true, evBonus: 0, nightBonus: 0, splitBonus: 0, techBonus: 0, valClass: 0, valSen: 0, valPrem: 0, valSenior: 0, valMentor: 0 }; }
+        if (text.includes('упц') || text.includes('учеба')) { let baseRate = rate / 1.245; let total = baseRate * 2; return { net: Math.round(total * 0.87), dirty: total, hours: 8, isRes: false, isFull: false, night: 0, ev: 0, isSplit: false, isTrain: true, evBonus: 0, nightBonus: 0, splitBonus: 0, techBonus: 0, valClass: 0, valSen: 0, valPrem: 0, valSenior: 0, valMentor: 0 }; }
         if(text.includes('бл') || text.includes('донор') || text.includes('вых')) return null;
 
         let isMentor = (shift.customMentor !== undefined) ? shift.customMentor : settings.mentor;
