@@ -28,7 +28,7 @@
             --col-work-bg: #e8f5e9; --col-work-txt: #2e7d32;
             --col-sick-bg: #fff9c4; --col-sick-txt: #fbc02d; --col-sick-border: #fff59d;
             --col-donor-bg: #e1bee7; --col-donor-txt: #7b1fa2; --col-donor-border: #ba68c8;
-            --col-vacation-bg: #e1f5fe; --col-vacation-txt: #0288d1; /* NEW: Vacation Blue */
+            --col-vacation-bg: #e1f5fe; --col-vacation-txt: #0288d1; 
             --col-train-bg: #e0f7fa; --col-train-txt: #006064; --col-train-border: #b2ebf2;
             --col-weekend-txt: #e53935; --col-holiday-bg: #ffebee; --col-holiday-border: #ef5350; 
         }
@@ -111,8 +111,7 @@
         .cal-cell.empty { background: transparent; cursor: default; }
 
         .tag { font-size: 9px; padding: 3px 8px; border-radius: 6px; color: white; font-weight: bold; letter-spacing: 0.5px; display:inline-block; margin-left:2px;}
-        .tag.gray { background: #90a4ae; } .tag.orange { background: var(--accent); } .tag.teal { background: #009688; } 
-        .tag.indigo { background: #7b1fa2; } .tag.blue { background: #0288d1; }
+        .tag.gray { background: #90a4ae; } .tag.orange { background: var(--accent); } .tag.teal { background: #009688; } .tag.indigo { background: #7b1fa2; }
         
         .fab-container { position: fixed; bottom: 90px; right: 20px; display: flex; align-items: center; gap: 15px; z-index: 2000; pointer-events: auto; }
         .fab-main { background: var(--accent); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 8px 20px rgba(255, 171, 0, 0.4); cursor: pointer; border: none; transition: transform 0.2s; -webkit-tap-highlight-color: transparent; } .fab-main:active { transform: scale(0.9); } .fab-main svg { width: 30px; height: 30px; fill: white; pointer-events: none; }
@@ -167,7 +166,7 @@
         details { margin-top: 15px; border: 1px solid #eee; border-radius: 12px; padding: 15px; } summary { font-size: 13px; font-weight: 700; color: var(--primary); cursor: pointer; outline: none; }
         .detail-row { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; } .detail-row label { margin: 0; font-size: 13px; color: #455a64; font-weight: 500;} .detail-row input[type="checkbox"] { width: 24px; height: 24px; margin: 0; accent-color: var(--accent);} .detail-row input[type="text"] { width: 90px; padding: 8px; font-size: 14px; margin: 0; } .line-input-row { display: flex; gap: 10px; margin-top: 5px; }
 
-        /* MODE SWITCHER (PERIOD / SINGLE) */
+        /* MODE SWITCHER */
         .mode-switch { display: flex; background: #f0f2f5; padding: 4px; border-radius: 12px; margin-bottom: 20px; }
         .mode-btn { flex: 1; border: none; background: transparent; padding: 10px; font-weight: 700; color: #90a4ae; cursor: pointer; border-radius: 10px; transition: 0.2s; }
         .mode-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
@@ -426,7 +425,7 @@
             if(s.lineEnd) mini.le = s.lineEnd;
             if(s.isTech) mini.it = 1;
             if(s.isPostTrip) mini.ip = 1;
-            if(s.isMedical) mini.im = 1; 
+            if(s.isMedical) mini.im = 1;
             if(s.isDonor) mini.id = 1;
             if(s.periodType) mini.pt = s.periodType; // NEW: Period type for vacation/sick
             grouped[key].push(mini);
