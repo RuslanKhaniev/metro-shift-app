@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MetroTime Pro v92</title>
+    <title>MetroTime Pro v93</title>
 
     <script type="text/javascript" >
        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
@@ -111,7 +111,7 @@
         .cal-cell.empty { background: transparent; cursor: default; }
 
         .tag { font-size: 9px; padding: 3px 8px; border-radius: 6px; color: white; font-weight: bold; letter-spacing: 0.5px; display:inline-block; margin-left:2px;}
-        .tag.gray { background: #90a4ae; } .tag.orange { background: var(--accent); } .tag.teal { background: #009688; } .tag.indigo { background: #7b1fa2; }
+        .tag.gray { background: #90a4ae; } .tag.orange { background: var(--accent); } .tag.teal { background: #009688; } .tag.indigo { background: #7b1fa2; } .tag.red { background: #e53935; }
         
         .fab-container { position: fixed; bottom: 90px; right: 20px; display: flex; align-items: center; gap: 15px; z-index: 2000; pointer-events: auto; }
         .fab-main { background: var(--accent); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 8px 20px rgba(255, 171, 0, 0.4); cursor: pointer; border: none; transition: transform 0.2s; -webkit-tap-highlight-color: transparent; } .fab-main:active { transform: scale(0.9); } .fab-main svg { width: 30px; height: 30px; fill: white; pointer-events: none; }
@@ -264,7 +264,7 @@
                 <div style="font-size:10px; color:#8d6e63; margin-top:5px;">Нажми, если данные на телефоне есть, а на ПК нет.</div>
             </div>
         </div>
-        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v92.0 (Period & Sick)</div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v93.0 (Ultimate)</div>
     </div>
 
     <div class="modal-overlay" id="addModal"><div class="modal-box">
@@ -357,6 +357,7 @@
     function getHolidays(year) { return holidaysData.fixed.map(d => `${year}-${d}`); }
     function isHoliday(dateObj) { const isoDate = getIsoDate(dateObj); const md = isoDate.slice(5); const day = dateObj.getDay(); const year = dateObj.getFullYear(); if (year >= 2024 && year <= 2026) { if (holidaysData.workOnWeekend.includes(isoDate)) return false; if (holidaysData.restOnWorkday.includes(isoDate)) return true; if (holidaysData.fixed.includes(md)) return true; if (day === 0 || day === 6) return true; return false; } if (day === 0 || day === 6) return true; if (holidaysData.fixed.includes(md)) return true; return false; }
     function getMonthNorm(year, month) { let workDays = 0; let shortDays = 0; const daysInMonth = new Date(year, month + 1, 0).getDate(); for (let d = 1; d <= daysInMonth; d++) { const current = new Date(year, month, d); if (!isHoliday(current)) { workDays++; const iso = getIsoDate(current); if (year >= 2024 && year <= 2026) { if (holidaysData.short.includes(iso)) shortDays++; else { const tomorrow = new Date(year, month, d + 1); const tomIso = getIsoDate(tomorrow).slice(5); if (holidaysData.fixed.includes(tomIso)) shortDays++; } } else { const tomorrow = new Date(year, month, d + 1); const tomIso = getIsoDate(tomorrow).slice(5); if (holidaysData.fixed.includes(tomIso)) shortDays++; } } } return parseFloat(((workDays * 7.2) - shortDays).toFixed(1)); }
+
     function updateCloudStatus(msg, isError = false) { const el = document.getElementById('cloudStatus'); if(el) { el.innerText = "Облако: " + msg; el.style.color = isError ? "#e53935" : "#2e7d32"; } }
 
     function init() {
@@ -427,7 +428,7 @@
             if(s.isPostTrip) mini.ip = 1;
             if(s.isMedical) mini.im = 1;
             if(s.isDonor) mini.id = 1;
-            if(s.periodType) mini.pt = s.periodType; // NEW: Period type for vacation/sick
+            if(s.periodType) mini.pt = s.periodType; 
             grouped[key].push(mini);
         });
         let keys = Object.keys(grouped); let completed = 0;
@@ -454,7 +455,6 @@
     function normalizeShifts() { shifts = shifts.map(s => normalizeOne(s)); }
 
     function updateUI() {
-        // DYNAMIC YEARS
         const curYear = new Date().getFullYear();
         document.getElementById('lbl_inc_1').innerText = `Доход за ${curYear - 2} г. (грязными)`;
         document.getElementById('lbl_inc_2').innerText = `Доход за ${curYear - 1} г. (грязными)`;
@@ -467,7 +467,6 @@
         document.getElementById('set_start_date').value = settings.startDate || "";
         document.getElementById('set_union').checked = settings.union !== false;
         
-        // Sick Pay Fields
         document.getElementById('set_inc_1').value = settings.inc1 || "";
         document.getElementById('set_inc_2').value = settings.inc2 || "";
         document.getElementById('set_exp_years').value = settings.expCoef || "1.0";
@@ -532,23 +531,6 @@
 
     function calcShift(shift) {
         let text = shift.text.toLowerCase();
-        // Handle new Period Types
-        if (shift.periodType) {
-             if (shift.periodType === 'sick') {
-                 // Calculate Sick Pay if inputs exist
-                 let money = 0;
-                 if (settings.inc1 > 0 && settings.inc2 > 0) {
-                     // Formula: (Inc1 + Inc2) / 730 * ExpCoeff * 0.87 (net)
-                     let avgDay = (settings.inc1 + settings.inc2) / 730;
-                     money = avgDay * settings.expCoef * 0.87;
-                 }
-                 return { net: Math.round(money), dirty: 0, hours: 0, isRes: false, isDonor: false, isSick: true, displayHours: 0 };
-             }
-             // Other types (Vacation, Donor, Unpaid) -> Money 0
-             return { net: 0, dirty: 0, hours: 0, isRes: false, isDonor: (shift.periodType === 'donor'), isVacation: true, displayHours: (shift.periodType === 'donor' ? 7.2 : 0) };
-        }
-
-        // ... Standard calculation logic (same as before) ...
         let rateStr = (shift.customRate !== undefined) ? shift.customRate : settings.rate;
         let rate = safeFloat(rateStr); if (rate === 0) rate = 546.18; 
         let sClass = (shift.customClass !== undefined) ? shift.customClass : settings.classP;
@@ -557,17 +539,43 @@
         let sPrem = safeFloat(sPremStr);
         let k = (1 + sPrem / 100);
 
+        // HOLIDAY CHECK (x2 RATE)
+        let dObj = new Date(shift.date);
+        let isHol = isHoliday(dObj);
+        if (isHol && !shift.periodType) { // Only for work shifts
+            rate = rate * 2; 
+        }
+
+        // Handle new Period Types
+        if (shift.periodType) {
+             if (shift.periodType === 'sick') {
+                 let money = 0;
+                 if (settings.inc1 > 0 && settings.inc2 > 0) {
+                     let avgDay = (settings.inc1 + settings.inc2) / 730;
+                     money = avgDay * settings.expCoef * 0.87;
+                 }
+                 return { net: Math.round(money), dirty: 0, hours: 0, isRes: false, isDonor: false, isSick: true, displayHours: 0 };
+             }
+             return { net: 0, dirty: 0, hours: 0, isRes: false, isDonor: (shift.periodType === 'donor'), isVacation: true, displayHours: (shift.periodType === 'donor' ? 7.2 : 0) };
+        }
+
         // 1. UPC (Training)
         if (text.includes('упц') || text.includes('учеба')) {
             let hours = 8;
-            let baseRate = rate / 1.245; 
+            let baseRate = isHol ? (rate/2)/1.245 : rate/1.245; // Base rate (remove potential x2, remove line coeff)
             let total = baseRate * 8; 
-            return { net: Math.round(total * 0.87), dirty: total, hours: hours, isRes: false, isFull: false, night: 0, ev: 0, isSplit: false, isTrain: true, evBonus: 0, nightBonus: 0, splitBonus: 0, techBonus: 0, valClass: 0, valSen: 0, valPrem: 0, valSenior: 0, valMentor: 0 };
+            return { net: Math.round(total * 0.87), dirty: total, hours: hours, isRes: false, isFull: false, night: 0, ev: 0, isSplit: false, isTrain: true, evBonus: 0, nightBonus: 0, splitBonus: 0, techBonus: 0, valClass: 0, valSen: 0, valPrem: 0, valSenior: 0, valMentor: 0, isHoliday: isHol };
         }
-        
-        // Legacy Donor (Single Day)
+
+        // 2. DONOR - 7.2 hours
         if (text.includes('донор')) {
-             return { net: 0, dirty: 0, hours: 0, isRes: false, isDonor: true, displayHours: 7.2 };
+            return {
+                net: 0, dirty: 0, hours: 0, 
+                isRes: false, isFull: false, night: 0, ev: 0, isSplit: false, isTrain: false,
+                evBonus: 0, nightBonus: 0, splitBonus: 0, techBonus: 0,
+                valClass: 0, valSen: 0, valPrem: 0, valSenior: 0, valMentor: 0,
+                isDonor: true, displayHours: 7.2
+            };
         }
 
         if(text.includes('бл') || text.includes('отпуск') || text.includes('вых')) return null;
@@ -579,9 +587,30 @@
         let isMedical = (shift.isMedical === true);
         let isSplit = (shift.autoSplit === true);
         let isRes = text.includes('рез');
-        if (isRes && shift.customRate === undefined) { rate = (rate / 1.12) * 1.08; }
         
-        if (isMedical) { rate = rate / 1.12; isSenior = false; isMentor = false; isSplit = false; }
+        // Normalize rate for specific conditions (remove x2 if applied for base logic calc, then re-apply if needed)
+        // Actually simpler: If holiday, rate is ALREADY x2. 
+        // If RES/Medical -> we need SINGLE rate without coefficients.
+        
+        let baseRate = isHol ? rate / 2 : rate; // Get back to x1 for logic adjustments
+
+        if (isRes && shift.customRate === undefined) { 
+            // Res is usually paid x1 even on holiday? Or x2? 
+            // Document says "Tariff rate". Law says x2. Let's assume x2 applies to Res too.
+            // Logic for Res rate: (Rate / 1.12) * 1.08
+            // If Holiday: ((Rate/1.12)*1.08) * 2
+            let resRate = (baseRate / 1.12) * 1.08;
+            rate = isHol ? resRate * 2 : resRate;
+        }
+        
+        if (isMedical) { 
+            // Medical: Naked Rate. 
+            // If Holiday: Naked Rate * 2
+            let medRate = baseRate / 1.12;
+            rate = isHol ? medRate * 2 : medRate;
+            
+            isSenior = false; isMentor = false; isSplit = false; 
+        }
 
         let times = [...text.matchAll(/(\d{1,2}[:\.]\d{2})/g)];
         if (times.length < 2) return null;
@@ -597,16 +626,25 @@
 
         if (isMedical) { nightHoursToPay = 0; evHoursToPay = 0; }
 
-        let nakedTariff = totalHours * rate;
-        let bonusClass = nakedTariff * (sClass / 100); 
-        let bonusSen = nakedTariff * (sSen / 100); 
-        let bonusSenior = isSenior ? nakedTariff * 0.10 : 0;
-        let bonusMentor = isMentor ? nakedTariff * 0.15 : 0;
-        let bonusSplit = isSplit ? nakedTariff * 0.30 : 0;
-        let bonusTech = 0; if (isTech) { let baseRate = rate / 1.245; bonusTech = baseRate * 2; }
+        // For bonuses (Class, Sen, etc), usually applied to SINGLE tariff (x1), not x2.
+        // So we calculate bonuses based on baseRate.
+        let calcRate = isHol ? rate / 2 : rate; // Rate for bonuses (x1)
+        
+        let nakedTariff = totalHours * rate; // This includes x2 if holiday
+        
+        // Bonuses are usually on x1 rate
+        let bonusClass = (totalHours * calcRate) * (sClass / 100); 
+        let bonusSen = (totalHours * calcRate) * (sSen / 100); 
+        
+        let bonusSenior = isSenior ? (totalHours * calcRate) * 0.10 : 0;
+        let bonusMentor = isMentor ? (totalHours * calcRate) * 0.15 : 0;
+        let bonusSplit = isSplit ? (totalHours * calcRate) * 0.30 : 0;
+        let bonusTech = 0; if (isTech) { let bR = calcRate / 1.245; bonusTech = bR * 2; }
 
-        let evMoney = evHoursToPay * rate * 0.20;
-        let nightMoney = nightHoursToPay * rate * 0.40;
+        let evMoney = evHoursToPay * calcRate * 0.20;
+        let nightMoney = nightHoursToPay * calcRate * 0.40;
+        
+        // Premium is usually on EVERYTHING (including x2 part)
         let totalAccrued = nakedTariff + bonusClass + bonusSen + bonusSenior + bonusMentor + bonusSplit + evMoney + nightMoney;
         let final = totalAccrued * k + bonusTech;
 
@@ -616,7 +654,7 @@
             splitBonus: bonusSplit * k, evBonus: evMoney * k, nightBonus: nightMoney * k, techBonus: bonusTech, 
             valClass: bonusClass * k, valSen: bonusSen * k, valSenior: bonusSenior * k, valMentor: bonusMentor * k, valPrem: totalAccrued * (sPrem / 100),
             mentorHours: isMentor ? totalHours : 0,
-            isMedical: isMedical
+            isMedical: isMedical, isHoliday: isHol
         };
     }
 
@@ -629,12 +667,11 @@
         const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
         document.getElementById('statsMonthDisplay').innerText = `${monthNames[month]} ${year}`;
         const monthlyShifts = shifts.filter(s => { const d = new Date(s.date); return d.getFullYear() === year && d.getMonth() === month; });
-        let st = { count: 0, hours: 0, night: 0, ev: 0, res: 0, dirty: 0, sick: 0, donor: 0, net: 0, union: 0, tax: 0, splitBonus: 0, evBonus: 0, nightBonus: 0, techBonus: 0, splitHours: 0, sumClass: 0, sumSen: 0, sumPrem: 0, sumSenior: 0, sumMentor: 0, ot15Hours: 0, ot15Money: 0, ot20Hours: 0, ot20Money: 0, mentorHours: 0 };
+        let st = { count: 0, hours: 0, night: 0, ev: 0, res: 0, dirty: 0, sick: 0, donor: 0, net: 0, union: 0, tax: 0, splitBonus: 0, evBonus: 0, nightBonus: 0, techBonus: 0, splitHours: 0, sumClass: 0, sumSen: 0, sumPrem: 0, sumSenior: 0, sumMentor: 0, ot15Hours: 0, ot15Money: 0, ot20Hours: 0, ot20Money: 0, mentorHours: 0, holidayHours: 0 };
         let sickDeduction = 0;
 
         monthlyShifts.forEach(s => {
             let text = s.text.toLowerCase();
-            // CHECK FOR PERIOD TYPES FOR NORM DEDUCTION
             let isNormDed = false;
             if (s.periodType) {
                 if (['vacation', 'study', 'sick', 'donor', 'unpaid'].includes(s.periodType)) isNormDed = true;
@@ -653,10 +690,13 @@
 
             let res = calcShift(s);
             if (res) {
-                if (res.net > 0) st.dirty += res.net / 0.87; // Reverse net for sick pay aggregation to dirty
+                if (res.net > 0 && s.periodType === 'sick') st.dirty += res.net / 0.87; 
                 if (res.hours > 0) {
                     st.count++; st.hours += res.hours; st.night += res.night; st.ev += (res.ev || 0); if (res.isRes) st.res++;
-                    // standard accumulation...
+                    
+                    // ACCUMULATE HOLIDAY HOURS TO EXCLUDE FROM OVERTIME
+                    if (res.isHoliday) st.holidayHours += res.hours;
+
                     st.dirty += res.dirty; st.splitBonus += (res.splitBonus || 0); st.evBonus += (res.evBonus || 0); st.nightBonus += (res.nightBonus || 0); st.techBonus += (res.techBonus || 0);
                     if(res.isSplit) st.splitHours += res.hours;
                     st.sumClass += (res.valClass || 0); st.sumSen += (res.valSen || 0); st.sumSenior += (res.valSenior || 0); st.sumMentor += (res.valMentor || 0); st.sumPrem += (res.valPrem || 0); st.mentorHours += (res.mentorHours || 0);
@@ -666,7 +706,12 @@
 
         let norm = getMonthNorm(year, month); let displayNorm = norm + ' ч';
         if (sickDeduction > 0) { norm -= sickDeduction; norm = parseFloat(norm.toFixed(1)); displayNorm = `${norm} ч (снижена на ${sickDeduction.toFixed(1)})`; }
-        const overtime = st.hours - norm; let percent = (norm > 0) ? (st.hours / norm) * 100 : 0; drawProgress(percent, st.hours);
+        
+        // OVERTIME FIX: Exclude Holiday Hours
+        const hoursForOvertime = st.hours - st.holidayHours;
+        const overtime = hoursForOvertime - norm;
+        
+        let percent = (norm > 0) ? (st.hours / norm) * 100 : 0; drawProgress(percent, st.hours);
 
         if (overtime > 0) {
             let rate = settings.rate; let premRate = settings.premP;
@@ -726,6 +771,7 @@
                 if (s.lineStart) tags += '<span class="tag orange">ВЫЕЗД</span> '; 
                 if (res.isTech) tags += '<span class="tag teal">+УЧЕБА</span> ';
                 if (res.isDonor) tags += '<span class="tag indigo">ДОНОР</span> ';
+                if (res.isHoliday) tags += '<span class="tag red">ПРАЗДНИК</span> '; // NEW TAG
             }
             
             // PERIOD STYLES
@@ -761,29 +807,23 @@
         }
     }
 
-    function openModal() { document.body.classList.add('modal-open'); document.getElementById('addModal').classList.add('open'); setAutoDate(); document.getElementById('inpText').value = ''; document.getElementById('modalTitle').innerText = 'Новая смена'; document.getElementById('btnSaveShift').innerText = 'Добавить'; document.getElementById('btnDeleteShift').style.display = 'none'; document.getElementById('shiftRate').value = String(settings.rate).replace('.',','); document.getElementById('shiftMentor').checked = settings.mentor; document.getElementById('shiftSenior').checked = settings.senior || false; document.getElementById('shiftTech').checked = false; document.getElementById('shiftPostTrip').checked = false; document.getElementById('shiftMedical').checked = false; document.getElementById('shiftClassSelect').value = settings.classP; document.getElementById('shiftPrem').value = String(settings.premP).replace('.',','); checkShiftText(); setMode('single'); }
+    function openModal() { document.body.classList.add('modal-open'); document.getElementById('addModal').classList.add('open'); setAutoDate(); document.getElementById('inpText').value = ''; document.getElementById('modalTitle').innerText = 'Новая смена'; document.getElementById('btnSaveShift').innerText = 'Добавить'; document.getElementById('btnDeleteShift').style.display = 'none'; document.getElementById('shiftRate').value = String(settings.rate).replace('.',','); document.getElementById('shiftMentor').checked = settings.mentor; document.getElementById('shiftSenior').checked = settings.senior || false; document.getElementById('shiftTech').checked = false; document.getElementById('shiftPostTrip').checked = false; document.getElementById('shiftMedical').checked = false; document.getElementById('shiftClassSelect').value = settings.classP; document.getElementById('shiftPrem').value = String(settings.premP).replace('.',','); checkShiftText(); setMode('single'); document.getElementById('inpText').focus(); }
     
     function openDayModal(dateStr) { 
         document.body.classList.add('modal-open'); 
         document.getElementById('inpDate').value = dateStr; 
-        
-        // Pre-fill period start if in period mode
         document.getElementById('inpDateStart').value = dateStr;
-        
         const shift = shifts.find(s => s.date === dateStr); 
         const delBtn = document.getElementById('btnDeleteShift'); 
         const saveBtn = document.getElementById('btnSaveShift'); 
         const title = document.getElementById('modalTitle'); 
         document.getElementById('lineStart').value = ''; 
         document.getElementById('lineEnd').value = ''; 
-        
         if (shift) { 
-            // EDIT EXISTING
-            setMode('single'); // Force single edit for existing
+            setMode('single'); 
             document.getElementById('inpText').value = shift.text; 
             let effectiveRate = shift.customRate; if(effectiveRate === undefined) { effectiveRate = shift.text.toLowerCase().includes('рез') ? (settings.rate / 1.12) * 1.08 : settings.rate; } document.getElementById('shiftRate').value = String(effectiveRate).replace('.',','); document.getElementById('shiftMentor').checked = shift.customMentor !== undefined ? shift.customMentor : settings.mentor; document.getElementById('shiftSenior').checked = shift.customSenior !== undefined ? shift.customSenior : (settings.senior || false); document.getElementById('shiftTech').checked = shift.isTech !== undefined ? shift.isTech : false; document.getElementById('shiftPostTrip').checked = shift.isPostTrip !== undefined ? shift.isPostTrip : false; document.getElementById('shiftMedical').checked = shift.isMedical !== undefined ? shift.isMedical : false; document.getElementById('shiftClassSelect').value = (shift.customClass !== undefined) ? shift.customClass : settings.classP; document.getElementById('shiftPrem').value = (shift.customPrem !== undefined) ? shift.customPrem : settings.premP; if (shift.customPrem === undefined) document.getElementById('shiftPrem').value = String(settings.premP).replace('.',','); else document.getElementById('shiftPrem').value = String(shift.customPrem).replace('.',','); if (shift.lineStart) document.getElementById('lineStart').value = shift.lineStart; if (shift.lineEnd) document.getElementById('lineEnd').value = shift.lineEnd; title.innerText = 'Редактирование'; saveBtn.innerText = 'Сохранить'; delBtn.style.display = 'block'; 
         } else { 
-            // NEW
             document.getElementById('inpText').value = ''; document.getElementById('shiftRate').value = String(settings.rate).replace('.',','); document.getElementById('shiftMentor').checked = settings.mentor; document.getElementById('shiftSenior').checked = settings.senior || false; document.getElementById('shiftTech').checked = false; document.getElementById('shiftPostTrip').checked = false; document.getElementById('shiftMedical').checked = false; document.getElementById('shiftClassSelect').value = settings.classP; document.getElementById('shiftPrem').value = String(settings.premP).replace('.',','); title.innerText = 'Новая смена'; saveBtn.innerText = 'Добавить'; delBtn.style.display = 'none'; 
         } 
         checkShiftText(); 
@@ -791,8 +831,10 @@
     }
     
     function checkShiftText() { const txt = document.getElementById('inpText').value.toLowerCase(); const details = document.getElementById('shiftDetailsBox'); const lineBlock = document.getElementById('lineWorkContainer'); if (txt.includes('вых') || txt.includes('бл') || txt.includes('донор')) { details.style.display = 'none'; } else { details.style.display = 'block'; } const rateInput = document.getElementById('shiftRate'); const mainRate = safeFloat(settings.rate); if (txt.includes('рез')) { const resRate = (mainRate / 1.12) * 1.08; if(document.activeElement.id === 'inpText') { rateInput.value = String(resRate.toFixed(2)).replace('.',','); } lineBlock.style.display = 'block'; } else { if (details.style.display !== 'none' && document.activeElement.id === 'inpText') { rateInput.value = String(mainRate).replace('.',','); } lineBlock.style.display = 'none'; } }
-    function applyPremToCurrentMonth() { const newPrem = safeFloat(document.getElementById('shiftPrem').value); const dateStr = document.getElementById('inpDate').value; if (!dateStr) return; const targetDate = new Date(dateStr); const targetMonth = targetDate.getMonth(); const targetYear = targetDate.getFullYear(); let count = 0; shifts.forEach(s => { const d = new Date(s.date); if (d.getMonth() === targetMonth && d.getFullYear() === targetYear) { s.customPrem = newPrem; count++; } }); saveAll(); alert(`Премия ${newPrem}% применена к ${count} сменам.`); render(); }
-    function deleteCurrentShift() { const d = document.getElementById('inpDate').value; if(confirm('Удалить эту смену?')) { shifts = shifts.filter(s => s.date !== d); saveAll(); render(); renderCalendar(); closeModal('addModal'); } }
+    
+    // SAVE WRAPPERS
+    function applyPremToCurrentMonth() { const newPrem = safeFloat(document.getElementById('shiftPrem').value); const dateStr = document.getElementById('inpDate').value; if (!dateStr) return; const targetDate = new Date(dateStr); const targetMonth = targetDate.getMonth(); const targetYear = targetDate.getFullYear(); let count = 0; shifts.forEach(s => { const d = new Date(s.date); if (d.getMonth() === targetMonth && d.getFullYear() === targetYear) { s.customPrem = newPrem; count++; } }); saveData(); alert(`Премия ${newPrem}% применена к ${count} сменам.`); render(); }
+    function deleteCurrentShift() { const d = document.getElementById('inpDate').value; if(confirm('Удалить эту смену?')) { shifts = shifts.filter(s => s.date !== d); saveData(); render(); renderCalendar(); closeModal('addModal'); } }
     function openImportModal() { document.body.classList.add('modal-open'); document.getElementById('importModal').classList.add('open'); }
     function closeModal(id) { document.body.classList.remove('modal-open'); document.getElementById(id).classList.remove('open'); }
     function saveAllSettings() { 
@@ -812,7 +854,7 @@
     }
     window.saveAll = saveAllSettings;
 
-    function processImport() { const text = document.getElementById('importText').value; if(!text) return; const lines = text.split('\n'); let addedCount = 0; const defRate = settings.rate; const defMent = settings.mentor; const defSen = settings.senior || false; const defClass = settings.classP; const defExp = getSeniorityPercent(settings.startDate); const defPrem = settings.premP; lines.forEach(line => { line = line.trim(); if(!line) return; const dateMatch = line.match(/^(\d{1,2})\.(\d{2})\.(\d{2})/); if(dateMatch) { const day = dateMatch[1].padStart(2, '0'); const month = dateMatch[2]; const year = '20' + dateMatch[3]; const isoDate = `${year}-${month}-${day}`; let desc = line.replace(dateMatch[0], '').trim(); shifts = shifts.filter(s => s.date !== isoDate); let impRate = defRate; if(desc.toLowerCase().includes('рез')) { impRate = (safeFloat(defRate) / 1.12) * 1.08; } shifts.push({ date: isoDate, text: desc, customRate: impRate, customMentor: defMent, customSenior: defSen, customClass: defClass, customSen: defExp, customPrem: defPrem }); addedCount++; } }); if(addedCount > 0) { saveAll(); render(); closeModal('importModal'); alert(`Успешно обработано: ${addedCount}`); } else { alert('Ошибка формата.'); } }
+    function processImport() { const text = document.getElementById('importText').value; if(!text) return; const lines = text.split('\n'); let addedCount = 0; const defRate = settings.rate; const defMent = settings.mentor; const defSen = settings.senior || false; const defClass = settings.classP; const defExp = getSeniorityPercent(settings.startDate); const defPrem = settings.premP; lines.forEach(line => { line = line.trim(); if(!line) return; const dateMatch = line.match(/^(\d{1,2})\.(\d{2})\.(\d{2})/); if(dateMatch) { const day = dateMatch[1].padStart(2, '0'); const month = dateMatch[2]; const year = '20' + dateMatch[3]; const isoDate = `${year}-${month}-${day}`; let desc = line.replace(dateMatch[0], '').trim(); shifts = shifts.filter(s => s.date !== isoDate); let impRate = defRate; if(desc.toLowerCase().includes('рез')) { impRate = (safeFloat(defRate) / 1.12) * 1.08; } shifts.push({ date: isoDate, text: desc, customRate: impRate, customMentor: defMent, customSenior: defSen, customClass: defClass, customSen: defExp, customPrem: defPrem }); addedCount++; } }); if(addedCount > 0) { saveData(); render(); closeModal('importModal'); alert(`Успешно обработано: ${addedCount}`); } else { alert('Ошибка формата.'); } }
     
     function addShift() { 
         if (currentMode === 'single') {
