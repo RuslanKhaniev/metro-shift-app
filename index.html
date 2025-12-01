@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MetroTime Pro v93</title>
+    <title>MetroTime Pro v93 (Fixed)</title>
 
     <script type="text/javascript" >
        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
@@ -264,7 +264,7 @@
                 <div style="font-size:10px; color:#8d6e63; margin-top:5px;">Нажми, если данные на телефоне есть, а на ПК нет.</div>
             </div>
         </div>
-        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v93.0 (Ultimate)</div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v93.0 (Fixed)</div>
     </div>
 
     <div class="modal-overlay" id="addModal"><div class="modal-box">
@@ -405,7 +405,49 @@
         saveAllToCloud(() => { hideLoader(); alert('Данные успешно отправлены в Облако!'); updateCloudStatus("Отправлено вручную"); });
     }
 
-    function saveAll() { saveSettings(); saveLocal(); saveAllToCloud(); }
+    // --- FIX STARTS HERE ---
+    
+    // Новая функция для сбора данных из UI
+    function updateSettingsFromUI() {
+        const rateEl = document.getElementById('set_rate');
+        if (rateEl) settings.rate = safeFloat(rateEl.value);
+        
+        const classEl = document.getElementById('set_class');
+        if (classEl) settings.classP = parseInt(classEl.value);
+        
+        const premEl = document.getElementById('set_prem');
+        if (premEl) settings.premP = safeFloat(premEl.value);
+        
+        const mentorEl = document.getElementById('set_mentor');
+        if (mentorEl) settings.mentor = mentorEl.checked;
+        
+        const seniorEl = document.getElementById('set_senior');
+        if (seniorEl) settings.senior = seniorEl.checked;
+        
+        const startEl = document.getElementById('set_start_date');
+        if (startEl) settings.startDate = startEl.value;
+        
+        const unionEl = document.getElementById('set_union');
+        if (unionEl) settings.union = unionEl.checked;
+        
+        const inc1El = document.getElementById('set_inc_1');
+        if (inc1El) settings.inc1 = safeFloat(inc1El.value);
+        
+        const inc2El = document.getElementById('set_inc_2');
+        if (inc2El) settings.inc2 = safeFloat(inc2El.value);
+        
+        const expEl = document.getElementById('set_exp_years');
+        if (expEl) settings.expCoef = parseFloat(expEl.value);
+        
+        calcExpDisplay();
+    }
+
+    // Исправленная функция saveAll
+    function saveAll() { 
+        updateSettingsFromUI(); 
+        saveLocal(); 
+        saveAllToCloud(); 
+    }
 
     function saveAllToCloud(cb) {
         if (!tg.CloudStorage) { if(cb) cb(); return; }
@@ -588,27 +630,16 @@
         let isSplit = (shift.autoSplit === true);
         let isRes = text.includes('рез');
         
-        // Normalize rate for specific conditions (remove x2 if applied for base logic calc, then re-apply if needed)
-        // Actually simpler: If holiday, rate is ALREADY x2. 
-        // If RES/Medical -> we need SINGLE rate without coefficients.
-        
         let baseRate = isHol ? rate / 2 : rate; // Get back to x1 for logic adjustments
 
         if (isRes && shift.customRate === undefined) { 
-            // Res is usually paid x1 even on holiday? Or x2? 
-            // Document says "Tariff rate". Law says x2. Let's assume x2 applies to Res too.
-            // Logic for Res rate: (Rate / 1.12) * 1.08
-            // If Holiday: ((Rate/1.12)*1.08) * 2
             let resRate = (baseRate / 1.12) * 1.08;
             rate = isHol ? resRate * 2 : resRate;
         }
         
         if (isMedical) { 
-            // Medical: Naked Rate. 
-            // If Holiday: Naked Rate * 2
             let medRate = baseRate / 1.12;
             rate = isHol ? medRate * 2 : medRate;
-            
             isSenior = false; isMentor = false; isSplit = false; 
         }
 
@@ -626,13 +657,9 @@
 
         if (isMedical) { nightHoursToPay = 0; evHoursToPay = 0; }
 
-        // For bonuses (Class, Sen, etc), usually applied to SINGLE tariff (x1), not x2.
-        // So we calculate bonuses based on baseRate.
         let calcRate = isHol ? rate / 2 : rate; // Rate for bonuses (x1)
-        
         let nakedTariff = totalHours * rate; // This includes x2 if holiday
         
-        // Bonuses are usually on x1 rate
         let bonusClass = (totalHours * calcRate) * (sClass / 100); 
         let bonusSen = (totalHours * calcRate) * (sSen / 100); 
         
@@ -644,7 +671,6 @@
         let evMoney = evHoursToPay * calcRate * 0.20;
         let nightMoney = nightHoursToPay * calcRate * 0.40;
         
-        // Premium is usually on EVERYTHING (including x2 part)
         let totalAccrued = nakedTariff + bonusClass + bonusSen + bonusSenior + bonusMentor + bonusSplit + evMoney + nightMoney;
         let final = totalAccrued * k + bonusTech;
 
@@ -832,29 +858,84 @@
     
     function checkShiftText() { const txt = document.getElementById('inpText').value.toLowerCase(); const details = document.getElementById('shiftDetailsBox'); const lineBlock = document.getElementById('lineWorkContainer'); if (txt.includes('вых') || txt.includes('бл') || txt.includes('донор')) { details.style.display = 'none'; } else { details.style.display = 'block'; } const rateInput = document.getElementById('shiftRate'); const mainRate = safeFloat(settings.rate); if (txt.includes('рез')) { const resRate = (mainRate / 1.12) * 1.08; if(document.activeElement.id === 'inpText') { rateInput.value = String(resRate.toFixed(2)).replace('.',','); } lineBlock.style.display = 'block'; } else { if (details.style.display !== 'none' && document.activeElement.id === 'inpText') { rateInput.value = String(mainRate).replace('.',','); } lineBlock.style.display = 'none'; } }
     
-    // SAVE WRAPPERS
-    function applyPremToCurrentMonth() { const newPrem = safeFloat(document.getElementById('shiftPrem').value); const dateStr = document.getElementById('inpDate').value; if (!dateStr) return; const targetDate = new Date(dateStr); const targetMonth = targetDate.getMonth(); const targetYear = targetDate.getFullYear(); let count = 0; shifts.forEach(s => { const d = new Date(s.date); if (d.getMonth() === targetMonth && d.getFullYear() === targetYear) { s.customPrem = newPrem; count++; } }); saveData(); alert(`Премия ${newPrem}% применена к ${count} сменам.`); render(); }
-    function deleteCurrentShift() { const d = document.getElementById('inpDate').value; if(confirm('Удалить эту смену?')) { shifts = shifts.filter(s => s.date !== d); saveData(); render(); renderCalendar(); closeModal('addModal'); } }
+    // SAVE WRAPPERS REPLACED
+    function applyPremToCurrentMonth() { 
+        const newPrem = safeFloat(document.getElementById('shiftPrem').value); 
+        const dateStr = document.getElementById('inpDate').value; 
+        if (!dateStr) return; 
+        const targetDate = new Date(dateStr); 
+        const targetMonth = targetDate.getMonth(); 
+        const targetYear = targetDate.getFullYear(); 
+        let count = 0; 
+        shifts.forEach(s => { 
+            const d = new Date(s.date); 
+            if (d.getMonth() === targetMonth && d.getFullYear() === targetYear) { 
+                s.customPrem = newPrem; 
+                count++; 
+            } 
+        }); 
+        saveAll(); 
+        alert(`Премия ${newPrem}% применена к ${count} сменам.`); 
+        render(); 
+    }
+
+    function deleteCurrentShift() { 
+        const d = document.getElementById('inpDate').value; 
+        if(confirm('Удалить эту смену?')) { 
+            shifts = shifts.filter(s => s.date !== d); 
+            saveAll(); 
+            render(); 
+            renderCalendar(); 
+            closeModal('addModal'); 
+        } 
+    }
+
     function openImportModal() { document.body.classList.add('modal-open'); document.getElementById('importModal').classList.add('open'); }
     function closeModal(id) { document.body.classList.remove('modal-open'); document.getElementById(id).classList.remove('open'); }
-    function saveAllSettings() { 
-        settings.rate = safeFloat(document.getElementById('set_rate').value); 
-        settings.classP = parseInt(document.getElementById('set_class').value); 
-        settings.premP = safeFloat(document.getElementById('set_prem').value); 
-        settings.mentor = document.getElementById('set_mentor').checked; 
-        settings.senior = document.getElementById('set_senior').checked; 
-        settings.startDate = document.getElementById('set_start_date').value; 
-        settings.union = document.getElementById('set_union').checked; 
-        
-        settings.inc1 = safeFloat(document.getElementById('set_inc_1').value);
-        settings.inc2 = safeFloat(document.getElementById('set_inc_2').value);
-        settings.expCoef = parseFloat(document.getElementById('set_exp_years').value);
 
-        saveAll(); calcExpDisplay(); render(); 
+    function processImport() { 
+        const text = document.getElementById('importText').value; 
+        if(!text) return; 
+        const lines = text.split('\n'); 
+        let addedCount = 0; 
+        const defRate = settings.rate; 
+        const defMent = settings.mentor; 
+        const defSen = settings.senior || false; 
+        const defClass = settings.classP; 
+        const defExp = getSeniorityPercent(settings.startDate); 
+        const defPrem = settings.premP; 
+        lines.forEach(line => { 
+            line = line.trim(); 
+            if(!line) return; 
+            const dateMatch = line.match(/^(\d{1,2})\.(\d{2})\.(\d{2})/); 
+            if(dateMatch) { 
+                const day = dateMatch[1].padStart(2, '0'); 
+                const month = dateMatch[2]; 
+                const year = '20' + dateMatch[3]; 
+                const isoDate = `${year}-${month}-${day}`; 
+                let desc = line.replace(dateMatch[0], '').trim(); 
+                shifts = shifts.filter(s => s.date !== isoDate); 
+                let impRate = defRate; 
+                if(desc.toLowerCase().includes('рез')) { 
+                    impRate = (safeFloat(defRate) / 1.12) * 1.08; 
+                } 
+                shifts.push({ 
+                    date: isoDate, text: desc, customRate: impRate, 
+                    customMentor: defMent, customSenior: defSen, 
+                    customClass: defClass, customSen: defExp, customPrem: defPrem 
+                }); 
+                addedCount++; 
+            } 
+        }); 
+        if(addedCount > 0) { 
+            saveAll(); 
+            render(); 
+            closeModal('importModal'); 
+            alert(`Успешно обработано: ${addedCount}`); 
+        } else { 
+            alert('Ошибка формата.'); 
+        } 
     }
-    window.saveAll = saveAllSettings;
-
-    function processImport() { const text = document.getElementById('importText').value; if(!text) return; const lines = text.split('\n'); let addedCount = 0; const defRate = settings.rate; const defMent = settings.mentor; const defSen = settings.senior || false; const defClass = settings.classP; const defExp = getSeniorityPercent(settings.startDate); const defPrem = settings.premP; lines.forEach(line => { line = line.trim(); if(!line) return; const dateMatch = line.match(/^(\d{1,2})\.(\d{2})\.(\d{2})/); if(dateMatch) { const day = dateMatch[1].padStart(2, '0'); const month = dateMatch[2]; const year = '20' + dateMatch[3]; const isoDate = `${year}-${month}-${day}`; let desc = line.replace(dateMatch[0], '').trim(); shifts = shifts.filter(s => s.date !== isoDate); let impRate = defRate; if(desc.toLowerCase().includes('рез')) { impRate = (safeFloat(defRate) / 1.12) * 1.08; } shifts.push({ date: isoDate, text: desc, customRate: impRate, customMentor: defMent, customSenior: defSen, customClass: defClass, customSen: defExp, customPrem: defPrem }); addedCount++; } }); if(addedCount > 0) { saveData(); render(); closeModal('importModal'); alert(`Успешно обработано: ${addedCount}`); } else { alert('Ошибка формата.'); } }
     
     function addShift() { 
         if (currentMode === 'single') {
