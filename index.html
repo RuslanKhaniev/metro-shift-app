@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MetroTime Pro v82</title>
+    <title>MetroTime Pro v85</title>
 
     <script type="text/javascript" >
        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
@@ -33,6 +33,7 @@
         }
         body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Roboto", sans-serif; background-color: var(--bg); margin: 0; padding: 0; color: var(--text); padding-bottom: 90px; padding-top: 60px; -webkit-tap-highlight-color: transparent; }
         
+        /* IPHONE SCROLL FIX */
         body.modal-open { overflow: hidden; height: 100vh; position: fixed; width: 100%; touch-action: none; }
 
         /* HEADER */
@@ -222,14 +223,14 @@
     <div id="tab-settings" class="page">
         <div class="card">
             <h3 style="margin-top:0; color:var(--primary)">⚙️ Профиль</h3>
-            <label>Тариф (Основной)</label><input type="text" inputmode="decimal" id="set_rate" onchange="updateProfile()">
-            <label>Класс квалификации</label><select id="set_class" onchange="updateProfile()"><option value="0">Без класса</option><option value="30">1 класс (30%)</option><option value="20">2 класс (20%)</option><option value="10">3 класс (10%)</option></select>
-            <label>Дата трудоустройства</label><input type="date" id="set_start_date" onchange="updateProfile()">
+            <label>Тариф (Основной)</label><input type="text" inputmode="decimal" id="set_rate" onchange="saveAll()">
+            <label>Класс квалификации</label><select id="set_class" onchange="saveAll()"><option value="0">Без класса</option><option value="30">1 класс (30%)</option><option value="20">2 класс (20%)</option><option value="10">3 класс (10%)</option></select>
+            <label>Дата трудоустройства</label><input type="date" id="set_start_date" onchange="saveAll()">
             <div style="font-size:13px; color:var(--primary); margin-top:8px; text-align:right; font-weight:600;" id="set_exp_text"></div>
-            <label>Премия (%)</label><input type="text" inputmode="decimal" id="set_prem" onchange="updateProfile()">
-            <div style="margin-top:25px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;"><input type="checkbox" id="set_mentor" style="width:24px; height:24px; margin:0;" onchange="updateProfile()"><span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Наставник (+15%)</span></div>
-            <div style="margin-top:10px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;"><input type="checkbox" id="set_senior" style="width:24px; height:24px; margin:0;" onchange="updateProfile()"><span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Ст. машинист (+10%)</span></div>
-            <div style="margin-top:10px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;"><input type="checkbox" id="set_union" style="width:24px; height:24px; margin:0;" onchange="updateProfile()"><span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Член профсоюза (-1%)</span></div>
+            <label>Премия (%)</label><input type="text" inputmode="decimal" id="set_prem" onchange="saveAll()">
+            <div style="margin-top:25px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;"><input type="checkbox" id="set_mentor" style="width:24px; height:24px; margin:0;" onchange="saveAll()"><span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Наставник (+15%)</span></div>
+            <div style="margin-top:10px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;"><input type="checkbox" id="set_senior" style="width:24px; height:24px; margin:0;" onchange="saveAll()"><span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Ст. машинист (+10%)</span></div>
+            <div style="margin-top:10px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;"><input type="checkbox" id="set_union" style="width:24px; height:24px; margin:0;" onchange="saveAll()"><span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Член профсоюза (-1%)</span></div>
             
             <div style="margin-top:30px; padding:15px; background:#fff3e0; border-radius:12px; text-align:center;">
                 <div id="cloudStatus" style="font-size:12px; font-weight:bold; color:#f57c00; margin-bottom:10px;">Статус облака: Проверка...</div>
@@ -237,7 +238,7 @@
                 <div style="font-size:10px; color:#8d6e63; margin-top:5px;">Нажми, если данные на телефоне есть, а на ПК нет.</div>
             </div>
         </div>
-        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v81.0 (Average Pay Fix)</div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v85.0 (Golden)</div>
     </div>
 
     <div class="modal-overlay" id="addModal"><div class="modal-box"><h3 style="margin-top:0; color:var(--primary)" id="modalTitle">Новая смена</h3><label>Дата</label><input type="date" id="inpDate"><label>Текст из графика</label><input type="text" id="inpText" placeholder="Например: м75 14:00-22:00" oninput="checkShiftText()"><details id="shiftDetailsBox"><summary>⚙️ Параметры этой смены</summary><div class="detail-row"><label>Ставка (₽/час)</label><input type="text" inputmode="decimal" id="shiftRate"></div><div class="detail-row"><label>Премия (%)</label><div style="text-align:right"><input type="text" inputmode="decimal" id="shiftPrem" style="width:60px"><button class="btn-text" onclick="applyPremToCurrentMonth()">На весь месяц</button></div></div><div class="detail-row"><label>Класс</label><select id="shiftClassSelect"><option value="0">Без класса</option><option value="30">1 класс</option><option value="20">2 класс</option><option value="10">3 класс</option></select></div><div id="lineWorkContainer" style="display:none;"><div class="line-input-row" style="margin-top:15px;"><input type="time" id="lineStart"><span style="align-self:center">-</span><input type="time" id="lineEnd"></div><div style="font-size:10px; color:#90a4ae; margin-top:5px;">Время работы на линии</div></div><div class="detail-row" style="margin-top:15px;"><label style="flex:1;">Тех. учеба (+2ч)</label><input type="checkbox" id="shiftTech"></div><div class="detail-row"><label style="flex:1;">Послерейсовый (+10 мин)</label><input type="checkbox" id="shiftPostTrip"></div><div class="detail-row" style="margin-top:15px;"><label>Наставник (+15%)</label><input type="checkbox" id="shiftMentor"></div><div class="detail-row"><label>Ст. Машинист (+10%)</label><input type="checkbox" id="shiftSenior"></div></details><div class="btn-row"><button class="btn btn-delete" id="btnDeleteShift" onclick="deleteCurrentShift()" style="display:none; margin-right:auto;">Удалить</button><button class="btn btn-cancel" onclick="closeModal('addModal')">Отмена</button><button class="btn btn-save" id="btnSaveShift" onclick="addShift()">Сохранить</button></div></div></div>
@@ -252,7 +253,7 @@
     </nav>
 
 <script>
-    // --- ГИБРИДНАЯ СИСТЕМА v78 (FIXED RECURSION) ---
+    // --- ГИБРИДНАЯ СИСТЕМА v85 (GOLDEN) ---
     let shifts = JSON.parse(localStorage.getItem('metro_shifts')) || [];
     let settings = JSON.parse(localStorage.getItem('metro_settings')) || { rate: 546.18, classP: 30, premP: 35, mentor: false, senior: false, startDate: "", union: true };
     let calDate = new Date();
