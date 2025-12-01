@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MetroTime Pro v85</title>
+    <title>MetroTime Pro v87</title>
 
     <script type="text/javascript" >
        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
@@ -33,7 +33,6 @@
         }
         body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Roboto", sans-serif; background-color: var(--bg); margin: 0; padding: 0; color: var(--text); padding-bottom: 90px; padding-top: 60px; -webkit-tap-highlight-color: transparent; }
         
-        /* IPHONE SCROLL FIX */
         body.modal-open { overflow: hidden; height: 100vh; position: fixed; width: 100%; touch-action: none; }
 
         /* HEADER */
@@ -234,14 +233,21 @@
             
             <div style="margin-top:30px; padding:15px; background:#fff3e0; border-radius:12px; text-align:center;">
                 <div id="cloudStatus" style="font-size:12px; font-weight:bold; color:#f57c00; margin-bottom:10px;">Статус облака: Проверка...</div>
-                <button onclick="forcePushToCloud()" style="background:#ff9800; color:white; border:none; padding:10px 15px; border-radius:10px; font-weight:bold; width:100%;">📤 Отправить данные в Облако</button>
+                <button onclick="forcePushToCloud()" style="background:#9c27b0; color:white; border:none; padding:10px 15px; border-radius:10px; font-weight:bold; width:100%;">📤 Отправить данные в Облако</button>
                 <div style="font-size:10px; color:#8d6e63; margin-top:5px;">Нажми, если данные на телефоне есть, а на ПК нет.</div>
             </div>
         </div>
-        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v85.0 (Golden)</div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v87.0 (Night + Med)</div>
     </div>
 
-    <div class="modal-overlay" id="addModal"><div class="modal-box"><h3 style="margin-top:0; color:var(--primary)" id="modalTitle">Новая смена</h3><label>Дата</label><input type="date" id="inpDate"><label>Текст из графика</label><input type="text" id="inpText" placeholder="Например: м75 14:00-22:00" oninput="checkShiftText()"><details id="shiftDetailsBox"><summary>⚙️ Параметры этой смены</summary><div class="detail-row"><label>Ставка (₽/час)</label><input type="text" inputmode="decimal" id="shiftRate"></div><div class="detail-row"><label>Премия (%)</label><div style="text-align:right"><input type="text" inputmode="decimal" id="shiftPrem" style="width:60px"><button class="btn-text" onclick="applyPremToCurrentMonth()">На весь месяц</button></div></div><div class="detail-row"><label>Класс</label><select id="shiftClassSelect"><option value="0">Без класса</option><option value="30">1 класс</option><option value="20">2 класс</option><option value="10">3 класс</option></select></div><div id="lineWorkContainer" style="display:none;"><div class="line-input-row" style="margin-top:15px;"><input type="time" id="lineStart"><span style="align-self:center">-</span><input type="time" id="lineEnd"></div><div style="font-size:10px; color:#90a4ae; margin-top:5px;">Время работы на линии</div></div><div class="detail-row" style="margin-top:15px;"><label style="flex:1;">Тех. учеба (+2ч)</label><input type="checkbox" id="shiftTech"></div><div class="detail-row"><label style="flex:1;">Послерейсовый (+10 мин)</label><input type="checkbox" id="shiftPostTrip"></div><div class="detail-row" style="margin-top:15px;"><label>Наставник (+15%)</label><input type="checkbox" id="shiftMentor"></div><div class="detail-row"><label>Ст. Машинист (+10%)</label><input type="checkbox" id="shiftSenior"></div></details><div class="btn-row"><button class="btn btn-delete" id="btnDeleteShift" onclick="deleteCurrentShift()" style="display:none; margin-right:auto;">Удалить</button><button class="btn btn-cancel" onclick="closeModal('addModal')">Отмена</button><button class="btn btn-save" id="btnSaveShift" onclick="addShift()">Сохранить</button></div></div></div>
+    <div class="modal-overlay" id="addModal"><div class="modal-box"><h3 style="margin-top:0; color:var(--primary)" id="modalTitle">Новая смена</h3><label>Дата</label><input type="date" id="inpDate"><label>Текст из графика</label><input type="text" id="inpText" placeholder="Например: м75 14:00-22:00" oninput="checkShiftText()"><details id="shiftDetailsBox"><summary>⚙️ Параметры этой смены</summary><div class="detail-row"><label>Ставка (₽/час)</label><input type="text" inputmode="decimal" id="shiftRate"></div><div class="detail-row"><label>Премия (%)</label><div style="text-align:right"><input type="text" inputmode="decimal" id="shiftPrem" style="width:60px"><button class="btn-text" onclick="applyPremToCurrentMonth()">На весь месяц</button></div></div><div class="detail-row"><label>Класс</label><select id="shiftClassSelect"><option value="0">Без класса</option><option value="30">1 класс</option><option value="20">2 класс</option><option value="10">3 класс</option></select></div><div id="lineWorkContainer" style="display:none;"><div class="line-input-row" style="margin-top:15px;"><input type="time" id="lineStart"><span style="align-self:center">-</span><input type="time" id="lineEnd"></div><div style="font-size:10px; color:#90a4ae; margin-top:5px;">Время работы на линии</div></div>
+    
+    <div class="detail-row" style="background:#ffebee; padding:8px; border-radius:8px; margin-top:15px; border:1px solid #ffcdd2;">
+        <label style="color:#c62828; font-weight:bold; flex:1;">⛔ Мед. отвод / Снят</label>
+        <input type="checkbox" id="shiftMedical">
+    </div>
+    
+    <div class="detail-row" style="margin-top:15px;"><label style="flex:1;">Тех. учеба (+2ч)</label><input type="checkbox" id="shiftTech"></div><div class="detail-row"><label style="flex:1;">Послерейсовый (+10 мин)</label><input type="checkbox" id="shiftPostTrip"></div><div class="detail-row" style="margin-top:15px;"><label>Наставник (+15%)</label><input type="checkbox" id="shiftMentor"></div><div class="detail-row"><label>Ст. Машинист (+10%)</label><input type="checkbox" id="shiftSenior"></div></details><div class="btn-row"><button class="btn btn-delete" id="btnDeleteShift" onclick="deleteCurrentShift()" style="display:none; margin-right:auto;">Удалить</button><button class="btn btn-cancel" onclick="closeModal('addModal')">Отмена</button><button class="btn btn-save" id="btnSaveShift" onclick="addShift()">Сохранить</button></div></div></div>
     <div class="modal-overlay" id="importModal"><div class="modal-box"><h3 style="margin-top:0; color:var(--primary)">Импорт смен</h3><label>Вставьте текст списка:</label><textarea id="importText" rows="8" placeholder="1.01.25 м61 20:22-2:46..."></textarea><div class="btn-row"><button class="btn btn-cancel" onclick="closeModal('importModal')">Отмена</button><button class="btn btn-save" onclick="processImport()">Распознать</button></div></div></div>
     <div class="modal-overlay" id="calendarModal"><div class="modal-box" style="max-width: 400px;" id="calModalBox"><div class="cal-header"><button class="cal-btn" onclick="changeMonth(-1)">&#8249;</button><div class="cal-title" id="calTitle">Ноябрь 2025</div><button class="cal-btn" onclick="changeMonth(1)">&#8250;</button></div><div class="cal-grid" id="calGrid"></div><div class="btn-row"><button class="btn btn-cancel" onclick="closeModal('calendarModal')">Закрыть</button></div></div></div>
 
@@ -253,12 +259,47 @@
     </nav>
 
 <script>
-    // --- ГИБРИДНАЯ СИСТЕМА v85 (GOLDEN) ---
     let shifts = JSON.parse(localStorage.getItem('metro_shifts')) || [];
     let settings = JSON.parse(localStorage.getItem('metro_settings')) || { rate: 546.18, classP: 30, premP: 35, mentor: false, senior: false, startDate: "", union: true };
     let calDate = new Date();
     let statsDate = new Date();
     const tg = window.Telegram.WebApp;
+
+    // SWIPE LOGIC
+    let touchStartX = 0;
+    let touchEndX = 0;
+    
+    document.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, {passive: false});
+
+    document.addEventListener('touchend', e => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+    }, {passive: false});
+
+    function handleSwipe() {
+        // Disable swipe if modal is open
+        if (document.body.classList.contains('modal-open')) return;
+        
+        const threshold = 70; // min distance
+        const diff = touchEndX - touchStartX;
+        
+        if (Math.abs(diff) > threshold) {
+            const tabs = ['today', 'home', 'stats', 'settings'];
+            const currentTab = document.querySelector('.page.active').id.replace('tab-', '');
+            let idx = tabs.indexOf(currentTab);
+            
+            if (diff < 0) { // Swipe Left -> Next Tab
+                idx++;
+                if (idx >= tabs.length) idx = 0; // loop
+            } else { // Swipe Right -> Prev Tab
+                idx--;
+                if (idx < 0) idx = tabs.length - 1; // loop
+            }
+            switchTab(tabs[idx]);
+        }
+    }
 
     const holidaysData = {
         fixed: ["01-01", "01-02", "01-03", "01-04", "01-05", "01-06", "01-07", "01-08", "02-23", "03-08", "05-01", "05-09", "06-12", "11-04"],
@@ -290,9 +331,20 @@
 
         if (tg.CloudStorage) { showLoader(); syncWithCloud(); } else { hideLoader(); }
         document.addEventListener('keydown', function(event) { if (event.key === "Escape") { closeModal('addModal'); closeModal('importModal'); closeModal('calendarModal'); } });
+        
+        // CALENDAR SWIPE - Specific handler for the modal calendar
         const calBox = document.getElementById('calModalBox'); let tsX = 0;
-        calBox.addEventListener('touchstart', e => tsX = e.changedTouches[0].screenX);
-        calBox.addEventListener('touchend', e => { let teX = e.changedTouches[0].screenX; if(teX < tsX - 50) changeMonth(1); if(teX > tsX + 50) changeMonth(-1); });
+        calBox.addEventListener('touchstart', e => {
+             tsX = e.changedTouches[0].screenX;
+             e.stopPropagation(); // Prevent global swipe
+        });
+        calBox.addEventListener('touchend', e => { 
+            let teX = e.changedTouches[0].screenX; 
+            if(teX < tsX - 50) changeMonth(1); 
+            if(teX > tsX + 50) changeMonth(-1);
+            e.stopPropagation(); // Prevent global swipe
+        });
+        
         setInterval(updateTodayTab, 1000);
         scrollToToday();
     }
@@ -315,7 +367,6 @@
                     shifts.forEach(s => shiftMap.set(s.date, s));
                     cloudShifts.forEach(s => { let norm = s.d ? normalizeOne(s) : s; shiftMap.set(norm.date, norm); });
                     shifts = Array.from(shiftMap.values());
-                    // НЕ ВЫЗЫВАЕМ saveAll ЗДЕСЬ, ЧТОБЫ ИЗБЕЖАТЬ ЦИКЛА, ПРОСТО СОХРАНЯЕМ ЛОКАЛЬНО
                     localStorage.setItem('metro_shifts', JSON.stringify(shifts));
                     localStorage.setItem('metro_settings', JSON.stringify(settings));
                     render();
@@ -331,28 +382,7 @@
         saveAllToCloud(() => { hideLoader(); alert('Данные успешно отправлены в Облако!'); updateCloudStatus("Отправлено вручную"); });
     }
 
-    // --- ИСПРАВЛЕННАЯ ЛОГИКА СОХРАНЕНИЯ (БЕЗ РЕКУРСИИ) ---
-    
-    // 1. Главная функция сохранения (БЕЗ чтения инпутов)
-    function saveData() {
-        localStorage.setItem('metro_shifts', JSON.stringify(shifts));
-        localStorage.setItem('metro_settings', JSON.stringify(settings));
-        saveAllToCloud();
-    }
-
-    // 2. Функция обновления настроек из полей (вызывает сохранение)
-    function updateProfile() {
-        settings.rate = safeFloat(document.getElementById('set_rate').value);
-        settings.classP = parseInt(document.getElementById('set_class').value);
-        settings.premP = safeFloat(document.getElementById('set_prem').value);
-        settings.mentor = document.getElementById('set_mentor').checked;
-        settings.senior = document.getElementById('set_senior').checked;
-        settings.startDate = document.getElementById('set_start_date').value;
-        settings.union = document.getElementById('set_union').checked;
-        saveData(); // Сохраняем
-        calcExpDisplay();
-        render();
-    }
+    function saveAll() { saveSettings(); saveLocal(); saveAllToCloud(); }
 
     function saveAllToCloud(cb) {
         if (!tg.CloudStorage) { if(cb) cb(); return; }
@@ -373,6 +403,7 @@
             if(s.lineEnd) mini.le = s.lineEnd;
             if(s.isTech) mini.it = 1;
             if(s.isPostTrip) mini.ip = 1;
+            if(s.isMedical) mini.im = 1; // New flag for Medical
             grouped[key].push(mini);
         });
         let keys = Object.keys(grouped); let completed = 0;
@@ -380,10 +411,22 @@
         keys.forEach(k => { tg.CloudStorage.setItem(k, JSON.stringify(grouped[k]), (err) => { completed++; if (completed === keys.length) { updateCloudStatus("Сохранено"); if(cb) cb(); } }); });
     }
 
+    function saveLocal() { localStorage.setItem('metro_shifts', JSON.stringify(shifts)); localStorage.setItem('metro_settings', JSON.stringify(settings)); }
     function showLoader() { document.getElementById('loader').classList.add('loader-active'); }
     function hideLoader() { document.getElementById('loader').classList.remove('loader-active'); }
 
-    function normalizeOne(s) { if (s.d) { return { date: s.d, text: s.t, customRate: s.cr, customMentor: s.cm, customSenior: s.cs, customClass: s.cc, customSen: s.ce, customPrem: s.cp, lineStart: s.ls, lineEnd: s.le, isTech: !!s.it, isPostTrip: !!s.ip }; } return s; }
+    function normalizeOne(s) { 
+        if (s.d) { 
+            return { 
+                date: s.d, text: s.t, 
+                customRate: s.cr, customMentor: s.cm, customSenior: s.cs, 
+                customClass: s.cc, customSen: s.ce, customPrem: s.cp, 
+                lineStart: s.ls, lineEnd: s.le, isTech: !!s.it, isPostTrip: !!s.ip,
+                isMedical: !!s.im 
+            }; 
+        } 
+        return s; 
+    }
     function normalizeShifts() { shifts = shifts.map(s => normalizeOne(s)); }
 
     function updateUI() {
@@ -446,41 +489,26 @@
         let sPrem = safeFloat(sPremStr);
         let k = (1 + sPrem / 100);
 
-        if (text.includes('упц') || text.includes('учеба')) {
-            let hours = 8;
-            let nakedTariff = hours * rate; // Full rate * 8 hours
-            
-            // Calculate bonuses manually to emulate "Average Pay" structure
-            let valClass = nakedTariff * (sClass / 100);
-            let valSen = nakedTariff * (sSen / 100);
-            // Include Senior bonus if applicable (optional, usually Average includes everything)
-            let valSenior = 0;
-            // let valSenior = isSenior ? nakedTariff * 0.10 : 0; 
-
-            let baseSum = nakedTariff + valClass + valSen + valSenior;
-            let valPrem = baseSum * (sPrem / 100);
-            
-            let total = baseSum + valPrem;
-
-            return {
-                net: Math.round(total * 0.87), dirty: total, hours: hours,
-                isRes: false, isFull: false, night: 0, ev: 0, isSplit: false, isTrain: true,
-                evBonus: 0, nightBonus: 0, splitBonus: 0, techBonus: 0,
-                valClass: valClass, valSen: valSen, valPrem: valPrem, valSenior: valSenior, valMentor: 0,
-                mentorHours: 0
-            };
-        }
-
+        if (text.includes('упц') || text.includes('учеба')) { let baseRate = rate / 1.245; let total = baseRate * 8; return { net: Math.round(total * 0.87), dirty: total, hours: 8, isRes: false, isFull: false, night: 0, ev: 0, isSplit: false, isTrain: true, evBonus: 0, nightBonus: 0, splitBonus: 0, techBonus: 0, valClass: 0, valSen: 0, valPrem: 0, valSenior: 0, valMentor: 0 }; }
         if(text.includes('бл') || text.includes('донор') || text.includes('вых')) return null;
 
         let isMentor = (shift.customMentor !== undefined) ? shift.customMentor : settings.mentor;
         let isSenior = (shift.customSenior !== undefined) ? shift.customSenior : (settings.senior || false);
         let isTech = (shift.isTech === true);
         let isPostTrip = (shift.isPostTrip === true);
+        let isMedical = (shift.isMedical === true);
         let isSplit = (shift.autoSplit === true);
         let isRes = text.includes('рез');
         if (isRes && shift.customRate === undefined) { rate = (rate / 1.12) * 1.08; }
         
+        // MEDICAL OVERRIDE
+        if (isMedical) {
+             rate = rate / 1.12; // Remove ~12% harmfulness
+             isSenior = false;   // No driving
+             isMentor = false;
+             isSplit = false;    // No split for sitting
+        }
+
         let times = [...text.matchAll(/(\d{1,2}[:\.]\d{2})/g)];
         if (times.length < 2) return null;
         let s = parseTime(times[0][0]), e = parseTime(times[1][0]); if (e < s) e += 24*60;
@@ -596,7 +624,7 @@
     }
     
     function openModal() { document.body.classList.add('modal-open'); document.getElementById('addModal').classList.add('open'); setAutoDate(); document.getElementById('inpText').value = ''; document.getElementById('modalTitle').innerText = 'Новая смена'; document.getElementById('btnSaveShift').innerText = 'Добавить'; document.getElementById('btnDeleteShift').style.display = 'none'; document.getElementById('shiftRate').value = String(settings.rate).replace('.',','); document.getElementById('shiftMentor').checked = settings.mentor; document.getElementById('shiftSenior').checked = settings.senior || false; document.getElementById('shiftTech').checked = false; document.getElementById('shiftPostTrip').checked = false; document.getElementById('shiftClassSelect').value = settings.classP; document.getElementById('shiftPrem').value = String(settings.premP).replace('.',','); checkShiftText(); document.getElementById('inpText').focus(); }
-    function openDayModal(dateStr) { document.body.classList.add('modal-open'); document.getElementById('inpDate').value = dateStr; const shift = shifts.find(s => s.date === dateStr); const delBtn = document.getElementById('btnDeleteShift'); const saveBtn = document.getElementById('btnSaveShift'); const title = document.getElementById('modalTitle'); document.getElementById('lineStart').value = ''; document.getElementById('lineEnd').value = ''; if (shift) { document.getElementById('inpText').value = shift.text; let effectiveRate = shift.customRate; if(effectiveRate === undefined) { effectiveRate = shift.text.toLowerCase().includes('рез') ? (settings.rate / 1.12) * 1.08 : settings.rate; } document.getElementById('shiftRate').value = String(effectiveRate).replace('.',','); document.getElementById('shiftMentor').checked = shift.customMentor !== undefined ? shift.customMentor : settings.mentor; document.getElementById('shiftSenior').checked = shift.customSenior !== undefined ? shift.customSenior : (settings.senior || false); document.getElementById('shiftTech').checked = shift.isTech !== undefined ? shift.isTech : false; document.getElementById('shiftPostTrip').checked = shift.isPostTrip !== undefined ? shift.isPostTrip : false; document.getElementById('shiftClassSelect').value = (shift.customClass !== undefined) ? shift.customClass : settings.classP; document.getElementById('shiftPrem').value = (shift.customPrem !== undefined) ? shift.customPrem : settings.premP; if (shift.customPrem === undefined) document.getElementById('shiftPrem').value = String(settings.premP).replace('.',','); else document.getElementById('shiftPrem').value = String(shift.customPrem).replace('.',','); if (shift.lineStart) document.getElementById('lineStart').value = shift.lineStart; if (shift.lineEnd) document.getElementById('lineEnd').value = shift.lineEnd; title.innerText = 'Редактирование'; saveBtn.innerText = 'Сохранить'; delBtn.style.display = 'block'; } else { document.getElementById('inpText').value = ''; document.getElementById('shiftRate').value = String(settings.rate).replace('.',','); document.getElementById('shiftMentor').checked = settings.mentor; document.getElementById('shiftSenior').checked = settings.senior || false; document.getElementById('shiftTech').checked = false; document.getElementById('shiftPostTrip').checked = false; document.getElementById('shiftClassSelect').value = settings.classP; document.getElementById('shiftPrem').value = String(settings.premP).replace('.',','); title.innerText = 'Новая смена'; saveBtn.innerText = 'Добавить'; delBtn.style.display = 'none'; } checkShiftText(); document.getElementById('addModal').classList.add('open'); document.getElementById('inpText').focus(); }
+    function openDayModal(dateStr) { document.body.classList.add('modal-open'); document.getElementById('inpDate').value = dateStr; const shift = shifts.find(s => s.date === dateStr); const delBtn = document.getElementById('btnDeleteShift'); const saveBtn = document.getElementById('btnSaveShift'); const title = document.getElementById('modalTitle'); document.getElementById('lineStart').value = ''; document.getElementById('lineEnd').value = ''; if (shift) { document.getElementById('inpText').value = shift.text; let effectiveRate = shift.customRate; if(effectiveRate === undefined) { effectiveRate = shift.text.toLowerCase().includes('рез') ? (settings.rate / 1.12) * 1.08 : settings.rate; } document.getElementById('shiftRate').value = String(effectiveRate).replace('.',','); document.getElementById('shiftMentor').checked = shift.customMentor !== undefined ? shift.customMentor : settings.mentor; document.getElementById('shiftSenior').checked = shift.customSenior !== undefined ? shift.customSenior : (settings.senior || false); document.getElementById('shiftTech').checked = shift.isTech !== undefined ? shift.isTech : false; document.getElementById('shiftPostTrip').checked = shift.isPostTrip !== undefined ? shift.isPostTrip : false; document.getElementById('shiftMedical').checked = shift.isMedical !== undefined ? shift.isMedical : false; document.getElementById('shiftClassSelect').value = (shift.customClass !== undefined) ? shift.customClass : settings.classP; document.getElementById('shiftPrem').value = (shift.customPrem !== undefined) ? shift.customPrem : settings.premP; if (shift.customPrem === undefined) document.getElementById('shiftPrem').value = String(settings.premP).replace('.',','); else document.getElementById('shiftPrem').value = String(shift.customPrem).replace('.',','); if (shift.lineStart) document.getElementById('lineStart').value = shift.lineStart; if (shift.lineEnd) document.getElementById('lineEnd').value = shift.lineEnd; title.innerText = 'Редактирование'; saveBtn.innerText = 'Сохранить'; delBtn.style.display = 'block'; } else { document.getElementById('inpText').value = ''; document.getElementById('shiftRate').value = String(settings.rate).replace('.',','); document.getElementById('shiftMentor').checked = settings.mentor; document.getElementById('shiftSenior').checked = settings.senior || false; document.getElementById('shiftTech').checked = false; document.getElementById('shiftPostTrip').checked = false; document.getElementById('shiftMedical').checked = false; document.getElementById('shiftClassSelect').value = settings.classP; document.getElementById('shiftPrem').value = String(settings.premP).replace('.',','); title.innerText = 'Новая смена'; saveBtn.innerText = 'Добавить'; delBtn.style.display = 'none'; } checkShiftText(); document.getElementById('addModal').classList.add('open'); document.getElementById('inpText').focus(); }
     function checkShiftText() { const txt = document.getElementById('inpText').value.toLowerCase(); const details = document.getElementById('shiftDetailsBox'); const lineBlock = document.getElementById('lineWorkContainer'); if (txt.includes('вых') || txt.includes('бл') || txt.includes('донор')) { details.style.display = 'none'; } else { details.style.display = 'block'; } const rateInput = document.getElementById('shiftRate'); const mainRate = safeFloat(settings.rate); if (txt.includes('рез')) { const resRate = (mainRate / 1.12) * 1.08; if(document.activeElement.id === 'inpText') { rateInput.value = String(resRate.toFixed(2)).replace('.',','); } lineBlock.style.display = 'block'; } else { if (details.style.display !== 'none' && document.activeElement.id === 'inpText') { rateInput.value = String(mainRate).replace('.',','); } lineBlock.style.display = 'none'; } }
     
     // SAVE WRAPPERS
@@ -605,11 +633,10 @@
     function openImportModal() { document.body.classList.add('modal-open'); document.getElementById('importModal').classList.add('open'); }
     function closeModal(id) { document.body.classList.remove('modal-open'); document.getElementById(id).classList.remove('open'); }
     function saveAllSettings() { settings.rate = safeFloat(document.getElementById('set_rate').value); settings.classP = parseInt(document.getElementById('set_class').value); settings.premP = safeFloat(document.getElementById('set_prem').value); settings.mentor = document.getElementById('set_mentor').checked; settings.senior = document.getElementById('set_senior').checked; settings.startDate = document.getElementById('set_start_date').value; settings.union = document.getElementById('set_union').checked; saveData(); calcExpDisplay(); render(); }
-    // Fix function name reference in HTML
     window.saveAll = saveAllSettings;
 
     function processImport() { const text = document.getElementById('importText').value; if(!text) return; const lines = text.split('\n'); let addedCount = 0; const defRate = settings.rate; const defMent = settings.mentor; const defSen = settings.senior || false; const defClass = settings.classP; const defExp = getSeniorityPercent(settings.startDate); const defPrem = settings.premP; lines.forEach(line => { line = line.trim(); if(!line) return; const dateMatch = line.match(/^(\d{1,2})\.(\d{2})\.(\d{2})/); if(dateMatch) { const day = dateMatch[1].padStart(2, '0'); const month = dateMatch[2]; const year = '20' + dateMatch[3]; const isoDate = `${year}-${month}-${day}`; let desc = line.replace(dateMatch[0], '').trim(); shifts = shifts.filter(s => s.date !== isoDate); let impRate = defRate; if(desc.toLowerCase().includes('рез')) { impRate = (safeFloat(defRate) / 1.12) * 1.08; } shifts.push({ date: isoDate, text: desc, customRate: impRate, customMentor: defMent, customSenior: defSen, customClass: defClass, customSen: defExp, customPrem: defPrem }); addedCount++; } }); if(addedCount > 0) { saveData(); render(); closeModal('importModal'); alert(`Успешно обработано: ${addedCount}`); } else { alert('Ошибка формата.'); } }
-    function addShift() { let d = document.getElementById('inpDate').value; let t = document.getElementById('inpText').value; let sRate = safeFloat(document.getElementById('shiftRate').value); let sMentor = document.getElementById('shiftMentor').checked; let sSenior = document.getElementById('shiftSenior').checked; let lStart = document.getElementById('lineStart').value; let lEnd = document.getElementById('lineEnd').value; let sClass = parseInt(document.getElementById('shiftClassSelect').value); let sSen = getSeniorityPercent(settings.startDate); let sPrem = safeFloat(document.getElementById('shiftPrem').value); let sTech = document.getElementById('shiftTech').checked; let sPost = document.getElementById('shiftPostTrip').checked; if(d && t) { shifts = shifts.filter(s => s.date !== d); shifts.push({ date:d, text:t, customRate: sRate, customMentor: sMentor, customSenior: sSenior, customClass: sClass, customSen: sSen, customPrem: sPrem, lineStart: lStart, lineEnd: lEnd, isTech: sTech, isPostTrip: sPost }); saveData(); render(); if(document.getElementById('calendarModal').classList.contains('open')) renderCalendar(); closeModal('addModal'); } }
+    function addShift() { let d = document.getElementById('inpDate').value; let t = document.getElementById('inpText').value; let sRate = safeFloat(document.getElementById('shiftRate').value); let sMentor = document.getElementById('shiftMentor').checked; let sSenior = document.getElementById('shiftSenior').checked; let lStart = document.getElementById('lineStart').value; let lEnd = document.getElementById('lineEnd').value; let sClass = parseInt(document.getElementById('shiftClassSelect').value); let sSen = getSeniorityPercent(settings.startDate); let sPrem = safeFloat(document.getElementById('shiftPrem').value); let sTech = document.getElementById('shiftTech').checked; let sPost = document.getElementById('shiftPostTrip').checked; let sMedical = document.getElementById('shiftMedical').checked; if(d && t) { shifts = shifts.filter(s => s.date !== d); shifts.push({ date:d, text:t, customRate: sRate, customMentor: sMentor, customSenior: sSenior, customClass: sClass, customSen: sSen, customPrem: sPrem, lineStart: lStart, lineEnd: lEnd, isTech: sTech, isPostTrip: sPost, isMedical: sMedical }); saveData(); render(); if(document.getElementById('calendarModal').classList.contains('open')) renderCalendar(); closeModal('addModal'); } }
     function renderCalendar() { const grid = document.getElementById('calGrid'); grid.innerHTML = ''; ['ПН','ВТ','СР','ЧТ','ПТ','СБ','ВС'].forEach(d => grid.innerHTML += `<div class="cal-day-name">${d}</div>`); const year = calDate.getFullYear(); const month = calDate.getMonth(); const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"]; document.getElementById('calTitle').innerText = `${monthNames[month]} ${year}`; const currentYearHolidays = getHolidays(year); let firstDay = new Date(year, month, 1).getDay(); firstDay = (firstDay === 0 ? 6 : firstDay - 1); const daysInMonth = new Date(year, month + 1, 0).getDate(); const todayStr = new Date().toISOString().split('T')[0]; for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div class="cal-cell empty"></div>`; for (let d = 1; d <= daysInMonth; d++) { const currentIso = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; const shift = shifts.find(s => s.date === currentIso); const dateObj = new Date(currentIso); const dayOfWeek = dateObj.getDay(); const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6); const isHoliday = isHolidayFunc(dateObj); let cellClass = ''; if (isWeekend || isHoliday) cellClass += ' weekend'; if (isHoliday) cellClass += ' holiday'; let content = `<div class="cal-num">${d}</div>`; if (shift) { let text = shift.text.toLowerCase(); let typeClass = 'type-work'; if(text.includes('бл')) typeClass = 'type-sick'; else if(text.includes('донор')) typeClass = 'type-donor'; else if(text.includes('вых')) typeClass = 'type-off'; else if(text.includes('упц') || text.includes('учеба')) typeClass = 'type-train'; cellClass += ` has-shift ${typeClass}`; let title = shift.text.split(' ')[0]; if(title.length > 5) title = title.substr(0,4)+'.'; content += `<div class="cal-shift">${title}</div>`; } if (currentIso === todayStr) cellClass += ' today'; let cellHTML = `<div class="cal-cell ${cellClass}" onclick="openDayModal('${currentIso}')">${content}</div>`; grid.innerHTML += cellHTML; } }
     
     function isHolidayFunc(d) { return isHoliday(d); }
