@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MetroTime Pro v94 (Smart)</title>
+    <title>MetroTime Pro v95 (Fixed)</title>
 
     <script type="text/javascript" >
        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
@@ -264,7 +264,7 @@
                 <div style="font-size:10px; color:#8d6e63; margin-top:5px;">Нажми, если данные на телефоне есть, а на ПК нет.</div>
             </div>
         </div>
-        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v94.0 (Smart)</div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v95.0 (Fixed)</div>
     </div>
 
     <div class="modal-overlay" id="addModal"><div class="modal-box">
@@ -613,14 +613,18 @@
         sorted.forEach(s => {
             const d = new Date(s.date);
             if (d >= oneYearAgo && d < current) {
-                // Calculate dirty for this shift only (without recursion if possible)
-                // We use calcShift but avoid periodType to avoid loop
-                if (!s.periodType) {
-                    const res = calcShift(s);
-                    if (res && res.dirty) {
-                        totalDirty += res.dirty;
-                        count++;
-                    }
+                // FIXED RECURSION BUG HERE
+                // 1. If periodType is present (it's vacation, donor, sick, etc), skip it for average calc.
+                if (s.periodType) return; 
+
+                // 2. If text contains triggers that might cause recursion (legacy data)
+                let txt = s.text.toLowerCase();
+                if (txt.includes('донор') || txt.includes('отпуск') || txt.includes('бл')) return;
+
+                const res = calcShift(s);
+                if (res && res.dirty) {
+                    totalDirty += res.dirty;
+                    count++;
                 }
             }
         });
