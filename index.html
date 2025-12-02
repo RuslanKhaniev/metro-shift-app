@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MetroTime Pro v91 (Сам делал)</title>
+    <title>MetroTime Pro v92 (больничный)</title>
 
     <script type="text/javascript" >
        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
@@ -246,12 +246,50 @@
                 <div style="font-size:10px; color:#8d6e63; margin-top:5px;">Нажми, если данные на телефоне есть, а на ПК нет.</div>
             </div>
         </div>
-        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v91 (сам делал)</div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v92 (больничный)</div>
     </div>
 
-    <div class="modal-overlay" id="addModal"><div class="modal-box"><h3 style="margin-top:0; color:var(--primary)" id="modalTitle">Новая смена</h3><label>Дата</label><input type="date" id="inpDate"><label>Текст из графика</label><input type="text" id="inpText" placeholder="Например: м75 14:00-22:00" oninput="checkShiftText()"><details id="shiftDetailsBox"><summary>⚙️ Параметры этой смены</summary><div class="detail-row"><label>Ставка (₽/час)</label><input type="text" inputmode="decimal" id="shiftRate"></div><div class="detail-row"><label>Премия (%)</label><div style="text-align:right"><input type="text" inputmode="decimal" id="shiftPrem" style="width:60px"><button class="btn-text" onclick="applyPremToCurrentMonth()">На весь месяц</button></div></div><div class="detail-row"><label>Класс</label><select id="shiftClassSelect"><option value="0">Без класса</option><option value="30">1 класс</option><option value="20">2 класс</option><option value="10">3 класс</option></select></div><div id="lineWorkContainer" style="display:none;"><div class="line-input-row" style="margin-top:15px;"><input type="time" id="lineStart"><span style="align-self:center">-</span><input type="time" id="lineEnd"></div><div style="font-size:10px; color:#90a4ae; margin-top:5px;">Время работы на линии</div></div>
-    <div class="detail-row" style="background:#ffebee; padding:8px; border-radius:8px; margin-top:15px; border:1px solid #ffcdd2;"><label style="color:#c62828; font-weight:bold; flex:1;">⛔ Мед. отвод / Снят</label><input type="checkbox" id="shiftMedical"></div>
-    <div class="detail-row" style="margin-top:15px;"><label style="flex:1;">Тех. учеба (+2ч)</label><input type="checkbox" id="shiftTech"></div><div class="detail-row"><label style="flex:1;">Послерейсовый (+10 мин)</label><input type="checkbox" id="shiftPostTrip"></div><div class="detail-row" style="margin-top:15px;"><label>Наставник (+15%)</label><input type="checkbox" id="shiftMentor"></div><div class="detail-row"><label>Ст. Машинист (+10%)</label><input type="checkbox" id="shiftSenior"></div></details><div class="btn-row"><button class="btn btn-delete" id="btnDeleteShift" onclick="deleteCurrentShift()" style="display:none; margin-right:auto;">Удалить</button><button class="btn btn-cancel" onclick="closeModal('addModal')">Отмена</button><button class="btn btn-save" id="btnSaveShift" onclick="addShift()">Сохранить</button></div></div></div>
+    <div class="modal-overlay" id="addModal">
+	<div class="modal-box">
+            <h3 style="margin-top:0; color:var(--primary)" id="modalTitle">Новая смена</h3>
+            <label>Дата</label>
+            <input type="date" id="inpDate">
+            <label>Текст из графика</label>
+            <input type="text" id="inpText" placeholder="Например: м75 14:00-22:00 или БЛ" oninput="checkShiftText()">
+
+            <div id="sickDetailsBox" style="display:none; background:#e8f5e9; padding:15px; border-radius:12px; margin-top:15px; border:1px solid #c8e6c9;">
+                <h4 style="margin:0 0 10px 0; color:#2e7d32;">🚑 Параметры больничного</h4>
+                <label id="lbl_year_1">Доход за прошлый год</label>
+                <input type="text" inputmode="decimal" id="sickInc1" placeholder="Сумма из 2-НДФЛ (код 2000)">
+                <label id="lbl_year_2">Доход за позапрошлый год</label>
+                <input type="text" inputmode="decimal" id="sickInc2" placeholder="Сумма из 2-НДФЛ (код 2000)">
+                <label>Стаж (процент оплаты)</label>
+                <select id="sickPercent">
+                    <option value="100">100% (8+ лет стажа)</option>
+                    <option value="80">80% (5-8 лет стажа)</option>
+                    <option value="60">60% (до 5 лет стажа)</option>
+                </select>
+                <div style="margin-top:10px; font-size:11px; color:#558b2f;">* Суммы сохранятся для всех БЛ в этом году</div>
+            </div>
+
+            <details id="shiftDetailsBox">
+                <summary>⚙️ Параметры этой смены</summary>
+                <div class="detail-row"><label>Ставка (₽/час)</label><input type="text" inputmode="decimal" id="shiftRate"></div>
+                <div class="detail-row"><label>Премия (%)</label><div style="text-align:right"><input type="text" inputmode="decimal" id="shiftPrem" style="width:60px"><button class="btn-text" onclick="applyPremToCurrentMonth()">На весь месяц</button></div></div>
+                <div class="detail-row"><label>Класс</label><select id="shiftClassSelect"><option value="0">Без класса</option><option value="30">1 класс</option><option value="20">2 класс</option><option value="10">3 класс</option></select></div>
+                <div id="lineWorkContainer" style="display:none;"><div class="line-input-row" style="margin-top:15px;"><input type="time" id="lineStart"><span style="align-self:center">-</span><input type="time" id="lineEnd"></div><div style="font-size:10px; color:#90a4ae; margin-top:5px;">Время работы на линии</div></div>
+               <div class="detail-row" style="background:#ffebee; padding:8px; border-radius:8px; margin-top:15px; border:1px solid #ffcdd2;"><label style="color:#c62828; font-weight:bold; flex:1;">⛔ Мед. отвод / Снят</label><input type="checkbox" id="shiftMedical"></div>
+               <div class="detail-row" style="margin-top:15px;"><label style="flex:1;">Тех. учеба (+2ч)</label><input type="checkbox" id="shiftTech"></div><div class="detail-row"><label style="flex:1;">Послерейсовый (+10 мин)</label><input type="checkbox" id="shiftPostTrip"></div><div class="detail-row" style="margin-top:15px;"><label>Наставник (+15%)</label><input type="checkbox" id="shiftMentor"></div><div class="detail-row"><label>Ст. Машинист (+10%)</label><input type="checkbox" id="shiftSenior"></div>
+            </details>
+
+            <div class="btn-row">
+                <button class="btn btn-delete" id="btnDeleteShift" onclick="deleteCurrentShift()" style="display:none; margin-right:auto;">Удалить</button>
+                <button class="btn btn-cancel" onclick="closeModal('addModal')">Отмена</button>
+                <button class="btn btn-save" id="btnSaveShift" onclick="addShift()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="importModal"><div class="modal-box"><h3 style="margin-top:0; color:var(--primary)">Импорт смен</h3><label>Вставьте текст списка:</label><textarea id="importText" rows="8" placeholder="1.01.25 м61 20:22-2:46..."></textarea><div class="btn-row"><button class="btn btn-cancel" onclick="closeModal('importModal')">Отмена</button><button class="btn btn-save" onclick="processImport()">Распознать</button></div></div></div>
     <div class="modal-overlay" id="calendarModal"><div class="modal-box" style="max-width: 400px;" id="calModalBox"><div class="cal-header"><button class="cal-btn" onclick="changeMonth(-1)">&#8249;</button><div class="cal-title" id="calTitle">Ноябрь 2025</div><button class="cal-btn" onclick="changeMonth(1)">&#8250;</button></div><div class="cal-grid" id="calGrid"></div><div class="btn-row"><button class="btn btn-cancel" onclick="closeModal('calendarModal')">Закрыть</button></div></div></div>
 
@@ -264,7 +302,10 @@
 
 <script>
     let shifts = JSON.parse(localStorage.getItem('metro_shifts')) || [];
-    let settings = JSON.parse(localStorage.getItem('metro_settings')) || { rate: 546.18, classP: 30, premP: 35, mentor: false, senior: false, startDate: "", union: true };
+    let settings = JSON.parse(localStorage.getItem('metro_settings')) || { 
+    rate: 546.18, classP: 30, premP: 35, mentor: false, senior: false, 
+    startDate: "", union: true, sickData: {}, sickPercent: 100 
+    };
     let calDate = new Date();
     let statsDate = new Date();
     let preventRender = false;
@@ -382,6 +423,8 @@
         const el = document.getElementById('cloudStatus');
         if(el) { el.innerText = "Облако: " + msg; el.style.color = isError ? "#e53935" : "#2e7d32"; }
     }
+	
+    
 
     function init() {
         normalizeShifts(); render(); updateUI(); tg.ready(); tg.expand();
@@ -425,9 +468,21 @@
     }
 
     function forcePushToCloud() {
-        if (!confirm('Это перезапишет данные в облаке вашими текущими данными с телефона. Продолжить?')) return;
+        // --- ЗАЩИТА ОТ "ПУСТОГО" ТЕЛЕФОНА ---
+        if (shifts.length === 0) {
+            alert('Внимание: Список смен пуст!\nНельзя отправлять пустые данные, это может сбросить ваши настройки в облаке.\n\nСначала нажмите "Синхронизация" при загрузке или добавьте смену вручную.');
+            return; // Прерываем выполнение, ничего не отправляем
+        }
+        // -------------------------------------
+
+        if (!confirm('Это перезапишет данные в облаке (включая настройки профиля) данными с этого телефона. Продолжить?')) return;
+        
         showLoader();
-        saveAllToCloud(() => { hideLoader(); alert('Данные успешно отправлены в Облако!'); updateCloudStatus("Отправлено вручную"); });
+        saveAllToCloud(() => { 
+            hideLoader(); 
+            alert('Данные успешно отправлены в Облако!'); 
+            updateCloudStatus("Отправлено вручную"); 
+        });
     }
 
     function saveAll() { saveSettings(); saveData(); render(); }
@@ -573,6 +628,53 @@
     function calcShift(shift) {
         if (!shift || !shift.text || String(shift.text).trim() === "") return null;
         let text = shift.text.toLowerCase();
+
+        // === БЛОК РАСЧЕТА БОЛЬНИЧНОГО ===
+        if (text.includes('бл') || text.includes('больничный')) {
+            const years = getSickYears(shift.date);
+            
+            // Пытаемся взять данные из настроек
+            let inc1 = 0, inc2 = 0;
+            if (settings.sickData) {
+                inc1 = settings.sickData[years[0]] || 0;
+                inc2 = settings.sickData[years[1]] || 0;
+            }
+
+            // Если данных нет — возвращаем 0 руб.
+            if (inc1 === 0 && inc2 === 0) {
+                return { net: 0, dirty: 0, hours: 0, isRes: false, isFull: false, night: 0, ev: 0, isSplit: false, isTrain: false, isTech: false, evBonus: 0, nightBonus: 0, splitBonus: 0, techBonus: 0, valClass: 0, valSen: 0, valSenior: 0, valMentor: 0, valPrem: 0, mentorHours: 0 };
+            }
+
+            // Применяем лимиты
+            const limit1 = FSS_LIMITS[years[0]] || 1917000;
+            const limit2 = FSS_LIMITS[years[1]] || 2225000;
+            
+            inc1 = Math.min(inc1, limit1);
+            inc2 = Math.min(inc2, limit2);
+            
+            let percent = settings.sickPercent || 100;
+            
+            let averageDaily = (inc1 + inc2) / 730;
+            
+            // Проверка на МРОТ (на 2025 год ~22440)
+            const minDaily = (22440 * 24) / 730;
+            if (averageDaily < minDaily) averageDaily = minDaily;
+            
+            let dailyDirty = averageDaily * (percent / 100);
+            let dailyNet = dailyDirty * 0.87; // Минус 13%
+
+            return {
+                net: Math.round(dailyNet), dirty: dailyDirty, hours: 0, 
+                isRes: false, isFull: false, night: 0, ev: 0, isSplit: false, isTrain: false, isTech: false,
+                evBonus: 0, nightBonus: 0, splitBonus: 0, techBonus: 0,
+                valClass: 0, valSen: 0, valSenior: 0, valMentor: 0, valPrem: 0, mentorHours: 0
+            };
+        } 
+        
+        // Игнор выходных и доноров
+        if (text.includes('донор') || text.includes('вых')) return null;
+
+        
         let rateStr = (shift.customRate !== undefined) ? shift.customRate : settings.rate;
         let rate = safeFloat(rateStr); 
         if (rate === 0) rate = 546.18; 
@@ -785,6 +887,25 @@
     function addShift() { 
         let d = document.getElementById('inpDate').value; 
         let t = document.getElementById('inpText').value; 
+        
+        // --- НОВАЯ ЛОГИКА ДЛЯ БОЛЬНИЧНОГО (ЗАПОМИНАЕМ ДОХОДЫ) ---
+        if (t.toLowerCase().includes('бл') || t.toLowerCase().includes('больничный')) {
+            const years = getSickYears(d);
+            const inc1 = safeFloat(document.getElementById('sickInc1').value);
+            const inc2 = safeFloat(document.getElementById('sickInc2').value);
+            const perc = parseInt(document.getElementById('sickPercent').value);
+            
+            // Записываем в глобальные настройки
+            if (!settings.sickData) settings.sickData = {};
+            // Сохраняем, только если там не ноль
+            if (inc1 > 0) settings.sickData[years[0]] = inc1;
+            if (inc2 > 0) settings.sickData[years[1]] = inc2;
+            
+            settings.sickPercent = perc;
+            saveSettings(); // Сохраняем настройки в память телефона прямо сейчас
+        }
+        // ---------------------------------------------------------
+
         let sRate = safeFloat(document.getElementById('shiftRate').value); 
         let sMentor = document.getElementById('shiftMentor').checked; 
         let sSenior = document.getElementById('shiftSenior').checked; 
@@ -818,7 +939,6 @@
             
             closeModal('addModal'); 
             
-            // ПРИНУДИТЕЛЬНЫЙ СКРОЛЛ ПОСЛЕ ЗАКРЫТИЯ МОДАЛКИ (СТРАХОВКА)
             setTimeout(() => { 
                 preventRender = false; 
                 const el = document.getElementById('card-' + d);
@@ -902,7 +1022,68 @@
         document.getElementById('addModal').classList.add('open');
         document.getElementById('inpText').focus();
     }
-    function checkShiftText() { const txt = document.getElementById('inpText').value.toLowerCase(); const details = document.getElementById('shiftDetailsBox'); const lineBlock = document.getElementById('lineWorkContainer'); if (txt.includes('вых') || txt.includes('бл') || txt.includes('донор')) { details.style.display = 'none'; } else { details.style.display = 'block'; } const rateInput = document.getElementById('shiftRate'); const mainRate = safeFloat(settings.rate); if (txt.includes('рез')) { const resRate = (mainRate / 1.12) * 1.08; if(document.activeElement.id === 'inpText') { rateInput.value = String(resRate.toFixed(2)).replace('.',','); } lineBlock.style.display = 'block'; } else { if (details.style.display !== 'none' && document.activeElement.id === 'inpText') { rateInput.value = String(mainRate).replace('.',','); } lineBlock.style.display = 'none'; } }
+function checkShiftText() {
+    const txt = document.getElementById('inpText').value.toLowerCase();
+    const dateVal = document.getElementById('inpDate').value;
+    
+    // Проверяем, написал ли пользователь БЛ
+    const isSick = txt.includes('бл') || txt.includes('больничный');
+    
+    // Берем блоки по ID
+    const details = document.getElementById('shiftDetailsBox');
+    const sickBox = document.getElementById('sickDetailsBox'); // Тот самый новый блок
+    const lineBlock = document.getElementById('lineWorkContainer');
+    const rateInput = document.getElementById('shiftRate');
+
+    if (isSick) {
+        // ЕСЛИ БОЛЬНИЧНЫЙ:
+        if(details) details.style.display = 'none';   // Прячем обычные настройки
+        if(sickBox) sickBox.style.display = 'block';  // ПОКАЗЫВАЕМ настройки больничного
+        
+        // Подгружаем лимиты и года (используем функцию из Шага 3)
+        const years = getSickYears(dateVal);
+        const limit1 = FSS_LIMITS[years[0]] || 0;
+        const limit2 = FSS_LIMITS[years[1]] || 0;
+        
+        const lbl1 = document.getElementById('lbl_year_1');
+        const lbl2 = document.getElementById('lbl_year_2');
+        if(lbl1) lbl1.innerText = `Доход за ${years[0]} г. (Лимит ${Math.round(limit1).toLocaleString()} ₽)`;
+        if(lbl2) lbl2.innerText = `Доход за ${years[1]} г. (Лимит ${Math.round(limit2).toLocaleString()} ₽)`;
+        
+        // Автозаполнение (если есть в памяти)
+        if (!settings.sickData) settings.sickData = {};
+        if (settings.sickData[years[0]] && document.activeElement.id !== 'sickInc1') {
+            document.getElementById('sickInc1').value = settings.sickData[years[0]];
+        }
+        if (settings.sickData[years[1]] && document.activeElement.id !== 'sickInc2') {
+            document.getElementById('sickInc2').value = settings.sickData[years[1]];
+        }
+        if (settings.sickPercent) document.getElementById('sickPercent').value = settings.sickPercent;
+
+    } else {
+        // ЕСЛИ ОБЫЧНАЯ СМЕНА:
+        if(sickBox) sickBox.style.display = 'none'; // Прячем больничный
+        
+        if (txt.includes('вых') || txt.includes('донор')) {
+            if(details) details.style.display = 'none';
+        } else {
+            if(details) details.style.display = 'block';
+        }
+
+        // Логика резерва
+        const mainRate = safeFloat(settings.rate);
+        if (txt.includes('рез')) {
+            const resRate = (mainRate / 1.12) * 1.08;
+            if (document.activeElement.id === 'inpText') rateInput.value = String(resRate.toFixed(2)).replace('.', ',');
+            if(lineBlock) lineBlock.style.display = 'block';
+        } else {
+            if (details && details.style.display !== 'none' && document.activeElement.id === 'inpText') {
+                rateInput.value = String(mainRate).replace('.', ',');
+            }
+            if(lineBlock) lineBlock.style.display = 'none';
+        }
+    }
+}
     function applyPremToCurrentMonth() { const newPrem = safeFloat(document.getElementById('shiftPrem').value); const dateStr = document.getElementById('inpDate').value; if (!dateStr) return; const targetDate = new Date(dateStr); const targetMonth = targetDate.getMonth(); const targetYear = targetDate.getFullYear(); let count = 0; shifts.forEach(s => { const d = new Date(s.date); if (d.getMonth() === targetMonth && d.getFullYear() === targetYear) { s.customPrem = newPrem; count++; } }); saveData(); alert(`Премия ${newPrem}% применена к ${count} сменам.`); render(); }
     function deleteCurrentShift() { const d = document.getElementById('inpDate').value; if(confirm('Удалить эту смену?')) { shifts = shifts.filter(s => s.date !== d); saveData(); render(); renderCalendar(); closeModal('addModal'); } }
     function openImportModal() { 
@@ -965,7 +1146,14 @@
     function changeMonth(dir) { calDate.setMonth(calDate.getMonth() + dir); renderCalendar(); }
     function openCalendarModal() { document.body.classList.add('modal-open'); document.getElementById('calendarModal').classList.add('open'); renderCalendar(); }
     function setAutoDate() { if (shifts.length === 0) { document.getElementById('inpDate').valueAsDate = new Date(); return; } let maxTime = 0; shifts.forEach(s => { let time = new Date(s.date).getTime(); if (time > maxTime) maxTime = time; }); let nextDay = new Date(maxTime); nextDay.setDate(nextDay.getDate() + 1); document.getElementById('inpDate').valueAsDate = nextDay; }
+    const FSS_LIMITS = { 2023: 1917000, 2024: 2225000, 2025: 2753000 };
 
+    // Получить два расчетных года для даты больничного
+    function getSickYears(dateStr) {
+        let d = dateStr ? new Date(dateStr) : new Date();
+        let y = d.getFullYear();
+        return [y - 2, y - 1];
+    }    
     init();
 </script>
 
