@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MetroTime Pro v89.0 (CSS Fix)</title>
+    <title>MetroTime Pro v91 (Сам делал)</title>
 
     <script type="text/javascript" >
        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
@@ -246,7 +246,7 @@
                 <div style="font-size:10px; color:#8d6e63; margin-top:5px;">Нажми, если данные на телефоне есть, а на ПК нет.</div>
             </div>
         </div>
-        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v89.0 (CSS Fix)</div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v91 (сам делал)</div>
     </div>
 
     <div class="modal-overlay" id="addModal"><div class="modal-box"><h3 style="margin-top:0; color:var(--primary)" id="modalTitle">Новая смена</h3><label>Дата</label><input type="date" id="inpDate"><label>Текст из графика</label><input type="text" id="inpText" placeholder="Например: м75 14:00-22:00" oninput="checkShiftText()"><details id="shiftDetailsBox"><summary>⚙️ Параметры этой смены</summary><div class="detail-row"><label>Ставка (₽/час)</label><input type="text" inputmode="decimal" id="shiftRate"></div><div class="detail-row"><label>Премия (%)</label><div style="text-align:right"><input type="text" inputmode="decimal" id="shiftPrem" style="width:60px"><button class="btn-text" onclick="applyPremToCurrentMonth()">На весь месяц</button></div></div><div class="detail-row"><label>Класс</label><select id="shiftClassSelect"><option value="0">Без класса</option><option value="30">1 класс</option><option value="20">2 класс</option><option value="10">3 класс</option></select></div><div id="lineWorkContainer" style="display:none;"><div class="line-input-row" style="margin-top:15px;"><input type="time" id="lineStart"><span style="align-self:center">-</span><input type="time" id="lineEnd"></div><div style="font-size:10px; color:#90a4ae; margin-top:5px;">Время работы на линии</div></div>
@@ -490,8 +490,10 @@
     function scrollToToday() { 
         setTimeout(() => { 
             const todayEl = document.querySelector('.shift-card.today'); 
-            if (todayEl) todayEl.scrollIntoView({ block: 'center', behavior: 'smooth' }); 
-        }, 200); 
+            // Было: behavior: 'smooth' (плавно/долго)
+            // Стало: behavior: 'auto' (мгновенно)
+            if (todayEl) todayEl.scrollIntoView({ block: 'center', behavior: 'auto' }); 
+        }, 100); // Можно даже уменьшить таймер с 200 до 100, чтобы срабатывало быстрее
     }
     
     function switchTab(tabName) { 
@@ -825,8 +827,81 @@
         } 
     }
     
-    function openModal() { document.body.classList.add('modal-open'); document.getElementById('addModal').classList.add('open'); setAutoDate(); document.getElementById('inpText').value = ''; document.getElementById('modalTitle').innerText = 'Новая смена'; document.getElementById('btnSaveShift').innerText = 'Добавить'; document.getElementById('btnDeleteShift').style.display = 'none'; document.getElementById('shiftRate').value = String(settings.rate).replace('.',','); document.getElementById('shiftMentor').checked = settings.mentor; document.getElementById('shiftSenior').checked = settings.senior || false; document.getElementById('shiftTech').checked = false; document.getElementById('shiftPostTrip').checked = false; document.getElementById('shiftClassSelect').value = settings.classP; document.getElementById('shiftPrem').value = String(settings.premP).replace('.',','); checkShiftText(); document.getElementById('inpText').focus(); }
-    function openDayModal(dateStr) { document.body.classList.add('modal-open'); document.getElementById('inpDate').value = dateStr; const shift = shifts.find(s => s.date === dateStr); const delBtn = document.getElementById('btnDeleteShift'); const saveBtn = document.getElementById('btnSaveShift'); const title = document.getElementById('modalTitle'); document.getElementById('lineStart').value = ''; document.getElementById('lineEnd').value = ''; if (shift) { document.getElementById('inpText').value = shift.text; let effectiveRate = shift.customRate; if(effectiveRate === undefined) { effectiveRate = shift.text.toLowerCase().includes('рез') ? (settings.rate / 1.12) * 1.08 : settings.rate; } document.getElementById('shiftRate').value = String(effectiveRate).replace('.',','); document.getElementById('shiftMentor').checked = shift.customMentor !== undefined ? shift.customMentor : settings.mentor; document.getElementById('shiftSenior').checked = shift.customSenior !== undefined ? shift.customSenior : (settings.senior || false); document.getElementById('shiftTech').checked = shift.isTech !== undefined ? shift.isTech : false; document.getElementById('shiftPostTrip').checked = shift.isPostTrip !== undefined ? shift.isPostTrip : false; document.getElementById('shiftMedical').checked = shift.isMedical !== undefined ? shift.isMedical : false; document.getElementById('shiftClassSelect').value = (shift.customClass !== undefined) ? shift.customClass : settings.classP; document.getElementById('shiftPrem').value = (shift.customPrem !== undefined) ? shift.customPrem : settings.premP; if (shift.customPrem === undefined) document.getElementById('shiftPrem').value = String(settings.premP).replace('.',','); else document.getElementById('shiftPrem').value = String(shift.customPrem).replace('.',','); if (shift.lineStart) document.getElementById('lineStart').value = shift.lineStart; if (shift.lineEnd) document.getElementById('lineEnd').value = shift.lineEnd; title.innerText = 'Редактирование'; saveBtn.innerText = 'Сохранить'; delBtn.style.display = 'block'; } else { document.getElementById('inpText').value = ''; document.getElementById('shiftRate').value = String(settings.rate).replace('.',','); document.getElementById('shiftMentor').checked = settings.mentor; document.getElementById('shiftSenior').checked = settings.senior || false; document.getElementById('shiftTech').checked = false; document.getElementById('shiftPostTrip').checked = false; document.getElementById('shiftMedical').checked = false; document.getElementById('shiftClassSelect').value = settings.classP; document.getElementById('shiftPrem').value = String(settings.premP).replace('.',','); title.innerText = 'Новая смена'; saveBtn.innerText = 'Добавить'; delBtn.style.display = 'none'; } checkShiftText(); document.getElementById('addModal').classList.add('open'); document.getElementById('inpText').focus(); }
+    function openModal() {
+        // СБРАСЫВАЕМ ОТКРЫТИЕ ПАРАМЕТРОВ
+        document.getElementById('shiftDetailsBox').open = false;
+
+        document.body.classList.add('modal-open');
+        document.getElementById('addModal').classList.add('open');
+        setAutoDate();
+        document.getElementById('inpText').value = '';
+        document.getElementById('modalTitle').innerText = 'Новая смена';
+        document.getElementById('btnSaveShift').innerText = 'Добавить';
+        document.getElementById('btnDeleteShift').style.display = 'none';
+        document.getElementById('shiftRate').value = String(settings.rate).replace('.', ',');
+        document.getElementById('shiftMentor').checked = settings.mentor;
+        document.getElementById('shiftSenior').checked = settings.senior || false;
+        document.getElementById('shiftTech').checked = false;
+        document.getElementById('shiftPostTrip').checked = false;
+        document.getElementById('shiftClassSelect').value = settings.classP;
+        document.getElementById('shiftPrem').value = String(settings.premP).replace('.', ',');
+        checkShiftText();
+        document.getElementById('inpText').focus();
+    }
+    function openDayModal(dateStr) {
+        // СБРАСЫВАЕМ ОТКРЫТИЕ ПАРАМЕТРОВ
+        document.getElementById('shiftDetailsBox').open = false;
+
+        document.body.classList.add('modal-open');
+        document.getElementById('inpDate').value = dateStr;
+        const shift = shifts.find(s => s.date === dateStr);
+        const delBtn = document.getElementById('btnDeleteShift');
+        const saveBtn = document.getElementById('btnSaveShift');
+        const title = document.getElementById('modalTitle');
+        document.getElementById('lineStart').value = '';
+        document.getElementById('lineEnd').value = '';
+        
+        if (shift) {
+            document.getElementById('inpText').value = shift.text;
+            let effectiveRate = shift.customRate;
+            if (effectiveRate === undefined) {
+                effectiveRate = shift.text.toLowerCase().includes('рез') ? (settings.rate / 1.12) * 1.08 : settings.rate;
+            }
+            document.getElementById('shiftRate').value = String(effectiveRate).replace('.', ',');
+            document.getElementById('shiftMentor').checked = shift.customMentor !== undefined ? shift.customMentor : settings.mentor;
+            document.getElementById('shiftSenior').checked = shift.customSenior !== undefined ? shift.customSenior : (settings.senior || false);
+            document.getElementById('shiftTech').checked = shift.isTech !== undefined ? shift.isTech : false;
+            document.getElementById('shiftPostTrip').checked = shift.isPostTrip !== undefined ? shift.isPostTrip : false;
+            document.getElementById('shiftMedical').checked = shift.isMedical !== undefined ? shift.isMedical : false;
+            document.getElementById('shiftClassSelect').value = (shift.customClass !== undefined) ? shift.customClass : settings.classP;
+            document.getElementById('shiftPrem').value = (shift.customPrem !== undefined) ? shift.customPrem : settings.premP;
+            
+            if (shift.customPrem === undefined) document.getElementById('shiftPrem').value = String(settings.premP).replace('.', ',');
+            else document.getElementById('shiftPrem').value = String(shift.customPrem).replace('.', ',');
+            
+            if (shift.lineStart) document.getElementById('lineStart').value = shift.lineStart;
+            if (shift.lineEnd) document.getElementById('lineEnd').value = shift.lineEnd;
+            title.innerText = 'Редактирование';
+            saveBtn.innerText = 'Сохранить';
+            delBtn.style.display = 'block';
+        } else {
+            document.getElementById('inpText').value = '';
+            document.getElementById('shiftRate').value = String(settings.rate).replace('.', ',');
+            document.getElementById('shiftMentor').checked = settings.mentor;
+            document.getElementById('shiftSenior').checked = settings.senior || false;
+            document.getElementById('shiftTech').checked = false;
+            document.getElementById('shiftPostTrip').checked = false;
+            document.getElementById('shiftMedical').checked = false;
+            document.getElementById('shiftClassSelect').value = settings.classP;
+            document.getElementById('shiftPrem').value = String(settings.premP).replace('.', ',');
+            title.innerText = 'Новая смена';
+            saveBtn.innerText = 'Добавить';
+            delBtn.style.display = 'none';
+        }
+        checkShiftText();
+        document.getElementById('addModal').classList.add('open');
+        document.getElementById('inpText').focus();
+    }
     function checkShiftText() { const txt = document.getElementById('inpText').value.toLowerCase(); const details = document.getElementById('shiftDetailsBox'); const lineBlock = document.getElementById('lineWorkContainer'); if (txt.includes('вых') || txt.includes('бл') || txt.includes('донор')) { details.style.display = 'none'; } else { details.style.display = 'block'; } const rateInput = document.getElementById('shiftRate'); const mainRate = safeFloat(settings.rate); if (txt.includes('рез')) { const resRate = (mainRate / 1.12) * 1.08; if(document.activeElement.id === 'inpText') { rateInput.value = String(resRate.toFixed(2)).replace('.',','); } lineBlock.style.display = 'block'; } else { if (details.style.display !== 'none' && document.activeElement.id === 'inpText') { rateInput.value = String(mainRate).replace('.',','); } lineBlock.style.display = 'none'; } }
     function applyPremToCurrentMonth() { const newPrem = safeFloat(document.getElementById('shiftPrem').value); const dateStr = document.getElementById('inpDate').value; if (!dateStr) return; const targetDate = new Date(dateStr); const targetMonth = targetDate.getMonth(); const targetYear = targetDate.getFullYear(); let count = 0; shifts.forEach(s => { const d = new Date(s.date); if (d.getMonth() === targetMonth && d.getFullYear() === targetYear) { s.customPrem = newPrem; count++; } }); saveData(); alert(`Премия ${newPrem}% применена к ${count} сменам.`); render(); }
     function deleteCurrentShift() { const d = document.getElementById('inpDate').value; if(confirm('Удалить эту смену?')) { shifts = shifts.filter(s => s.date !== d); saveData(); render(); renderCalendar(); closeModal('addModal'); } }
