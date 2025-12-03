@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MetroTime Pro v96 (оптимиз расчеты)</title>
+    <title>MetroTime Pro v96.1 (оптимиз расчеты, починка синхр возм удал)</title>
 
     <script type="text/javascript" >
        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
@@ -246,7 +246,7 @@
                 <div style="font-size:10px; color:#8d6e63; margin-top:5px;">Нажми, если данные на телефоне есть, а на ПК нет.</div>
             </div>
         </div>
-        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v96 (оптимизир расчеты)</div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v96.1 (оптимиз расчеты, починка синхр возм удал)</div>
     </div>
 
     <div class="modal-overlay" id="addModal">
@@ -1386,45 +1386,52 @@ function checkShiftText() {
 }
     function applyPremToCurrentMonth() { const newPrem = safeFloat(document.getElementById('shiftPrem').value); const dateStr = document.getElementById('inpDate').value; if (!dateStr) return; const targetDate = new Date(dateStr); const targetMonth = targetDate.getMonth(); const targetYear = targetDate.getFullYear(); let count = 0; shifts.forEach(s => { const d = new Date(s.date); if (d.getMonth() === targetMonth && d.getFullYear() === targetYear) { s.customPrem = newPrem; count++; } }); saveData(); alert(`Премия ${newPrem}% применена к ${count} сменам.`); render(); }
     function deleteCurrentShift() {
-        const d = document.getElementById('inpDate').value;
-        if(confirm('Удалить эту смену?')) {
-            try {
-                // 1. Вычисляем, к какому месяцу относилась смена
-                const y = d.substring(0,4);
-                const m = d.substring(5,7);
-                const cloudKey = `s_${y}_${m}`;
+        const d = document.getElementById('inpDate').value; // Получаем дату смены (2025-01-31)
+        
+        if(confirm('Удалить эту смену навсегда?')) {
+            // 1. Сначала вычисляем ключ облака ДО удаления (например, s_2025_01)
+            const y = d.substring(0,4);
+            const m = d.substring(5,7);
+            const cloudKey = `s_${y}_${m}`;
 
-                // 2. Удаляем смену из локального массива
-                shifts = shifts.filter(s => s.date !== d);
+            // 2. Удаляем смену из локального массива в памяти
+            shifts = shifts.filter(s => s.date !== d);
 
-                // 3. Пытаемся почистить облако (В БЛОКЕ TRY, ЧТОБЫ НЕ РОНЯТЬ ПРИЛОЖЕНИЕ)
-                try {
-                    const hasShiftsInMonth = shifts.some(s => s.date.startsWith(`${y}-${m}`));
-                    if (!hasShiftsInMonth && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.CloudStorage) {
-                        updateCloudStatus("Чистка облака...");
-                        window.Telegram.WebApp.CloudStorage.removeItem(cloudKey, (err, done) => {
-                            if(err) console.log("Ошибка CloudStorage:", err);
-                            else updateCloudStatus("Удалено из облака");
-                        });
-                    }
-                } catch (cloudErr) {
-                    console.error("Сбой удаления из облака, но продолжаем:", cloudErr);
+            // 3. Сохраняем локально (в LocalStorage), чтобы на телефоне всё было чисто
+            localStorage.setItem('metro_shifts', JSON.stringify(shifts));
+
+            // 4. ГЛАВНАЯ МАГИЯ: Проверяем Облако
+            // Есть ли у нас еще смены в этом месяце?
+            const hasShiftsInMonth = shifts.some(s => s.date.startsWith(`${y}-${m}`));
+
+            if (!hasShiftsInMonth) {
+                // ВАРИАНТ А: Месяц стал пустым. Нужно УДАЛИТЬ ключ из облака.
+                // Если мы этого не сделаем, saveAllToCloud просто проигнорирует этот месяц, 
+                // и старые данные останутся висеть в телеграме.
+                updateCloudStatus("Удаление из облака...");
+                if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.CloudStorage) {
+                     window.Telegram.WebApp.CloudStorage.removeItem(cloudKey, (err, done) => {
+                        if(err) {
+                            console.error("Ошибка удаления ключа:", err);
+                            updateCloudStatus("Ошибка Sync", true);
+                        } else {
+                            updateCloudStatus("Удалено везде");
+                        }
+                     });
                 }
-
-                // 4. Сохраняем локально и обновляем экран
-                saveData(); 
-                
-            } catch (e) {
-                alert("Ошибка при удалении: " + e.message);
-            } finally {
-                // 5. ЭТО ВЫПОЛНИТСЯ ВСЕГДА: Закрываем окно и перерисовываем
-                // Даже если всё сломалось, смена должна исчезнуть с экрана
-                closeModal('addModal');
-                render();
-                renderCalendar();
-                // Принудительно скроем кнопку удаления для следующего раза
-                document.getElementById('btnDeleteShift').style.display = 'none';
+            } else {
+                // ВАРИАНТ Б: В месяце еще остались другие смены.
+                // Просто обновляем данные в облаке стандартным методом.
+                saveAllToCloud(); 
             }
+
+            // 5. Обновляем интерфейс (удаляем с экрана, закрываем окно)
+            render();
+            renderCalendar();
+            closeModal('addModal');
+            
+            // Прячем кнопку удаления, чтобы она не маячила в пустом окне
+            document.getElementById('btnDeleteShift').style.display = 'none';
         }
     }
     function openImportModal() { 
