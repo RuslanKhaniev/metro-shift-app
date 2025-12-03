@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MetroTime Pro v93 (Доноры + Праздники)</title>
+    <title>MetroTime Pro v94 (разобрался с выходными, нормальная средняя)</title>
 
     <script type="text/javascript" >
        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
@@ -246,7 +246,7 @@
                 <div style="font-size:10px; color:#8d6e63; margin-top:5px;">Нажми, если данные на телефоне есть, а на ПК нет.</div>
             </div>
         </div>
-        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v93 (Доноры + Праздники)</div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v94 (разобрался с выходными, нормальная средняя)</div>
     </div>
 
     <div class="modal-overlay" id="addModal">
@@ -626,28 +626,170 @@
     function getShiftTimes(shift) { let times = [...shift.text.matchAll(/(\d{1,2}[:\.]\d{2})/g)]; if (times.length < 2) return null; let startHM = times[0][0].replace('.',':').split(':').map(Number); let endHM = times[1][0].replace('.',':').split(':').map(Number); let start = new Date(shift.date); start.setHours(startHM[0], startHM[1], 0, 0); let end = new Date(shift.date); end.setHours(endHM[0], endHM[1], 0, 0); if (end <= start) { end.setDate(end.getDate() + 1); } return { start, end }; }
     function calculateRestIntervals() { shifts.sort((a,b) => { let tA = getShiftTimes(a), tB = getShiftTimes(b); if(!tA) return 1; if(!tB) return -1; return tA.start - tB.start; }); shifts.forEach(s => s.autoSplit = false); for (let i = 0; i < shifts.length - 1; i++) { let curr = shifts[i]; let next = shifts[i+1]; let tCurr = getShiftTimes(curr); let tNext = getShiftTimes(next); if (tCurr && tNext) { let diffMs = tNext.start - tCurr.end; let diffHours = diffMs / (1000 * 60 * 60); if (diffHours > 0 && diffHours < 8) { curr.autoSplit = true; next.autoSplit = true; } } } }
 
-    function calcShift(shift) {
+// === 1. РАСЧЕТ СРЕДНЕГО ДНЕВНОГО (ТОЛЬКО ДЛЯ ОТПУСКА) ===
+    // Делим на календарные месяцы (коэф 29.3)
+    function calculateAverageDaily(targetDateStr) {
+        const targetDate = new Date(targetDateStr);
+        let minDate = new Date(targetDate);
+        minDate.setFullYear(minDate.getFullYear() - 1);
+        minDate.setDate(1); 
+        
+        let earliestShift = shifts.reduce((min, s) => {
+            const d = new Date(s.date);
+            return d < min ? d : min;
+        }, new Date());
+        
+        if (earliestShift > minDate) {
+            minDate = new Date(earliestShift);
+            minDate.setDate(1); 
+        }
+
+        let totalMoney = 0;
+        let totalDaysCoef = 0; 
+        let cursor = new Date(minDate);
+        
+        while (cursor < targetDate) {
+            if (cursor.getFullYear() === targetDate.getFullYear() && cursor.getMonth() === targetDate.getMonth()) break;
+            const y = cursor.getFullYear();
+            const m = cursor.getMonth();
+            const daysInMonth = new Date(y, m + 1, 0).getDate();
+
+            const monthShifts = shifts.filter(s => {
+                const d = new Date(s.date);
+                return d.getFullYear() === y && d.getMonth() === m;
+            });
+
+            if (monthShifts.length > 0) {
+                let excludedCount = 0; 
+                let monthMoney = 0;
+
+                monthShifts.forEach(s => {
+                    const txt = s.text.toLowerCase();
+                    if (txt.includes('бл') || txt.includes('больничный') || 
+                        txt.includes('отпуск') || txt.includes('донор')) {
+                        excludedCount++;
+                    } else {
+                        let res = calcShift(s, true); 
+                        if (res && res.dirty > 0) {
+                            monthMoney += res.dirty;
+                        }
+                    }
+                });
+
+                if (excludedCount === 0) {
+                    totalDaysCoef += 29.3;
+                } else {
+                    const workedDays = daysInMonth - excludedCount;
+                    if (workedDays > 0) {
+                        totalDaysCoef += (29.3 / daysInMonth) * workedDays;
+                    }
+                }
+                totalMoney += monthMoney;
+            }
+            cursor.setMonth(cursor.getMonth() + 1);
+        }
+
+        if (totalDaysCoef === 0) return 0;
+        return totalMoney / totalDaysCoef;
+    }
+
+    // === 2. НОВАЯ ФУНКЦИЯ: РАСЧЕТ СРЕДНЕГО ЧАСОВОГО (ДЛЯ ДОНОРА/КОМАНДИРОВКИ) ===
+    // Делим Деньги на Реально Отработанные Часы
+    function calculateAverageHourly(targetDateStr) {
+        const targetDate = new Date(targetDateStr);
+        // Берем период 12 месяцев назад
+        let minDate = new Date(targetDate);
+        minDate.setFullYear(minDate.getFullYear() - 1);
+        
+        let totalMoney = 0;
+        let totalHours = 0;
+
+        shifts.forEach(s => {
+            const sDate = new Date(s.date);
+            // Берем смены за прошлый год, но ДО текущей даты
+            if (sDate < minDate || sDate >= targetDate) return;
+
+            let txt = s.text.toLowerCase();
+            
+            // ИСКЛЮЧАЕМ: БЛ, Отпуск, Донор (так как это не работа)
+            if (txt.includes('бл') || txt.includes('больничный') || 
+                txt.includes('отпуск') || txt.includes('донор')) return;
+
+            // Считаем деньги и ЧАСЫ за эту смену
+            let res = calcShift(s, true); 
+            if (res && res.dirty > 0 && res.hours > 0) {
+                totalMoney += res.dirty;
+                totalHours += res.hours;
+            }
+        });
+
+        if (totalHours === 0) return 0;
+        return totalMoney / totalHours;
+    }
+// === НОВАЯ ФУНКЦИЯ: ПРОВЕРЯЕТ ТОЛЬКО ГОСУДАРСТВЕННЫЕ ПРАЗДНИКИ (Игнорирует СБ/ВС) ===
+    function isOnlyStateHoliday(dateObj) {
+        if (!dateObj) return false;
+        if (!(dateObj instanceof Date)) dateObj = new Date(dateObj);
+        const isoDate = getIsoDate(dateObj);
+        const md = isoDate.slice(5);
+        const year = dateObj.getFullYear();
+        
+        // Проверяем фиксированные праздники (01-01, 05-09 и т.д.)
+        if (holidaysData.fixed.includes(md)) return true;
+        
+        // Проверяем переносы выходных (например, 29, 30 апреля 2024)
+        if (year >= 2024 && year <= 2026) {
+            // Дни, которые стали выходными в будни (это праздник)
+            if (holidaysData.restOnWorkday.includes(isoDate)) return true; 
+            // Дни, которые стали рабочими в выходной (это не праздник, это работа)
+            if (holidaysData.workOnWeekend.includes(isoDate)) return false; 
+        }
+        return false;
+    }
+
+    // === 3. ОСНОВНОЙ КАЛЬКУЛЯТОР ===
+    function calcShift(shift, isAvgCalc = false) {
         if (!shift || !shift.text || String(shift.text).trim() === "") return null;
         let text = shift.text.toLowerCase();
 
-        // === 1. БОЛЬНИЧНЫЙ ===
+        // --- ЛОГИКА ОТПУСКА (Средний дневной) ---
+        if (!isAvgCalc && text.includes('отпуск')) {
+            let avgDaily = calculateAverageDaily(shift.date);
+            // Если истории нет, заглушка: ставка * 8
+            if (avgDaily === 0) {
+                let r = (shift.customRate !== undefined) ? shift.customRate : settings.rate;
+                avgDaily = (safeFloat(r) || 546.18) * 8; 
+            }
+            let unionFee = settings.union ? (avgDaily * 0.01) : 0;
+            let tax = avgDaily * 0.13;
+            let net = avgDaily - tax - unionFee;
+            return {
+                net: Math.round(net), dirty: avgDaily, hours: 0,
+                isRes: false, isFull: false, night: 0, ev: 0, isSplit: false, isTrain: false, isTech: false,
+                evBonus: 0, nightBonus: 0, splitBonus: 0, techBonus: 0,
+                valClass: 0, valSen: 0, valSenior: 0, valMentor: 0, valPrem: 0, mentorHours: 0
+            };
+        }
+        if (isAvgCalc && text.includes('отпуск')) return null;
+
+        // --- ЛОГИКА БОЛЬНИЧНОГО ---
         if (text.includes('бл') || text.includes('больничный')) {
+            if (isAvgCalc) return null;
             const years = getSickYears(shift.date);
             let inc1 = 0, inc2 = 0;
             if (settings.sickData) {
                 inc1 = settings.sickData[years[0]] || 0;
                 inc2 = settings.sickData[years[1]] || 0;
             }
-            if (inc1 === 0 && inc2 === 0) {
-                return { net: 0, dirty: 0, hours: 0, isRes: false, isFull: false, night: 0, ev: 0, isSplit: false, isTrain: false, isTech: false, evBonus: 0, nightBonus: 0, splitBonus: 0, techBonus: 0, valClass: 0, valSen: 0, valSenior: 0, valMentor: 0, valPrem: 0, mentorHours: 0 };
-            }
+            if (inc1 === 0 && inc2 === 0) return { net: 0, dirty: 0, hours: 0, isRes: false, isFull: false, night: 0, ev: 0, isSplit: false, isTrain: false, isTech: false, evBonus: 0, nightBonus: 0, splitBonus: 0, techBonus: 0, valClass: 0, valSen: 0, valSenior: 0, valMentor: 0, valPrem: 0, mentorHours: 0 };
+            
             const limit1 = FSS_LIMITS[years[0]] || 1917000;
             const limit2 = FSS_LIMITS[years[1]] || 2225000;
             inc1 = Math.min(inc1, limit1);
             inc2 = Math.min(inc2, limit2);
             let percent = settings.sickPercent || 100;
             let averageDaily = (inc1 + inc2) / 730;
-            const minDaily = (22440 * 24) / 730;
+            const minDaily = (19242 * 24) / 730;
             if (averageDaily < minDaily) averageDaily = minDaily;
             let dailyDirty = averageDaily * (percent / 100);
             return {
@@ -658,10 +800,8 @@
             };
         } 
 
-        // Игнор простых выходных
         if (text.includes('вых')) return null;
 
-        // Базовые параметры
         let rateStr = (shift.customRate !== undefined) ? shift.customRate : settings.rate;
         let rate = safeFloat(rateStr); 
         if (rate === 0) rate = 546.18; 
@@ -671,45 +811,67 @@
         let sPremStr = (shift.customPrem !== undefined) ? shift.customPrem : settings.premP;
         let sPrem = safeFloat(sPremStr);
         let k = (1 + sPrem / 100);
-        
         let isMentor = (shift.customMentor !== undefined) ? shift.customMentor : settings.mentor;
         let isSenior = (shift.customSenior !== undefined) ? shift.customSenior : (settings.senior || false);
 
-        // === 2. ДОНОР (ОБНОВЛЕНО: разные падежи) ===
+        // --- ЛОГИКА ДОНОРА (Средний часовой) ---
         if (text.includes('донор') || text.includes('кровь') || text.includes('крови')) {
-            let hoursToPay = 7.2;
-            let naked = hoursToPay * rate;
-            let bonusClass = naked * (sClass / 100);
-            let bonusSen = naked * (sSen / 100);
-            let bonusSenior = isSenior ? naked * 0.10 : 0;
-            let bonusMentor = isMentor ? naked * 0.15 : 0;
-            let baseSum = naked + bonusClass + bonusSen + bonusSenior + bonusMentor;
-            let valPrem = baseSum * (sPrem / 100);
-            let totalDirty = baseSum + valPrem;
+            // 1. Исключаем из расчета среднего (рекурсия)
+            if (isAvgCalc) return null;
 
-            // Если выходной/праздник - в норму (статистику) не идет, иначе - идет
+            // 2. Считаем СРЕДНИЙ ЧАСОВОЙ на основе истории
+            let avgHourly = calculateAverageHourly(shift.date);
+            
+            let totalDirty;
+            // Если истории нет, считаем "Идеальную смену" как раньше (Fallback)
+            if (avgHourly === 0) {
+                 let hoursToPay = 7.2; 
+                 let naked = hoursToPay * rate;
+                 let bonusClass = naked * (sClass / 100);
+                 let bonusSen = naked * (sSen / 100);
+                 let bonusSenior = isSenior ? naked * 0.10 : 0;
+                 let bonusMentor = isMentor ? naked * 0.15 : 0;
+                 let baseSum = naked + bonusClass + bonusSen + bonusSenior + bonusMentor;
+                 let valPrem = baseSum * (sPrem / 100);
+                 totalDirty = baseSum + valPrem;
+            } else {
+                // Если история есть - берем реальный средний час и умножаем на 7.2
+                // Это УЧИТЫВАЕТ твои прошлые ночные, разрывные и праздничные!
+                totalDirty = avgHourly * 7.2;
+            }
+
+            // В норму часов не идет (если это выходной), но деньги считаются
             let hoursToStats = isHoliday(new Date(shift.date)) ? 0 : 7.2;
+            
+            let unionFee = settings.union ? (totalDirty * 0.01) : 0;
+            let tax = totalDirty * 0.13;
+            let net = totalDirty - tax - unionFee;
 
             return {
-                net: Math.round(totalDirty * 0.87), dirty: totalDirty, hours: hoursToStats,
+                net: Math.round(net), dirty: totalDirty, hours: hoursToStats,
                 isRes: false, isFull: false, night: 0, ev: 0, isSplit: false, isTrain: false, isTech: false,
                 evBonus: 0, nightBonus: 0, splitBonus: 0, techBonus: 0,
-                valClass: bonusClass * k, valSen: bonusSen * k, valSenior: bonusSenior * k, 
-                valMentor: bonusMentor * k, valPrem: valPrem, mentorHours: 0
+                // Для донора отдельные поля бонусов не заполняем, всё сидит в dirty
+                valClass: 0, valSen: 0, valSenior: 0, valMentor: 0, valPrem: 0, mentorHours: 0
             };
         }
 
-        // === 3. УЧЕБА ===
+        // --- УЧЕБА (Средний часовой) ---
         if (text.includes('упц') || text.includes('учеба')) {
-            let hours = 8;
-            let nakedTariff = hours * rate; 
-            let valClass = nakedTariff * (sClass / 100);
-            let valSen = nakedTariff * (sSen / 100);
-            let valSenior = 0; 
-            let baseSum = nakedTariff + valClass + valSen + valSenior;
-            let valPrem = baseSum * (sPrem / 100);
-            let total = baseSum + valPrem;
-            return {
+             // Учеба входит в расчет среднего, поэтому если isAvgCalc - не выходим, а считаем как работу.
+             // НО! Если учеба оплачивается по тарифу, то считаем по тарифу.
+             
+             // Если это обычный вызов (не для расчета среднего)
+             let hours = 8;
+             let nakedTariff = hours * rate; 
+             let valClass = nakedTariff * (sClass / 100);
+             let valSen = nakedTariff * (sSen / 100);
+             let valSenior = 0; 
+             let baseSum = nakedTariff + valClass + valSen + valSenior;
+             let valPrem = baseSum * (sPrem / 100);
+             let total = baseSum + valPrem;
+             
+             return {
                 net: Math.round(total * 0.87), dirty: total, hours: hours,
                 isRes: false, isFull: false, night: 0, ev: 0, isSplit: false, isTrain: true,
                 evBonus: 0, nightBonus: 0, splitBonus: 0, techBonus: 0,
@@ -718,7 +880,7 @@
             };
         }
 
-        // === 4. РАБОЧАЯ СМЕНА (ОБНОВЛЕНО: Праздники) ===
+        // --- ДАЛЕЕ СТАНДАРТНЫЕ ПАРАМЕТРЫ (БЕЗ ИЗМЕНЕНИЙ) ---
         let isTech = (shift.isTech === true);
         let isPostTrip = (shift.isPostTrip === true);
         let isMedical = (shift.isMedical === true);
@@ -740,20 +902,11 @@
         let nightHoursToPay = payAsFullNight ? totalHours : (totalNight / 60);
         let evHoursToPay = payAsFullNight ? 0 : (totalEv / 60);
 
-        // --- ЛОГИКА ПРАЗДНИКОВ ---
-        let isWorkHoliday = isHoliday(new Date(shift.date));
-        
-        // 1. В статистику (норму) часы идут, только если это НЕ праздник.
-        // Если праздник - ставим 0, чтобы не забивать кружок нормы.
+        let isWorkHoliday = isOnlyStateHoliday(new Date(shift.date));
         let hoursToStats = isWorkHoliday ? 0 : totalHours;
-
-        // 2. Расчет денег
-        // Если праздник - тариф x2. Если будни - x1.
         let tariffMult = isWorkHoliday ? 2 : 1; 
         
-        let nakedTariff = totalHours * rate * tariffMult; // Сама работа (x2 в праздник)
-        
-        // База для надбавок берется от ОДИНАРНОГО тарифа (как ты просил "чуть меньше")
+        let nakedTariff = totalHours * rate * tariffMult;
         let baseForAddons = totalHours * rate; 
 
         let bonusClass = baseForAddons * (sClass / 100); 
@@ -767,7 +920,6 @@
         let evMoney = evHoursToPay * rate * 0.20;
         let nightMoney = nightHoursToPay * rate * 0.40;
         
-        // Собираем всё вместе
         let totalAccrued = nakedTariff + bonusClass + bonusSen + bonusSenior + bonusMentor + bonusSplit + evMoney + nightMoney;
         let final = totalAccrued * k + bonusTech;
 
