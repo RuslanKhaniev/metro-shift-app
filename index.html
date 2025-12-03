@@ -196,7 +196,14 @@
         <div class="card">
             <h3 style="margin-top:0; color:var(--primary); display:flex; justify-content:space-between; align-items:center;">
                 <span>📊 Сводка</span>
-                <div class="month-selector"><button class="month-btn" onclick="changeStatsMonth(-1)">&#8249;</button><div class="month-display" id="statsMonthDisplay"></div><button class="month-btn" onclick="changeStatsMonth(1)">&#8250;</button></div>
+                
+
+<div class="month-selector">
+    <button class="month-btn" onclick="changeStatsMonth(-1)">&#8249;</button>
+    <div class="month-display" id="statsMonthDisplay"></div>
+    <button class="month-btn" onclick="changeStatsMonth(1)">&#8250;</button>
+    <button class="month-btn" style="color: #e53935; margin-left: 5px;" onclick="wipeCurrentMonth()" title="Очистить месяц">🗑️</button>
+</div>
             </h3>
             <div class="chart-container">
                 <svg viewBox="0 0 36 36" class="circular-chart"><path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" /><path class="circle" stroke="#ffab00" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" id="circlePath" /></svg>
@@ -440,7 +447,8 @@
         setInterval(updateTodayTab, 1000);
         scrollToToday();
     }
-
+    
+	
     function syncWithCloud() {
         if (!tg.CloudStorage) { hideLoader(); return; }
         
@@ -1469,6 +1477,50 @@ function checkShiftText() {
             document.getElementById('btnDeleteShift').style.display = 'none';
         }
     }
+
+    function wipeCurrentMonth() {
+        // 1. Берем год и месяц из вкладки "Сводка"
+        const year = statsDate.getFullYear();
+        const month = statsDate.getMonth() + 1; // 1-12
+        const mStr = String(month).padStart(2, '0');
+        const cloudKey = `s_${year}_${mStr}`;
+
+        // 2. Страшное предупреждение
+        if (!confirm(`⚠️ ВНИМАНИЕ!\n\nВы точно хотите удалить ВСЕ смены за ${mStr}.${year}?\n\nЭто действие нельзя отменить.`)) {
+            return;
+        }
+
+        // 3. Удаляем локально (оставляем только то, что НЕ относится к этому месяцу)
+        const countBefore = shifts.length;
+        shifts = shifts.filter(s => !s.date.startsWith(`${year}-${mStr}`));
+        
+        const deletedCount = countBefore - shifts.length;
+        if (deletedCount === 0) {
+            alert("В этом месяце и так пусто.");
+            return;
+        }
+
+        // 4. Сохраняем локально
+        localStorage.setItem('metro_shifts', JSON.stringify(shifts));
+
+        // 5. Чистим облако (отправляем пустой массив "[]")
+        if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.CloudStorage) {
+            updateCloudStatus("Очистка месяца...");
+            window.Telegram.WebApp.CloudStorage.setItem(cloudKey, "[]", (err) => {
+                if(err) {
+                    updateCloudStatus("Ошибка Sync", true);
+                    alert("Ошибка очистки облака, но на телефоне удалено.");
+                } else {
+                    updateCloudStatus("Месяц очищен");
+                }
+            });
+        }
+
+        // 6. Обновляем экран
+        render();
+        alert(`Удалено смен: ${deletedCount}`);
+    }
+
     function openImportModal() { 
         document.body.classList.add('modal-open'); 
         document.getElementById('importModal').classList.add('open'); 
