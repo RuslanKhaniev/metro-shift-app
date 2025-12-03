@@ -443,27 +443,55 @@
 
     function syncWithCloud() {
         if (!tg.CloudStorage) { hideLoader(); return; }
+        
         tg.CloudStorage.getKeys((err, keys) => {
             if (err) { hideLoader(); updateCloudStatus("Ошибка доступа", true); return; }
             if(!keys) keys = [];
+            
+            // Фильтруем только наши ключи
             const myKeys = keys.filter(k => k === 'metro_settings' || k.startsWith('s_'));
-            if (myKeys.length === 0) { saveAllToCloud(() => { hideLoader(); updateCloudStatus("Синхронизировано"); }); return; }
+            
+            if (myKeys.length === 0) { 
+                // Если облако девственно чистое, ничего не трогаем, просто сохраняем текущее туда
+                saveAllToCloud(() => { hideLoader(); updateCloudStatus("Облако создано"); }); 
+                return; 
+            }
+            
             tg.CloudStorage.getItems(myKeys, (err, values) => {
                 hideLoader();
                 if (err) { updateCloudStatus("Ошибка чтения", true); return; }
-                if (values['metro_settings']) { try { settings = JSON.parse(values['metro_settings']); } catch(e){} }
-                let cloudShifts = [];
-                for (let k in values) { if (k.startsWith('s_')) { try { const chunk = JSON.parse(values[k]); if (Array.isArray(chunk)) cloudShifts = cloudShifts.concat(chunk); } catch(e){} } }
-                if (cloudShifts.length > 0) {
-                    const shiftMap = new Map();
-                    shifts.forEach(s => shiftMap.set(s.date, s));
-                    cloudShifts.forEach(s => { let norm = s.d ? normalizeOne(s) : s; shiftMap.set(norm.date, norm); });
-                    shifts = Array.from(shiftMap.values());
-                    localStorage.setItem('metro_shifts', JSON.stringify(shifts));
-                    localStorage.setItem('metro_settings', JSON.stringify(settings));
-                    render();
+                
+                // 1. Загружаем настройки
+                if (values['metro_settings']) { 
+                    try { settings = JSON.parse(values['metro_settings']); } catch(e){} 
                 }
-                updateCloudStatus("Подключено");
+                
+                // 2. Собираем ВСЕ смены из облака
+                let cloudShifts = [];
+                for (let k in values) { 
+                    if (k.startsWith('s_')) { 
+                        try { 
+                            const chunk = JSON.parse(values[k]); 
+                            if (Array.isArray(chunk)) {
+                                // Нормализуем данные (разворачиваем мини-формат)
+                                const normalizedChunk = chunk.map(s => normalizeOne(s));
+                                cloudShifts = cloudShifts.concat(normalizedChunk); 
+                            }
+                        } catch(e){} 
+                    } 
+                }
+                
+                // 3. ЖЕСТКАЯ ЗАМЕНА (РЕЖИМ ЗЕРКАЛА)
+                // Мы говорим: "Мой список смен теперь равен тому, что в облаке".
+                // Старые локальные данные, которых нет в облаке, исчезнут.
+                shifts = cloudShifts;
+                
+                // Сохраняем новую реальность в память телефона
+                localStorage.setItem('metro_shifts', JSON.stringify(shifts));
+                localStorage.setItem('metro_settings', JSON.stringify(settings));
+                
+                render();
+                updateCloudStatus("Синхронизировано");
             });
         });
     }
@@ -1386,51 +1414,58 @@ function checkShiftText() {
 }
     function applyPremToCurrentMonth() { const newPrem = safeFloat(document.getElementById('shiftPrem').value); const dateStr = document.getElementById('inpDate').value; if (!dateStr) return; const targetDate = new Date(dateStr); const targetMonth = targetDate.getMonth(); const targetYear = targetDate.getFullYear(); let count = 0; shifts.forEach(s => { const d = new Date(s.date); if (d.getMonth() === targetMonth && d.getFullYear() === targetYear) { s.customPrem = newPrem; count++; } }); saveData(); alert(`Премия ${newPrem}% применена к ${count} сменам.`); render(); }
     function deleteCurrentShift() {
-        const d = document.getElementById('inpDate').value; // Получаем дату смены (2025-01-31)
+        const d = document.getElementById('inpDate').value; 
         
         if(confirm('Удалить эту смену навсегда?')) {
-            // 1. Сначала вычисляем ключ облака ДО удаления (например, s_2025_01)
+            // 1. Готовим ключ
             const y = d.substring(0,4);
             const m = d.substring(5,7);
             const cloudKey = `s_${y}_${m}`;
 
-            // 2. Удаляем смену из локального массива в памяти
+            // 2. Удаляем из памяти
             shifts = shifts.filter(s => s.date !== d);
-
-            // 3. Сохраняем локально (в LocalStorage), чтобы на телефоне всё было чисто
             localStorage.setItem('metro_shifts', JSON.stringify(shifts));
 
-            // 4. ГЛАВНАЯ МАГИЯ: Проверяем Облако
-            // Есть ли у нас еще смены в этом месяце?
+            // 3. ПРОВЕРЯЕМ: Осталось ли что-то в этом месяце?
             const hasShiftsInMonth = shifts.some(s => s.date.startsWith(`${y}-${m}`));
 
-            if (!hasShiftsInMonth) {
-                // ВАРИАНТ А: Месяц стал пустым. Нужно УДАЛИТЬ ключ из облака.
-                // Если мы этого не сделаем, saveAllToCloud просто проигнорирует этот месяц, 
-                // и старые данные останутся висеть в телеграме.
-                updateCloudStatus("Удаление из облака...");
-                if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.CloudStorage) {
-                     window.Telegram.WebApp.CloudStorage.removeItem(cloudKey, (err, done) => {
-                        if(err) {
-                            console.error("Ошибка удаления ключа:", err);
-                            updateCloudStatus("Ошибка Sync", true);
-                        } else {
-                            updateCloudStatus("Удалено везде");
-                        }
-                     });
-                }
-            } else {
-                // ВАРИАНТ Б: В месяце еще остались другие смены.
-                // Просто обновляем данные в облаке стандартным методом.
-                saveAllToCloud(); 
+            // 4. ОТПРАВЛЯЕМ В ОБЛАКО
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.CloudStorage) {
+                updateCloudStatus("Синхронизация...");
+                
+                // Если смены остались -> отправляем новый список
+                // Если смен НЕТ -> отправляем "[]" (пустой список), чтобы стереть данные на другом устройстве
+                const monthShifts = shifts.filter(s => s.date.startsWith(`${y}-${m}`));
+                
+                // Превращаем в мини-формат для экономии места (как в saveAllToCloud)
+                const miniData = monthShifts.map(s => {
+                    let mini = { d: s.date, t: s.text };
+                    // Сохраняем все настройки (если есть)
+                    if(s.customRate !== undefined) mini.cr = s.customRate;
+                    if(s.customMentor !== undefined) mini.cm = s.customMentor;
+                    if(s.customSenior !== undefined) mini.cs = s.customSenior;
+                    if(s.customClass !== undefined) mini.cc = s.customClass;
+                    if(s.customSen !== undefined) mini.ce = s.customSen;
+                    if(s.customPrem !== undefined) mini.cp = s.customPrem;
+                    if(s.lineStart) mini.ls = s.lineStart;
+                    if(s.lineEnd) mini.le = s.lineEnd;
+                    if(s.isTech) mini.it = 1;
+                    if(s.isPostTrip) mini.ip = 1;
+                    if(s.isMedical) mini.im = 1;
+                    return mini;
+                });
+
+                // ВОТ ОНО: Всегда делаем setItem. Даже если список пустой.
+                window.Telegram.WebApp.CloudStorage.setItem(cloudKey, JSON.stringify(miniData), (err, done) => {
+                    if(err) updateCloudStatus("Ошибка Sync", true);
+                    else updateCloudStatus("Удалено и синхронизировано");
+                });
             }
 
-            // 5. Обновляем интерфейс (удаляем с экрана, закрываем окно)
+            // 5. Обновляем экран
             render();
             renderCalendar();
             closeModal('addModal');
-            
-            // Прячем кнопку удаления, чтобы она не маячила в пустом окне
             document.getElementById('btnDeleteShift').style.display = 'none';
         }
     }
