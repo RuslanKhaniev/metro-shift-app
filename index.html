@@ -1624,6 +1624,7 @@ function checkShiftText() {
         let addedCount = 0; 
         let errorCount = 0;
         
+        // Настройки
         const defRate = settings.rate; 
         const defMent = settings.mentor; 
         const defSen = settings.senior || false; 
@@ -1631,13 +1632,17 @@ function checkShiftText() {
         const defExp = getSeniorityPercent(settings.startDate); 
         const defPrem = settings.premP;
         
-        const currentYear = new Date().getFullYear();
+        // Данные о текущем времени для умной логики
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth(); // 0 = Январь, 11 = Декабрь
 
         lines.forEach(line => { 
             line = line.trim(); 
             if(!line) return; 
 
-            // 1. ДИАПАЗОН (ДД.ММ.ГГ - ДД.ММ.ГГ) - тут год обязателен для точности
+            // 1. ДИАПАЗОН (ДД.ММ.ГГ - ДД.ММ.ГГ)
+            // Здесь год обязателен, регулярка строгая
             const rangeRegex = /^\s*(\d{1,2})[\.\/,\-](\d{1,2})[\.\/,\-](\d{2,4})\s*-\s*(\d{1,2})[\.\/,\-](\d{1,2})[\.\/,\-](\d{2,4})/;
             const rangeMatch = line.match(rangeRegex);
 
@@ -1672,18 +1677,29 @@ function checkShiftText() {
                 }
 
             } else {
-                // 2. ОДИНОЧНАЯ ДАТА (ДД.ММ[.ГГ])
-                // Изменили регулярку: (?: ... )? делает группу с годом необязательной
+                // 2. ОДИНОЧНАЯ ДАТА: ДД.ММ[.ГГ]
+                // Группа с годом (?: ... )? является необязательной
                 const dateRegex = /^\s*(\d{1,2})[\.\/,\-](\d{1,2})(?:[\.\/,\-](\d{2,4}))?/;
                 const dateMatch = line.match(dateRegex);
 
                 if(dateMatch) { 
                     let day = parseInt(dateMatch[1]); 
-                    let month = parseInt(dateMatch[2]); 
+                    let month = parseInt(dateMatch[2]); // Это месяц как число (1-12)
+                    let year = currentYear;
+
+                    if (dateMatch[3]) {
+                        // Если год НАПИСАН явно (напр. 26 или 2026), берем его
+                        year = parseInt(dateMatch[3]);
+                    } else {
+                        // Если год НЕ НАПИСАН:
+                        // Включаем логику "Кануна Нового Года":
+                        // Если сейчас Окт(9), Ноя(10) или Дек(11), а загружаем Янв(1) или Фев(2) — это следующий год.
+                        if (currentMonth >= 9 && month <= 2) {
+                            year += 1;
+                        }
+                    }
                     
-                    // Если год есть - берем его, если нет - берем текущий (2025)
-                    let year = dateMatch[3] ? parseInt(dateMatch[3]) : currentYear;
-                    
+                    // Превращаем 26 -> 2026
                     if(year < 100) year += 2000;
 
                     const isoDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -1703,8 +1719,7 @@ function checkShiftText() {
                     }); 
                     addedCount++; 
                 } else {
-                    // Игнорируем совсем пустые строки или мусор, но выводим в консоль
-                    console.warn("Не распознано:", line);
+                    console.warn("Пропущена строка:", line);
                     errorCount++;
                 }
             }
