@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MetroTime Pro v92 (Stable, больничный)</title>
+    <title>MetroTime Pro v93 (Доноры + Праздники)</title>
 
     <script type="text/javascript" >
        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
@@ -246,7 +246,7 @@
                 <div style="font-size:10px; color:#8d6e63; margin-top:5px;">Нажми, если данные на телефоне есть, а на ПК нет.</div>
             </div>
         </div>
-        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v92 (Stable, больничный)</div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v93 (Доноры + Праздники)</div>
     </div>
 
     <div class="modal-overlay" id="addModal">
@@ -630,52 +630,38 @@
         if (!shift || !shift.text || String(shift.text).trim() === "") return null;
         let text = shift.text.toLowerCase();
 
-        // === БЛОК РАСЧЕТА БОЛЬНИЧНОГО ===
+        // === 1. БОЛЬНИЧНЫЙ ===
         if (text.includes('бл') || text.includes('больничный')) {
             const years = getSickYears(shift.date);
-            
-            // Пытаемся взять данные из настроек
             let inc1 = 0, inc2 = 0;
             if (settings.sickData) {
                 inc1 = settings.sickData[years[0]] || 0;
                 inc2 = settings.sickData[years[1]] || 0;
             }
-
-            // Если данных нет — возвращаем 0 руб.
             if (inc1 === 0 && inc2 === 0) {
                 return { net: 0, dirty: 0, hours: 0, isRes: false, isFull: false, night: 0, ev: 0, isSplit: false, isTrain: false, isTech: false, evBonus: 0, nightBonus: 0, splitBonus: 0, techBonus: 0, valClass: 0, valSen: 0, valSenior: 0, valMentor: 0, valPrem: 0, mentorHours: 0 };
             }
-
-            // Применяем лимиты
             const limit1 = FSS_LIMITS[years[0]] || 1917000;
             const limit2 = FSS_LIMITS[years[1]] || 2225000;
-            
             inc1 = Math.min(inc1, limit1);
             inc2 = Math.min(inc2, limit2);
-            
             let percent = settings.sickPercent || 100;
-            
             let averageDaily = (inc1 + inc2) / 730;
-            
-            // Проверка на МРОТ (на 2025 год ~22440)
             const minDaily = (22440 * 24) / 730;
             if (averageDaily < minDaily) averageDaily = minDaily;
-            
             let dailyDirty = averageDaily * (percent / 100);
-            let dailyNet = dailyDirty * 0.87; // Минус 13%
-
             return {
-                net: Math.round(dailyNet), dirty: dailyDirty, hours: 0, 
+                net: Math.round(dailyDirty * 0.87), dirty: dailyDirty, hours: 0, 
                 isRes: false, isFull: false, night: 0, ev: 0, isSplit: false, isTrain: false, isTech: false,
                 evBonus: 0, nightBonus: 0, splitBonus: 0, techBonus: 0,
                 valClass: 0, valSen: 0, valSenior: 0, valMentor: 0, valPrem: 0, mentorHours: 0
             };
         } 
-        
-        // Игнор выходных и доноров
-        if (text.includes('донор') || text.includes('вых')) return null;
 
-        
+        // Игнор простых выходных
+        if (text.includes('вых')) return null;
+
+        // Базовые параметры
         let rateStr = (shift.customRate !== undefined) ? shift.customRate : settings.rate;
         let rate = safeFloat(rateStr); 
         if (rate === 0) rate = 546.18; 
@@ -685,7 +671,35 @@
         let sPremStr = (shift.customPrem !== undefined) ? shift.customPrem : settings.premP;
         let sPrem = safeFloat(sPremStr);
         let k = (1 + sPrem / 100);
+        
+        let isMentor = (shift.customMentor !== undefined) ? shift.customMentor : settings.mentor;
+        let isSenior = (shift.customSenior !== undefined) ? shift.customSenior : (settings.senior || false);
 
+        // === 2. ДОНОР (ОБНОВЛЕНО: разные падежи) ===
+        if (text.includes('донор') || text.includes('кровь') || text.includes('крови')) {
+            let hoursToPay = 7.2;
+            let naked = hoursToPay * rate;
+            let bonusClass = naked * (sClass / 100);
+            let bonusSen = naked * (sSen / 100);
+            let bonusSenior = isSenior ? naked * 0.10 : 0;
+            let bonusMentor = isMentor ? naked * 0.15 : 0;
+            let baseSum = naked + bonusClass + bonusSen + bonusSenior + bonusMentor;
+            let valPrem = baseSum * (sPrem / 100);
+            let totalDirty = baseSum + valPrem;
+
+            // Если выходной/праздник - в норму (статистику) не идет, иначе - идет
+            let hoursToStats = isHoliday(new Date(shift.date)) ? 0 : 7.2;
+
+            return {
+                net: Math.round(totalDirty * 0.87), dirty: totalDirty, hours: hoursToStats,
+                isRes: false, isFull: false, night: 0, ev: 0, isSplit: false, isTrain: false, isTech: false,
+                evBonus: 0, nightBonus: 0, splitBonus: 0, techBonus: 0,
+                valClass: bonusClass * k, valSen: bonusSen * k, valSenior: bonusSenior * k, 
+                valMentor: bonusMentor * k, valPrem: valPrem, mentorHours: 0
+            };
+        }
+
+        // === 3. УЧЕБА ===
         if (text.includes('упц') || text.includes('учеба')) {
             let hours = 8;
             let nakedTariff = hours * rate; 
@@ -704,10 +718,7 @@
             };
         }
 
-        if(text.includes('бл') || text.includes('донор') || text.includes('вых')) return null;
-
-        let isMentor = (shift.customMentor !== undefined) ? shift.customMentor : settings.mentor;
-        let isSenior = (shift.customSenior !== undefined) ? shift.customSenior : (settings.senior || false);
+        // === 4. РАБОЧАЯ СМЕНА (ОБНОВЛЕНО: Праздники) ===
         let isTech = (shift.isTech === true);
         let isPostTrip = (shift.isPostTrip === true);
         let isMedical = (shift.isMedical === true);
@@ -729,21 +740,39 @@
         let nightHoursToPay = payAsFullNight ? totalHours : (totalNight / 60);
         let evHoursToPay = payAsFullNight ? 0 : (totalEv / 60);
 
-        let nakedTariff = totalHours * rate;
-        let bonusClass = nakedTariff * (sClass / 100); 
-        let bonusSen = nakedTariff * (sSen / 100); 
-        let bonusSenior = isSenior ? nakedTariff * 0.10 : 0;
-        let bonusMentor = isMentor ? nakedTariff * 0.15 : 0;
-        let bonusSplit = isSplit ? nakedTariff * 0.30 : 0;
+        // --- ЛОГИКА ПРАЗДНИКОВ ---
+        let isWorkHoliday = isHoliday(new Date(shift.date));
+        
+        // 1. В статистику (норму) часы идут, только если это НЕ праздник.
+        // Если праздник - ставим 0, чтобы не забивать кружок нормы.
+        let hoursToStats = isWorkHoliday ? 0 : totalHours;
+
+        // 2. Расчет денег
+        // Если праздник - тариф x2. Если будни - x1.
+        let tariffMult = isWorkHoliday ? 2 : 1; 
+        
+        let nakedTariff = totalHours * rate * tariffMult; // Сама работа (x2 в праздник)
+        
+        // База для надбавок берется от ОДИНАРНОГО тарифа (как ты просил "чуть меньше")
+        let baseForAddons = totalHours * rate; 
+
+        let bonusClass = baseForAddons * (sClass / 100); 
+        let bonusSen = baseForAddons * (sSen / 100); 
+        let bonusSenior = isSenior ? baseForAddons * 0.10 : 0;
+        let bonusMentor = isMentor ? baseForAddons * 0.15 : 0;
+        let bonusSplit = isSplit ? baseForAddons * 0.30 : 0;
+        
         let bonusTech = 0; if (isTech) { let baseRate = rate / 1.245; bonusTech = baseRate * 2; }
 
         let evMoney = evHoursToPay * rate * 0.20;
         let nightMoney = nightHoursToPay * rate * 0.40;
+        
+        // Собираем всё вместе
         let totalAccrued = nakedTariff + bonusClass + bonusSen + bonusSenior + bonusMentor + bonusSplit + evMoney + nightMoney;
         let final = totalAccrued * k + bonusTech;
 
         return { 
-            net: Math.round(final*0.87), dirty: final, hours: totalHours, isRes: isRes, isFull: payAsFullNight, 
+            net: Math.round(final*0.87), dirty: final, hours: hoursToStats, isRes: isRes, isFull: payAsFullNight, 
             night: nightHoursToPay, ev: evHoursToPay, isSplit: isSplit, isTrain: false, isTech: isTech,
             splitBonus: bonusSplit * k, evBonus: evMoney * k, nightBonus: nightMoney * k, techBonus: bonusTech, 
             valClass: bonusClass * k, valSen: bonusSen * k, valSenior: bonusSenior * k, valMentor: bonusMentor * k, valPrem: totalAccrued * (sPrem / 100),
@@ -855,6 +884,10 @@ function render(targetDate = null) {
                 tags += '<span class="tag red">БОЛЬНИЧНЫЙ</span> ';
             }
             
+            if (lowerText.includes('донор')) {
+                tags += '<span class="tag donor" style="background:#ab47bc;">ДОНОР</span> ';
+            }
+
             if (res) { 
                 if (res.isTrain) tags += '<span class="tag teal">ОБУЧЕНИЕ</span> '; 
                 if (res.isRes) tags += '<span class="tag gray">РЕЗЕРВ</span> '; 
