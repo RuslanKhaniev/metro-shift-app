@@ -1622,6 +1622,7 @@ function checkShiftText() {
         
         const lines = text.split('\n'); 
         let addedCount = 0; 
+        let errorCount = 0;
         
         const defRate = settings.rate; 
         const defMent = settings.mentor; 
@@ -1630,13 +1631,14 @@ function checkShiftText() {
         const defExp = getSeniorityPercent(settings.startDate); 
         const defPrem = settings.premP;
         
+        const currentYear = new Date().getFullYear();
+
         lines.forEach(line => { 
             line = line.trim(); 
             if(!line) return; 
 
-            // 1. ДИАПАЗОН (ДД,ММ,ГГ - ДД,ММ,ГГ)
-            // Добавили запятую в квадратные скобки: [\.\/,\-]
-            const rangeRegex = /(\d{1,2})[\.\/,\-](\d{1,2})[\.\/,\-](\d{2,4})\s*-\s*(\d{1,2})[\.\/,\-](\d{1,2})[\.\/,\-](\d{2,4})/;
+            // 1. ДИАПАЗОН (ДД.ММ.ГГ - ДД.ММ.ГГ) - тут год обязателен для точности
+            const rangeRegex = /^\s*(\d{1,2})[\.\/,\-](\d{1,2})[\.\/,\-](\d{2,4})\s*-\s*(\d{1,2})[\.\/,\-](\d{1,2})[\.\/,\-](\d{2,4})/;
             const rangeMatch = line.match(rangeRegex);
 
             if (rangeMatch) {
@@ -1664,21 +1666,24 @@ function checkShiftText() {
                         customMentor: defMent, customSenior: defSen, 
                         customClass: defClass, customSen: defExp, customPrem: defPrem 
                     });
-                    touchMeta(getMonthKey(iso));
+                    
                     addedCount++;
                     current.setDate(current.getDate() + 1);
                 }
 
             } else {
-                // 2. ОДИНОЧНАЯ ДАТА (ДД,ММ,ГГ)
-                // Тоже добавили запятую
-                const dateRegex = /^(\d{1,2})[\.\/,\-](\d{1,2})[\.\/,\-](\d{2,4})/;
+                // 2. ОДИНОЧНАЯ ДАТА (ДД.ММ[.ГГ])
+                // Изменили регулярку: (?: ... )? делает группу с годом необязательной
+                const dateRegex = /^\s*(\d{1,2})[\.\/,\-](\d{1,2})(?:[\.\/,\-](\d{2,4}))?/;
                 const dateMatch = line.match(dateRegex);
 
                 if(dateMatch) { 
                     let day = parseInt(dateMatch[1]); 
                     let month = parseInt(dateMatch[2]); 
-                    let year = parseInt(dateMatch[3]);
+                    
+                    // Если год есть - берем его, если нет - берем текущий (2025)
+                    let year = dateMatch[3] ? parseInt(dateMatch[3]) : currentYear;
+                    
                     if(year < 100) year += 2000;
 
                     const isoDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -1695,9 +1700,12 @@ function checkShiftText() {
                         date: isoDate, text: desc, customRate: impRate, 
                         customMentor: defMent, customSenior: defSen, 
                         customClass: defClass, customSen: defExp, customPrem: defPrem 
-                    });
-                    touchMeta(getMonthKey(iso));
+                    }); 
                     addedCount++; 
+                } else {
+                    // Игнорируем совсем пустые строки или мусор, но выводим в консоль
+                    console.warn("Не распознано:", line);
+                    errorCount++;
                 }
             }
         }); 
@@ -1706,7 +1714,7 @@ function checkShiftText() {
             saveData(); 
             render(); 
             closeModal('importModal'); 
-            alert(`Готово! Добавлено дней: ${addedCount}`); 
+            alert(`Успешно! Добавлено дней: ${addedCount}.` + (errorCount > 0 ? `\nНе распознано строк: ${errorCount}` : '')); 
         } else { 
             alert('Не удалось распознать даты. Проверьте формат.'); 
         } 
