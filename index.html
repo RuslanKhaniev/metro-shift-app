@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MetroTime Pro v103 ()</title>
+    <title>MetroTime Pro v106 ()</title>
 
     <script type="text/javascript" >
        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
@@ -206,7 +206,11 @@
 </div>
             </h3>
             <div class="chart-container">
-                <svg viewBox="0 0 36 36" class="circular-chart"><path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" /><path class="circle" stroke="#ffab00" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" id="circlePath" /></svg>
+                <svg viewBox="0 0 36 36" class="circular-chart">
+                    <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="circle" stroke="#ffab00" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" id="circlePath" />
+                    <path class="circle" stroke="#00c853" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" id="circlePathOver" style="display:none;" />
+                </svg>
                 <div class="chart-text-group"><span class="chart-val" id="chartValue">0</span><span class="chart-label">Часов</span></div>
             </div>
             <div class="stat-row"><span>Норма (36ч):</span> <span class="stat-val" id="st_norm">0</span></div>
@@ -220,7 +224,7 @@
             <div class="stat-row" id="row_split"><span>Разрывные (30%):</span> <div style="text-align:right"><span class="stat-sub-val" id="st_split_hours">0ч</span><span class="stat-val" id="st_split_money">0 ₽</span></div></div>
             <div class="stat-row" id="row_ot15"><span>Переработка (1.5х):</span> <div style="text-align:right"><span class="stat-sub-val" id="st_ot15_hours">0ч</span><span class="stat-val" id="st_ot15_money">0 ₽</span></div></div>
             <div class="stat-row" id="row_ot20"><span>Переработка (2.0х):</span> <div style="text-align:right"><span class="stat-sub-val" id="st_ot20_hours">0ч</span><span class="stat-val" id="st_ot20_money">0 ₽</span></div></div>
-            
+            <div class="stat-row" id="row_holiday"><span>Праздничные (x2):</span> <div style="text-align:right"><span class="stat-sub-val" id="st_holiday_hours">0ч</span><span class="stat-val" id="st_holiday_money">0 ₽</span></div></div>
             <div style="border-top:1px solid #eee; margin:10px 0;"></div>
             
             <div class="stat-row" id="row_class"><span id="lbl_class">Классность:</span> <span class="stat-val" id="st_class_money">0 ₽</span></div>
@@ -256,7 +260,7 @@
                 <div style="font-size:10px; color:#8d6e63; margin-top:5px;">Нажми, если данные на телефоне есть, а на ПК нет.</div>
             </div>
         </div>
-        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v103 (Fix Indexation)</div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v106 (Fix Indexation)</div>
     </div>
 
     <div class="modal-overlay" id="addModal">
@@ -1214,10 +1218,11 @@ function saveAll() {
             };
         }
 
-        // Учеба (УПЦ)
+        // Учеба (УПЦ) + МЕД.КОМИССИЯ
         if (text.includes('упц') || text.includes('учеба') || 
             text.includes('охрана') || text.includes('корпоратив') || 
-            text.includes('повышение') || text.includes('культура')) {
+            text.includes('повышение') || text.includes('культура') ||
+            text.includes('мед.ком') || text.includes('комиссия') || text.includes('мед ком')) {
             let hours = 8;
             let rate = getEffectiveRate(shift, text, false);
             let bonuses = calculateBonuses(hours * rate, settings, shift, false, false, rate);
@@ -1322,7 +1327,55 @@ function saveAll() {
         };
     }
 
-    function drawProgress(percent, labelValue) { const circle = document.getElementById('circlePath'); const textVal = document.getElementById('chartValue'); let drawPercent = percent; if (drawPercent < 0) drawPercent = 0; if (drawPercent > 100) drawPercent = 100; circle.style.strokeDasharray = `${drawPercent}, 100`; textVal.innerText = labelValue.toFixed(1); }
+    // Таймер для защиты от наложений анимации
+    let animTimer = null;
+
+    function drawProgress(percent, labelValue) { 
+        const circle = document.getElementById('circlePath'); 
+        const circleOver = document.getElementById('circlePathOver'); 
+        const textVal = document.getElementById('chartValue'); 
+        
+        // Если была старая анимация - отменяем
+        if (animTimer) clearTimeout(animTimer);
+
+        let mainPercent = percent;
+        let overPercent = 0;
+
+        // Расчет процентов
+        if (mainPercent > 100) {
+            overPercent = mainPercent - 100; 
+            mainPercent = 100; 
+            if (overPercent > 100) overPercent = 100; 
+        } else {
+            if (mainPercent < 0) mainPercent = 0;
+        }
+
+        // 1. Запускаем ОРАНЖЕВЫЙ круг (сразу)
+        circle.style.strokeDasharray = `${mainPercent}, 100`; 
+
+        // 2. Работаем с ЗЕЛЕНЫМ кругом
+        if (circleOver) {
+            if (overPercent > 0) {
+                // ШАГ А: Скрываем зеленый, пока он ждет (прозрачность 0)
+                circleOver.style.opacity = '0';
+                circleOver.style.strokeDasharray = `0, 100`;
+                circleOver.style.display = 'block'; 
+
+                // ШАГ Б: Ждем 600мс (пока оранжевый доедет до 100%)
+                animTimer = setTimeout(() => {
+                    // ШАГ В: Проявляем и запускаем рост
+                    circleOver.style.opacity = '1'; 
+                    circleOver.style.strokeDasharray = `${overPercent}, 100`;
+                }, 600); 
+            } else {
+                // Если переработки нет
+                circleOver.style.display = 'none';
+                circleOver.style.opacity = '0';
+            }
+        }
+        
+        textVal.innerText = labelValue.toFixed(1); 
+    }
     function changeStatsMonth(dir) { statsDate.setMonth(statsDate.getMonth() + dir); renderStats(); }
 
     function renderStats() {
@@ -1331,7 +1384,11 @@ function saveAll() {
         const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
         document.getElementById('statsMonthDisplay').innerText = `${monthNames[month]} ${year}`;
         const monthlyShifts = shifts.filter(s => { const d = new Date(s.date); return d.getFullYear() === year && d.getMonth() === month; });
-        let st = { count: 0, hours: 0, night: 0, ev: 0, res: 0, dirty: 0, sick: 0, donor: 0, net: 0, union: 0, tax: 0, splitBonus: 0, evBonus: 0, nightBonus: 0, techBonus: 0, splitHours: 0, sumClass: 0, sumSen: 0, sumPrem: 0, sumSenior: 0, sumMentor: 0, ot15Hours: 0, ot15Money: 0, ot20Hours: 0, ot20Money: 0, mentorHours: 0 };
+        
+        // ДОБАВИЛ holidayHours и holidayMoney в объект st
+        let st = { count: 0, hours: 0, night: 0, ev: 0, res: 0, dirty: 0, sick: 0, donor: 0, net: 0, union: 0, tax: 0, splitBonus: 0, evBonus: 0, nightBonus: 0, techBonus: 0, splitHours: 0, sumClass: 0, sumSen: 0, sumPrem: 0, sumSenior: 0, sumMentor: 0, ot15Hours: 0, ot15Money: 0, ot20Hours: 0, ot20Money: 0, mentorHours: 0, 
+                   holidayHours: 0, holidayMoney: 0 }; // <--- Новые поля
+        
         let sickDeduction = 0;
 
         monthlyShifts.forEach(s => {
@@ -1340,11 +1397,26 @@ function saveAll() {
             if (text.includes('донор')) st.donor++;
             let res = calcShift(s);
             if (res) {
-                st.count++; st.hours += res.hours; st.night += res.night; st.ev += (res.ev || 0); if (res.isRes) st.res++;
-                st.dirty += res.dirty; st.splitBonus += (res.splitBonus || 0); st.evBonus += (res.evBonus || 0); st.nightBonus += (res.nightBonus || 0); st.techBonus += (res.techBonus || 0);
+                st.count++; 
+                st.hours += res.hours; // Тут обычные часы (праздничные сюда не попадают, т.к. там 0)
+                st.night += res.night; 
+                st.ev += (res.ev || 0); 
+                if (res.isRes) st.res++;
+                st.dirty += res.dirty; 
+                st.splitBonus += (res.splitBonus || 0); 
+                st.evBonus += (res.evBonus || 0); 
+                st.nightBonus += (res.nightBonus || 0); 
+                st.techBonus += (res.techBonus || 0);
                 if(res.isSplit) st.splitHours += res.hours;
                 st.sumClass += (res.valClass || 0); st.sumSen += (res.valSen || 0); st.sumSenior += (res.valSenior || 0); st.sumMentor += (res.valMentor || 0); st.sumPrem += (res.valPrem || 0); st.mentorHours += (res.mentorHours || 0);
-            }
+                
+                // --- СЧИТАЕМ ПРАЗДНИКИ ---
+                // Если это гос. праздник (и мы работали, т.е. res существует)
+                if (isOnlyStateHoliday(new Date(s.date))) {
+                    st.holidayHours += res.duration; // Берем полную длительность смены
+                    st.holidayMoney += res.dirty;    // И полную сумму за эту смену (она там уже двойная)
+                }
+            }    
         });
 
         let norm = getMonthNorm(year, month); let displayNorm = norm + ' ч';
@@ -1458,6 +1530,11 @@ function saveAll() {
         document.getElementById('st_ot20_hours').innerText = (st.ot20Hours > 0 ? '+' : '') + st.ot20Hours.toFixed(1) + 'ч'; 
         document.getElementById('st_ot20_money').innerText = '+' + fmtMoney(st.ot20Money);
 
+        const holHoursEl = document.getElementById('st_holiday_hours');
+        const holMoneyEl = document.getElementById('st_holiday_money');
+        if (holHoursEl) holHoursEl.innerText = st.holidayHours.toFixed(1) + 'ч';
+        if (holMoneyEl) holMoneyEl.innerText = '+' + fmtMoney(st.holidayMoney);
+
         document.getElementById('lbl_class').innerText = `Классность (${settings.classP}%):`; 
         document.getElementById('lbl_sen').innerText = `Выслуга (${getSeniorityPercent(settings.startDate)}%):`; 
         document.getElementById('lbl_prem').innerText = `Премия (${settings.premP}%):`;
@@ -1483,6 +1560,8 @@ function saveAll() {
         toggleRow('row_ot15', st.ot15Money);
         toggleRow('row_ot20', st.ot20Money);
         
+        toggleRow('row_holiday', st.holidayMoney);
+
         toggleRow('row_class', st.sumClass);
         toggleRow('row_sen', st.sumSen);
         toggleRow('row_prem', st.sumPrem);
@@ -1550,12 +1629,28 @@ function render(targetDate = null) {
                 tags += '<span class="tag" style="background:#d32f2f;">МЕД.ОТВОД</span> ';
             }
 
+            // --- ПЛАШКА ПРАЗДНИК (УМНАЯ) ---
+            
+            // 1. Список слов-исключений (когда плашка НЕ нужна)
+            const isNonWork = lowerText.includes('отпуск') || lowerText.includes('отп') || 
+                              lowerText.includes('бл') || lowerText.includes('больничный') || 
+                              lowerText.includes('донор') || lowerText.includes('выходной') || 
+                              lowerText.includes('вых');
+
+            // 2. Рисуем, только если это Праздник И это рабочий день
+            if (isOnlyStateHoliday(new Date(s.date)) && !isNonWork) {
+                tags += '<span class="tag" style="background:#e91e63;">🎉 ПРАЗДНИК x2</span> ';
+            }
+
             if (res) { 
                 if (res && res.isTrain) {
-                // Если это "Охрана труда", напишем конкретно, или общее "ОБУЧЕНИЕ"
-                // Давай сделаем общее, чтобы не растягивать, или сокращенно
-                tags += '<span class="tag teal">ОБУЧЕНИЕ</span> ';
-                }
+                    // Если в тексте есть "мед.ком" — ставим правильную плашку
+                    if (lowerText.includes('мед.ком') || lowerText.includes('комиссия')) {
+                        tags += '<span class="tag teal" style="background:#00897b">МЕД. КОМИССИЯ</span> ';
+                    } else {
+                        tags += '<span class="tag teal">ОБУЧЕНИЕ</span> ';
+                    }
+            }
                 if (res.isRes) tags += '<span class="tag gray">РЕЗЕРВ</span> '; 
                 if (s.lineStart) tags += '<span class="tag orange">ВЫЕЗД</span> '; 
                 if (res.isTech) tags += '<span class="tag teal">+УЧЕБА</span> '; 
@@ -1572,7 +1667,7 @@ function render(targetDate = null) {
             
             let moneyHTML = ''; 
             if (res) { 
-                const moneyClass = (new Date(s.date) > new Date()) ? 'money-val future' : 'money-val'; 
+                const moneyClass = (s.date >= todayStr) ? 'money-val future' : 'money-val'; 
                 moneyHTML = `<div class="${moneyClass}">+${res.net}</div>`; 
             }
             
@@ -1625,6 +1720,7 @@ function render(targetDate = null) {
         else if (low.includes('повыш')) t = 'Повышение квалификации';
         else if (low.includes('культур')) t = 'Культура обслуживания';
         else if (low === 'упц') t = 'УПЦ';
+        else if (low.includes('мед.ком')) t = 'Мед. комиссия';
     
         // БОЛЬНИЧНЫЙ (ИСПРАВЛЕННОЕ СОХРАНЕНИЕ)
         if (t.toLowerCase().includes('бл') || t.toLowerCase().includes('больничный')) {
