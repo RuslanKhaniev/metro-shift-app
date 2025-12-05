@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MetroTime Pro v107 (Azamat version)</title>
+    <title>MetroTime Pro v108 (fix)</title>
 
     <script type="text/javascript" >
        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
@@ -241,25 +241,45 @@
         </div>
         <div class="card">
             <h3 style="margin-top:0; color:var(--primary)">💰 Расчет</h3>
+
             <div class="stat-row" id="row_ev"><span>Вечерние (20%):</span> <div style="text-align:right"><span class="stat-sub-val" id="st_ev_hours">0ч</span><span class="stat-val" id="st_ev_money">0 ₽</span></div></div>
             <div class="stat-row" id="row_night"><span>Ночные (40%):</span> <div style="text-align:right"><span class="stat-sub-val" id="st_night_hours">0ч</span><span class="stat-val" id="st_night_money">0 ₽</span></div></div>
             <div class="stat-row" id="row_split"><span>Разрывные (30%):</span> <div style="text-align:right"><span class="stat-sub-val" id="st_split_hours">0ч</span><span class="stat-val" id="st_split_money">0 ₽</span></div></div>
+            <div class="stat-row" id="row_holiday" style="display:none;"><span>Праздничные (x2):</span> <div style="text-align:right"><span class="stat-sub-val" id="st_holiday_hours">0ч</span><span class="stat-val" id="st_holiday_money">0 ₽</span></div></div>
             <div class="stat-row" id="row_ot15"><span>Переработка (1.5х):</span> <div style="text-align:right"><span class="stat-sub-val" id="st_ot15_hours">0ч</span><span class="stat-val" id="st_ot15_money">0 ₽</span></div></div>
             <div class="stat-row" id="row_ot20"><span>Переработка (2.0х):</span> <div style="text-align:right"><span class="stat-sub-val" id="st_ot20_hours">0ч</span><span class="stat-val" id="st_ot20_money">0 ₽</span></div></div>
-            <div class="stat-row" id="row_holiday"><span>Праздничные (x2):</span> <div style="text-align:right"><span class="stat-sub-val" id="st_holiday_hours">0ч</span><span class="stat-val" id="st_holiday_money">0 ₽</span></div></div>
-            <div style="border-top:1px solid #eee; margin:10px 0;"></div>
-            
+
+            <div style="margin-top:5px;"></div> 
+
+            <div class="stat-row" id="row_sick" style="display:none;">
+                <span>🚑 Больничный:</span> 
+                <div style="text-align:right">
+                    <span class="stat-sub-val" id="st_sick_days">0 дн.</span>
+                    <span class="stat-val" id="st_sick_money">0 ₽</span>
+                </div>
+            </div>
+            <div class="stat-row" id="row_vacation" style="display:none;"><span>🏖️ Отпускные:</span> <span class="stat-val" id="st_vacation_money">0 ₽</span></div>
+            <div class="stat-row" id="row_donor" style="display:none;"><span>🩸 Донорские:</span> <span class="stat-val" id="st_donor_money">0 ₽</span></div>
+            <div class="stat-row" id="row_med" style="display:none;"><span>🩺 Мед. комиссия:</span> <span class="stat-val" id="st_med_money">0 ₽</span></div>
+            <div class="stat-row" id="row_study" style="display:none;"><span>🎓 Учеба (УПЦ):</span> <span class="stat-val" id="st_study_money">0 ₽</span></div>
+
+            <div style="border-top:1px solid #eee; margin:8px 0;"></div>
+
             <div class="stat-row" id="row_class"><span id="lbl_class">Классность:</span> <span class="stat-val" id="st_class_money">0 ₽</span></div>
             <div class="stat-row" id="row_sen"><span id="lbl_sen">Выслуга:</span> <span class="stat-val" id="st_sen_money">0 ₽</span></div>
-            <div class="stat-row" id="row_prem"><span id="lbl_prem">Премия:</span> <span class="stat-val" id="st_prem_money">0 ₽</span></div>
-            <div class="stat-row" id="row_tech" style="display:none;"><span>Тех. учеба:</span> <span class="stat-val" id="st_tech_money">0 ₽</span></div>
             <div class="stat-row" id="row_senior" style="display:none;"><span id="lbl_senior">Ст. машинист:</span> <span class="stat-val" id="st_senior_money">0 ₽</span></div>
             <div class="stat-row" id="row_mentor" style="display:none;"><span id="lbl_mentor">Наставник:</span> <div style="text-align:right"><span class="stat-sub-val" id="st_mentor_hours">0ч</span><span class="stat-val" id="st_mentor_money">0 ₽</span></div></div>
+
+            <div class="stat-row" id="row_prem"><span id="lbl_prem">Премия:</span> <span class="stat-val" id="st_prem_money">0 ₽</span></div>
+            <div class="stat-row" id="row_tech" style="display:none;"><span>Тех. учеба:</span> <span class="stat-val" id="st_tech_money">0 ₽</span></div>
+
             <div style="border-top:2px solid #eee; margin:10px 0;"></div>
+
             <div class="stat-row"><span>Начислено:</span> <span class="stat-val" id="st_dirty">0 ₽</span></div>
             <div class="stat-row"><span>Профсоюз (1%):</span> <span class="stat-val" id="st_union" style="color:#e53935">0 ₽</span></div>
             <div class="stat-row"><span id="lbl_tax">Налог (13%):</span> <span class="stat-val" id="st_tax" style="color:#e57373">0 ₽</span></div>
             <div id="rich_alert" style="text-align:right; font-size:10px; color:#d32f2f; font-weight:800; display:none; margin-top:-8px; margin-bottom:8px; opacity:0.8;"></div>
+
             <div class="stat-row" style="font-size:20px; border-top:2px solid #eee; margin-top:10px; padding-top:15px"><span>На руки:</span> <span class="stat-val" id="st_net" style="color:#2e7d32">0 ₽</span></div>
         </div>
     </div>
@@ -282,7 +302,113 @@
                 <div style="font-size:10px; color:#8d6e63; margin-top:5px;">Нажми, если данные на телефоне есть, а на ПК нет.</div>
             </div>
         </div>
-        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v107 (Azamat version)</div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v108 (Clean)</div>
+    </div>
+
+    <script>
+        // Функция отрисовки сырой базы
+        function renderDebugMode() {
+            let html = `<table style="width:100%; font-size:11px; border-collapse:collapse;">
+                        <tr style="background:#eceff1; color:#455a64;">
+                            <th style="text-align:left; padding:5px;">Дата (Raw)</th>
+                            <th style="text-align:left; padding:5px;">Текст</th>
+                            <th style="text-align:right; padding:5px;">Сумма</th>
+                            <th></th>
+                        </tr>`;
+
+            // Проходим по ВСЕМ сменам в памяти
+            shifts.forEach((s, index) => {
+                let res = calcShift(s);
+                let money = res ? Math.round(res.dirty) : 0;
+                
+                // Ищем нашего призрака (сумма ~738р или дубль даты)
+                let isGhost = (money > 730 && money < 750 && s.text.toLowerCase().includes('бл'));
+                let rowStyle = isGhost ? 'background:#ffebee; border:2px solid #e53935;' : 'border-bottom:1px solid #eee;';
+                
+                html += `<tr style="${rowStyle}">
+                    <td style="padding:8px 4px;">${s.date}</td>
+                    <td style="padding:8px 4px;"><b>${s.text}</b></td>
+                    <td style="padding:8px 4px; text-align:right; font-weight:bold;">${money} ₽</td>
+                    <td style="padding:8px 4px; text-align:center;">
+                        <button onclick="forceDeleteShift(${index})" style="background:#d32f2f; color:white; border:none; padding:5px 10px; border-radius:6px; cursor:pointer;">🗑️</button>
+                    </td>
+                </tr>`;
+            });
+            html += `</table>`;
+            
+            // Добавляем инфо сколько всего смен
+            html += `<div style="margin-top:10px; text-align:center; font-size:10px; color:#90a4ae;">Всего записей в базе: ${shifts.length}</div>`;
+
+            document.getElementById('debug-table-container').innerHTML = html;
+        }
+
+        // Удаление по индексу массива (самое надежное)
+        function forceDeleteShift(idx) {
+            if(confirm('Удалить эту запись навсегда?')) {
+                shifts.splice(idx, 1); // Вырезаем из массива
+                saveData(); // Сохраняем в память
+                renderDebugMode(); // Перерисовываем таблицу
+                renderStats(); // Обновляем сводку
+                alert('Удалено!');
+            }
+        }
+
+        // Запускаем отрисовку при открытии
+        setInterval(() => {
+            if(document.getElementById('tab-settings').classList.contains('active')) {
+                // Чтобы не перерисовывать слишком часто, можно добавить проверку, но для дебага сойдет
+                // Лучше вызвать один раз, но setInterval гарантирует, что таблица появится
+                if(!document.getElementById('debug-table-container').hasChildNodes()) {
+                    renderDebugMode();
+                }
+            }
+        }, 500);
+        
+        // Кнопка обновления вручную
+        renderDebugMode();
+    </script>
+</div>
+    
+    <script>
+        // Эта функция отрисует таблицу прямо при открытии вкладки
+        function renderDebugTable() {
+            let html = '<table style="width:100%; font-size:11px; border-collapse:collapse;">';
+            html += '<tr style="background:#eceff1; text-align:left;"><th>Дата</th><th>Текст</th><th>Сумма</th><th></th></tr>';
+            
+            // Сортируем по дате, чтобы дубли были рядом
+            shifts.sort((a,b) => new Date(a.date) - new Date(b.date));
+
+            shifts.forEach((s, index) => {
+                let res = calcShift(s);
+                let money = res ? Math.round(res.dirty) : 0;
+                let color = (money < 1000 && s.text.toLowerCase().includes('бл')) ? '#ffcdd2' : 'transparent'; // Подсветка подозрительных
+                
+                html += `<tr style="background:${color}; border-bottom:1px solid #eee;">
+                    <td style="padding:8px 4px;">${s.date}</td>
+                    <td style="padding:8px 4px;"><b>${s.text}</b></td>
+                    <td style="padding:8px 4px;">${money} ₽</td>
+                    <td style="padding:8px 4px; text-align:right;">
+                        <button onclick="removeShiftByIndex(${index})" style="background:#d32f2f; color:white; border:none; padding:4px 8px; border-radius:4px; font-weight:bold;">X</button>
+                    </td>
+                </tr>`;
+            });
+            html += '</table>';
+            document.getElementById('debug-list').innerHTML = html;
+        }
+
+        function removeShiftByIndex(index) {
+            if(confirm('Точно удалить эту запись?')) {
+                shifts.splice(index, 1); // Удаляем по индексу
+                saveData(); // Сохраняем
+                renderDebugTable(); // Обновляем таблицу
+                renderStats(); // Обновляем сводку
+            }
+        }
+        
+        // Запускаем отрисовку каждые 2 секунды (на всякий случай) или при клике
+        setInterval(renderDebugTable, 2000);
+    </script>
+</div>
     </div>
 
     <div class="modal-overlay" id="addModal">
@@ -381,6 +507,18 @@ function getMonthKey(dateStr) {
     const tg = window.Telegram.WebApp;
     
     function saveData() {
+        // --- АВТОЧИСТКА ДУБЛЕЙ (FIX) ---
+        const uniqueMap = new Map();
+        shifts.forEach(s => {
+            if (s.date && s.date.length >= 10) {
+                const cleanDate = s.date.trim().substring(0, 10);
+                s.date = cleanDate;
+                uniqueMap.set(cleanDate, s);
+            }
+        });
+        shifts = Array.from(uniqueMap.values());
+        // -------------------------------
+
         localStorage.setItem('metro_shifts', JSON.stringify(shifts));
         localStorage.setItem('metro_settings', JSON.stringify(settings));
         saveAllToCloud();
@@ -497,7 +635,27 @@ function getMonthKey(dateStr) {
     
 
     function init() {
-        normalizeShifts(); render(); updateUI(); tg.ready(); tg.expand();
+        // --- ЖЕЛЕЗНАЯ ЧИСТКА ДУБЛЕЙ ПРИ ЗАПУСКЕ (FIX) ---
+        if (shifts && shifts.length > 0) {
+            const uniqueMap = new Map();
+            shifts.forEach(s => {
+                // ВАЖНО: Отрезаем мусор (пробелы) и берем только первые 10 символов даты
+                if (s.date && s.date.length >= 10) {
+                    const cleanDate = s.date.trim().substring(0, 10);
+                    s.date = cleanDate; // Исправляем саму смену
+                    uniqueMap.set(cleanDate, s); // Перезаписываем (останется только одна)
+                }
+            });
+            shifts = Array.from(uniqueMap.values());
+            // Сохраняем чистую базу сразу
+            localStorage.setItem('metro_shifts', JSON.stringify(shifts));
+        }
+
+        normalizeShifts(); 
+        render(); 
+        updateUI(); 
+        tg.ready(); 
+        tg.expand();
         if (typeof ym !== 'undefined' && tg.initDataUnsafe && tg.initDataUnsafe.user) {
             ym(105574700, 'userParams', { telegram_id: tg.initDataUnsafe.user.id });
         }
@@ -837,20 +995,43 @@ function saveAll() {
         if (isNaN(s.getTime())) return 0;
         const n = new Date(); 
         if (s > n) return 0; 
+        
         const y = (n - s) / (1000 * 60 * 60 * 24 * 365.25); 
-        if (y >= 20) return 30; if (y >= 15) return 25; if (y >= 10) return 20; if (y >= 5) return 15; if (y >= 3) return 10; if (y >= 1) return 5; return 0; 
+
+        if (y >= 20) return 30; 
+        if (y >= 15) return 25; 
+        if (y >= 10) return 20; 
+        if (y >= 5) return 15; 
+        if (y >= 3) return 10; 
+        
+        // РАНЬШЕ: if (y >= 1) return 5; else return 0;
+        
+        // ТЕПЕРЬ: Всем новичкам (от 0 до 3 лет) сразу даем 5%
+        return 5; 
     }
 
     function calcExpDisplay() { 
         const d = document.getElementById('set_start_date').value; 
         const t = document.getElementById('set_exp_text'); 
+        
         if(!d) { t.innerText = "Стаж не указан"; return; } 
+        
         const s = new Date(d); 
         if(isNaN(s.getTime())) { t.innerText = "Ошибка даты"; return; }
+        
         const n = new Date(); 
-        const y = Math.floor((n - s) / (1000 * 60 * 60 * 24 * 365.25)); 
+        // Считаем точное количество лет (с дробной частью для точности проверки)
+        const yearsFloat = (n - s) / (1000 * 60 * 60 * 24 * 365.25);
+        const yFull = Math.floor(yearsFloat); 
+        
         const p = getSeniorityPercent(d); 
-        t.innerText = `Стаж: ~${y} лет (Выслуга ${p}%)`; 
+        
+        // Если стаж меньше 1 года, но процент уже 5 — значит работает поддержка
+        if (yearsFloat < 1 && p === 5) {
+            t.innerHTML = `Стаж: < 1 года <span style="color:#2e7d32; font-weight:800;">(Поддержка 5% 🔥)</span>`;
+        } else {
+            t.innerText = `Стаж: ~${yFull} лет (Выслуга ${p}%)`; 
+        }
     }
 
     // === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (HELPER FUNCTIONS) ===
@@ -1247,7 +1428,7 @@ function saveAll() {
         if (text.includes('упц') || text.includes('учеба') || 
             text.includes('охрана') || text.includes('корпоратив') || 
             text.includes('повышение') || text.includes('культура') ||
-            text.includes('мед.ком') || text.includes('комиссия') || text.includes('мед ком')) {
+            text.includes('мед.ком') || text.includes('комиссия') || text.includes('мед ком') || text.includes('медком')) {
             let hours = 8;
             let rate = getEffectiveRate(shift, text, false);
             let bonuses = calculateBonuses(hours * rate, settings, shift, false, false, rate);
@@ -1412,7 +1593,8 @@ function saveAll() {
         
         // ДОБАВИЛ holidayHours и holidayMoney в объект st
         let st = { count: 0, hours: 0, night: 0, ev: 0, res: 0, dirty: 0, sick: 0, donor: 0, net: 0, union: 0, tax: 0, splitBonus: 0, evBonus: 0, nightBonus: 0, techBonus: 0, splitHours: 0, sumClass: 0, sumSen: 0, sumPrem: 0, sumSenior: 0, sumMentor: 0, ot15Hours: 0, ot15Money: 0, ot20Hours: 0, ot20Money: 0, mentorHours: 0, 
-                   holidayHours: 0, holidayMoney: 0 }; // <--- Новые поля
+           holidayHours: 0, holidayMoney: 0, 
+           sickMoney: 0, vacationMoney: 0, donorMoney: 0, medMoney: 0, studyMoney: 0 }; // <--- Новые поля
         
         let sickDeduction = 0;
 
@@ -1435,6 +1617,27 @@ function saveAll() {
                 if(res.isSplit) st.splitHours += res.hours;
                 st.sumClass += (res.valClass || 0); st.sumSen += (res.valSen || 0); st.sumSenior += (res.valSenior || 0); st.sumMentor += (res.valMentor || 0); st.sumPrem += (res.valPrem || 0); st.mentorHours += (res.mentorHours || 0);
                 
+                if (text.includes('бл') || text.includes('больничный')) {
+                    st.sickMoney += res.dirty;
+                    //st.sick++;
+                } 
+                else if (text.includes('отпуск') || text.includes('отп')) {
+                    st.vacationMoney += res.dirty;
+                }
+                else if (text.includes('донор')) {
+                    st.donorMoney += res.dirty;
+                }
+                
+
+                else if (res.isTrain) { 
+                    // Проверяем текст, чтобы понять, в какую кучку положить деньги
+                    if (text.includes('мед.ком') || text.includes('комиссия') || text.includes('мед ком') || text.includes('медком')) {
+                        st.medMoney += res.dirty;
+                } else {
+                    // Если это не медком, значит это Учеба (УПЦ, Охрана труда и т.д.)
+                    st.studyMoney += res.dirty;
+                }
+            }
                 // --- СЧИТАЕМ ПРАЗДНИКИ ---
                 // Если это гос. праздник (и мы работали, т.е. res существует)
                 if (isOnlyStateHoliday(new Date(s.date))) {
@@ -1614,6 +1817,20 @@ function saveAll() {
         toggleRow('row_ot20', st.ot20Money);
         
         toggleRow('row_holiday', st.holidayMoney);
+        document.getElementById('st_sick_days').innerText = st.sick + ' дн.';
+        document.getElementById('st_sick_money').innerText = '+' + fmtMoney(st.sickMoney);
+        document.getElementById('st_vacation_money').innerText = '+' + fmtMoney(st.vacationMoney);
+        document.getElementById('st_donor_money').innerText = '+' + fmtMoney(st.donorMoney);
+        
+        toggleRow('row_sick', st.sickMoney);
+        toggleRow('row_vacation', st.vacationMoney);
+        toggleRow('row_donor', st.donorMoney);
+        
+        document.getElementById('st_med_money').innerText = '+' + fmtMoney(st.medMoney);
+        document.getElementById('st_study_money').innerText = '+' + fmtMoney(st.studyMoney);
+
+        toggleRow('row_med', st.medMoney);
+        toggleRow('row_study', st.studyMoney);
 
         toggleRow('row_class', st.sumClass);
         toggleRow('row_sen', st.sumSen);
@@ -1669,7 +1886,7 @@ function render(targetDate = null) {
                 tags += '<span class="tag red">БОЛЬНИЧНЫЙ</span> ';
             }
             
-            if (lowerText.includes('отпуск')) {
+            if (lowerText.includes('отпуск') || lowerText.includes('отп')) {
                 // Красивый градиент: от светлого к глубокому синему
                 tags += '<span class="tag" style="background: linear-gradient(135deg, #4fc3f7, #2196f3);">ОТПУСК</span> ';
             }
@@ -1697,12 +1914,12 @@ function render(targetDate = null) {
 
             if (res) { 
                 if (res && res.isTrain) {
-                    // Если в тексте есть "мед.ком" — ставим правильную плашку
-                    if (lowerText.includes('мед.ком') || lowerText.includes('комиссия')) {
-                        tags += '<span class="tag teal" style="background:#00897b">МЕД. КОМИССИЯ</span> ';
-                    } else {
-                        tags += '<span class="tag teal">ОБУЧЕНИЕ</span> ';
-                    }
+                // Проверяем все варианты написания
+                if (lowerText.includes('мед.ком') || lowerText.includes('комиссия') || lowerText.includes('мед ком') || lowerText.includes('медком')) {
+                    tags += '<span class="tag teal" style="background:#00897b">МЕД. КОМИССИЯ</span> ';
+                } else {
+                    tags += '<span class="tag teal">ОБУЧЕНИЕ</span> ';
+                }
             }
                 if (res.isRes) tags += '<span class="tag gray">РЕЗЕРВ</span> '; 
                 if (s.lineStart) tags += '<span class="tag orange">ВЫЕЗД</span> '; 
@@ -1777,7 +1994,8 @@ function render(targetDate = null) {
         else if (low.includes('повыш')) t = 'Повышение квалификации';
         else if (low.includes('культур')) t = 'Культура обслуживания';
         else if (low === 'упц') t = 'УПЦ';
-        else if (low.includes('мед.ком')) t = 'Мед. комиссия';
+        else if (low.includes('мед.ком') || low.includes('мед ком') || low.includes('медком')) t = 'Мед. комиссия';
+        
     
         // БОЛЬНИЧНЫЙ (ИСПРАВЛЕННОЕ СОХРАНЕНИЕ)
         if (t.toLowerCase().includes('бл') || t.toLowerCase().includes('больничный')) {
@@ -1816,7 +2034,18 @@ function render(targetDate = null) {
     let sSen = getSeniorityPercent(settings.startDate); 
     let sTech = document.getElementById('shiftTech').checked; 
     let sPost = document.getElementById('shiftPostTrip').checked; 
+    
+    // 1. СНАЧАЛА ПОЛУЧАЕМ ЗНАЧЕНИЕ ГАЛОЧКИ
     let sMedical = document.getElementById('shiftMedical').checked; 
+    
+    // 2. И ТОЛЬКО ТЕПЕРЬ ПРОВЕРЯЕМ (ВСТАВИТЬ ЭТОТ БЛОК СЮДА):
+    // Если это Отпуск, БЛ или Донор — принудительно снимаем мед. отвод
+    let checkText = t.toLowerCase();
+    if (checkText.includes('отпуск') || checkText.includes('отп') || 
+        checkText.includes('бл') || checkText.includes('больничный') || 
+        checkText.includes('донор')) {
+        sMedical = false;
+    } 
     
     if(d && t) { 
         preventRender = true; 
@@ -1896,6 +2125,7 @@ function render(targetDate = null) {
         document.getElementById('shiftSenior').checked = settings.senior || false;
         document.getElementById('shiftTech').checked = false;
         document.getElementById('shiftPostTrip').checked = false;
+        document.getElementById('shiftMedical').checked = false;
         document.getElementById('shiftClassSelect').value = settings.classP;
         document.getElementById('shiftPrem').value = String(settings.premP).replace('.', ',');
         checkShiftText();
@@ -2129,6 +2359,7 @@ function checkShiftText() {
                 
                 let desc = line.replace(rangeMatch[0], '').trim();
                 if (desc.toLowerCase().includes('больничный')) desc = "БЛ";
+                if (desc.toLowerCase() === 'отп') desc = "отпуск";
 
                 // ИСПРАВЛЕНИЕ: Мы ВСЕГДА берем полную ставку.
                 // Неважно, резерв это или нет. Программа сама потом посчитает 8% вредности.
@@ -2171,6 +2402,7 @@ function checkShiftText() {
                     
                     let desc = line.replace(dateMatch[0], '').trim(); 
                     if (desc.toLowerCase().includes('больничный')) desc = "БЛ";
+                    if (desc.toLowerCase() === 'отп') desc = "отпуск";
         
                     shifts = shifts.filter(s => s.date !== isoDate); 
                     
