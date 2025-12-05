@@ -1453,6 +1453,34 @@ function saveAll() {
             if (overtime <= 2) { st.ot15Hours = overtime; let base15 = st.ot15Hours * rate * 0.5; st.ot15Money = base15 * (1 + premRate / 100); } 
             else { st.ot15Hours = 2; let base15 = 2 * rate * 0.5; st.ot15Money = base15 * (1 + premRate / 100); st.ot20Hours = overtime - 2; let base20 = st.ot20Hours * rate * 1.0; st.ot20Money = base20 * (1 + premRate / 100); }
             st.dirty += st.ot15Money + st.ot20Money;
+            // === ИСПРАВЛЕНИЕ: ДОНАЧИСЛЕНИЕ НАДБАВОК НА ПЕРЕРАБОТКУ ===
+    // Бухгалтерия платит Классность/Выслугу/Бригадирские и на доплату за переработку тоже.
+    
+    // 1. Считаем базу доплаты (чистые деньги за переработку без премии)
+    // 0.5 ставки за первые 2 часа + 1.0 ставка за остальные
+    let surchargeBase = (st.ot15Hours * settings.rate * 0.5) + (st.ot20Hours * settings.rate * 1.0);
+
+    if (surchargeBase > 0) {
+        // 2. Считаем пропущенные надбавки
+        let addClass = surchargeBase * (settings.classP / 100);
+        let addSen = surchargeBase * (getSeniorityPercent(settings.startDate) / 100);
+        let addSenior = settings.senior ? (surchargeBase * 0.10) : 0;
+        let addMentor = settings.mentor ? (surchargeBase * 0.15) : 0;
+
+        // 3. Плюсуем их в статистику
+        st.sumClass += addClass;
+        st.sumSen += addSen;
+        st.sumSenior += addSenior;
+        st.sumMentor += addMentor;
+
+        // 4. На эти новые надбавки тоже положена ПРЕМИЯ
+        let addPrem = (addClass + addSen + addSenior + addMentor) * (settings.premP / 100);
+        st.sumPrem += addPrem;
+
+        // 5. Добавляем всё это в итоговую грязную зарплату
+        st.dirty += addClass + addSen + addSenior + addMentor + addPrem;
+    }
+
         }
 
         // --- БЛОК НАЛОГА 2025 (С ИСПРАВЛЕНИЕМ НАДПИСИ) ---
