@@ -168,6 +168,24 @@
         .btn-text { background: none; border: none; color: var(--accent); font-size: 11px; font-weight: bold; cursor: pointer; text-decoration: underline; margin-top: 5px; display: block; text-align: right;}
         details { margin-top: 15px; border: 1px solid #eee; border-radius: 12px; padding: 15px; } summary { font-size: 13px; font-weight: 700; color: var(--primary); cursor: pointer; outline: none; }
         .detail-row { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; } .detail-row label { margin: 0; font-size: 13px; color: #455a64; font-weight: 500;} .detail-row input[type="checkbox"] { width: 24px; height: 24px; margin: 0; accent-color: var(--accent);} .detail-row input[type="text"] { width: 90px; padding: 8px; font-size: 14px; margin: 0; } .line-input-row { display: flex; gap: 10px; margin-top: 5px; }
+        /* --- СТИЛИ ДЛЯ ЗАМЕТОК --- */
+    /* Уголок в календаре */
+    .cal-cell.has-note::after {
+    content: ''; 
+    position: absolute; 
+    top: 0; 
+    right: 0;
+    border-top: 8px solid var(--accent); /* Оранжевый цвет */
+    border-left: 8px solid transparent;
+    border-top-right-radius: 8px; /* Чуть скруглим угол */
+    }
+    /* Иконка в списке смен */
+    .note-icon {
+    font-size: 14px;
+    margin-left: 6px;
+    cursor: help;
+    text-decoration: none;
+    }
     </style>
 </head>
 <body>
@@ -270,6 +288,8 @@
             <input type="date" id="inpDate">
             <label>Текст из графика</label>
             <input type="text" id="inpText" placeholder="Например: м75 14:00-22:00 или БЛ" oninput="checkShiftText()">
+            <label>Заметка</label>
+            <textarea id="inpNote" rows="2" placeholder="Например: зайти в кадры, номера вагонов..."></textarea>
 
             <div id="sickDetailsBox" style="display:none; background:#e8f5e9; padding:15px; border-radius:12px; margin-top:15px; border:1px solid #c8e6c9;">
                 <h4 style="margin:0 0 10px 0; color:#2e7d32;">🚑 Параметры больничного</h4>
@@ -629,6 +649,7 @@ function groupShiftsByMonth() {
         
         // Минификация (как у тебя была)
         const mini = { d: s.date, t: s.text };
+        if(s.note) mini.n = s.note;
         if(s.customRate !== undefined) mini.cr = s.customRate;
         if(s.customMentor !== undefined) mini.cm = s.customMentor;
         if(s.customSenior !== undefined) mini.cs = s.customSenior;
@@ -725,17 +746,17 @@ function saveAll() {
     function hideLoader() { document.getElementById('loader').classList.remove('loader-active'); }
 
     function normalizeOne(s) { 
-        if (s.d) { 
-            return { 
-                date: s.d, text: s.t, 
-                customRate: s.cr, customMentor: s.cm, customSenior: s.cs, 
-                customClass: s.cc, customSen: s.ce, customPrem: s.cp, 
-                lineStart: s.ls, lineEnd: s.le, isTech: !!s.it, isPostTrip: !!s.ip,
-                isMedical: !!s.im 
-            }; 
-        } 
-        return s; 
-    }
+    if (s.d) { 
+        return { 
+            date: s.d, text: s.t, note: s.n, // <--- Добавили note
+            customRate: s.cr, customMentor: s.cm, customSenior: s.cs, 
+            customClass: s.cc, customSen: s.ce, customPrem: s.cp, 
+            lineStart: s.ls, lineEnd: s.le, isTech: !!s.it, isPostTrip: !!s.ip,
+            isMedical: !!s.im 
+        }; 
+    } 
+    return s; 
+}
     function normalizeShifts() { shifts = shifts.map(s => normalizeOne(s)); }
 
     function updateUI() {
@@ -1655,6 +1676,9 @@ function render(targetDate = null) {
                 if (s.lineStart) tags += '<span class="tag orange">ВЫЕЗД</span> '; 
                 if (res.isTech) tags += '<span class="tag teal">+УЧЕБА</span> '; 
             }
+            if (s.note && s.note.trim() !== "") {
+                tags += '<span class="note-icon">📌</span>'; 
+            }
 
             let div = document.createElement('div'); 
             div.className = 'shift-card'; 
@@ -1708,7 +1732,8 @@ function render(targetDate = null) {
     
     function addShift() { 
         let d = document.getElementById('inpDate').value; 
-        let t = document.getElementById('inpText').value; 
+        let t = document.getElementById('inpText').value;
+        let n = document.getElementById('inpNote').value; 
         let low = t.trim().toLowerCase();
 
         // === АВТОЗАМЕНА ОТПУСКА ===
@@ -1767,7 +1792,7 @@ function render(targetDate = null) {
         // 1. Сохраняем текущую смену в массив
         shifts = shifts.filter(s => s.date !== d); 
         shifts.push({ 
-            date:d, text:t, customRate: sRate, customMentor: sMentor, 
+            date:d, text:t, note: n, customRate: sRate, customMentor: sMentor, 
             customSenior: sSenior, customClass: sClass, customSen: sSen, 
             customPrem: sPrem, lineStart: lStart, lineEnd: lEnd, 
             isTech: sTech, isPostTrip: sPost, isMedical: sMedical 
@@ -1830,6 +1855,7 @@ function render(targetDate = null) {
         document.getElementById('addModal').classList.add('open');
         setAutoDate();
         document.getElementById('inpText').value = '';
+        document.getElementById('inpNote').value = '';
         document.getElementById('modalTitle').innerText = 'Новая смена';
         document.getElementById('btnSaveShift').innerText = 'Добавить';
         document.getElementById('btnDeleteShift').style.display = 'none';
@@ -1864,7 +1890,7 @@ function render(targetDate = null) {
     if (shift) {
         // РЕДАКТИРОВАНИЕ
         document.getElementById('inpText').value = shift.text;
-        
+        document.getElementById('inpNote').value = shift.note || '';
         // Берем сохраненную ставку. Если её нет — берем из профиля.
         // БОЛЬШЕ НИКАКИХ ФОРМУЛ ТУТ! Мы показываем 546.18 даже для резерва.
         let showRate = (shift.customRate !== undefined) ? shift.customRate : currentProfileRate;
@@ -1889,6 +1915,7 @@ function render(targetDate = null) {
     } else {
         // НОВАЯ СМЕНА
         document.getElementById('inpText').value = '';
+        document.getElementById('inpNote').value = '';
         document.getElementById('shiftRate').value = String(currentProfileRate).replace('.', ',');
         
         document.getElementById('shiftMentor').checked = settings.mentor;
@@ -2172,6 +2199,10 @@ function checkShiftText() {
                 else if (text.includes('вых')) typeClass = 'type-off';
                 else if (text.includes('упц') || text.includes('учеба')) typeClass = 'type-train';
                 cellClass += ` has-shift ${typeClass}`;
+                if (shift.note && shift.note.trim() !== "") {
+                cellClass += ' has-note';
+                }
+
                 let title = shift.text.split(' ')[0];
                 if (title.length > 5) title = title.substr(0, 4) + '.';
                 content += `<div class="cal-shift">${title}</div>`;
