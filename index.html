@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MetroTime Pro v109 (fix)</title>
+    <title>MetroTime Pro v110 (fix)</title>
 
     <script type="text/javascript" >
        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
@@ -305,7 +305,7 @@
                 <div style="font-size:10px; color:#8d6e63; margin-top:5px;">Нажми, если данные на телефоне есть, а на ПК нет.</div>
             </div>
         </div>
-        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v109 (Clean)</div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">MetroTime v110 (Clean)</div>
     </div>
 
     
@@ -1489,6 +1489,12 @@ function saveAll() {
         
         let sickDeduction = 0;
 
+        // --- НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ ОТСЛЕЖИВАНИЯ РЕАЛЬНЫХ ПРОЦЕНТОВ ---
+        let usedClasses = new Set();
+        let usedPrems = new Set();
+        let usedSens = new Set();
+        let hasSeniorShift = false;
+
         monthlyShifts.forEach(s => {
             let text = s.text.toLowerCase();
             if (text.includes('бл') || text.includes('отпуск') || text.includes('отп')) {
@@ -1501,6 +1507,26 @@ function saveAll() {
             let res = calcShift(s);
 
             if (res) {
+                // --- СБОР ФАКТИЧЕСКИХ ДАННЫХ ---
+                // Если смена дала хоть копейку денег, запоминаем какой процент там стоял
+                if (res.dirty > 0) {
+                    // Класс
+                    let factClass = (s.customClass !== undefined) ? s.customClass : settings.classP;
+                    usedClasses.add(factClass);
+                    
+                    // Премия
+                    let factPrem = (s.customPrem !== undefined) ? parseFloat(s.customPrem) : settings.premP;
+                    usedPrems.add(factPrem);
+                    
+                    // Выслуга
+                    let factSen = (s.customSen !== undefined) ? s.customSen : getSeniorityPercent(settings.startDate);
+                    usedSens.add(factSen);
+                    
+                    // Ст. машинист
+                    if (res.valSenior > 0) hasSeniorShift = true;
+                }
+                // -------------------------------
+
                 st.count++;
                 st.hours += res.hours;
                 st.night += res.night;
@@ -1528,9 +1554,8 @@ function saveAll() {
             else if (text.includes('отпуск') || text.includes('отп')) { if (res) st.vacationMoney += res.dirty; }
             else if (text.includes('донор')) { if (res) st.donorMoney += res.dirty; }
             
-            // --- ВАЖНОЕ ИСПРАВЛЕНИЕ: ОТДЕЛЯЕМ ПРЕМИЮ ОТ УЧЕБЫ ---
             else if (res && res.isTrain) {
-                let cleanMoney = res.dirty - (res.valPrem || 0); // Оставляем только базу
+                let cleanMoney = res.dirty - (res.valPrem || 0); 
                 if (text.includes('мед.ком') || text.includes('комиссия') || text.includes('мед ком') || text.includes('медком')) {
                     st.medMoney += cleanMoney; 
                 } else {
@@ -1548,10 +1573,14 @@ function saveAll() {
         if (sickDeduction > 0) { norm -= sickDeduction; norm = parseFloat(norm.toFixed(1)); displayNorm = `${norm} ч (снижена на ${sickDeduction.toFixed(1)})`; }
         const overtime = st.hours - norm; let percent = (norm > 0) ? (st.hours / norm) * 100 : 0; drawProgress(percent, st.hours);
 
-        // --- ВАЖНОЕ ИСПРАВЛЕНИЕ: ПЕРЕРАБОТКА ПО ЧАСТЯМ ---
         if (overtime > 0) {
-            let rate = settings.rate; let premRate = settings.premP;
-            
+            let rate = settings.rate; 
+            // Для переработки берем текущую премию из настроек или последнюю использованную? 
+            // Обычно переработка считается по итогу месяца, берем setting или max из использованных. 
+            // Оставим settings.premP как было, или возьмем максимальную из месяца:
+            let premRate = settings.premP;
+            if(usedPrems.size > 0) premRate = Math.max(...usedPrems);
+
             if (overtime <= 2) { 
                 st.ot15Hours = overtime; 
                 let base15 = st.ot15Hours * rate * 0.5; 
@@ -1573,6 +1602,7 @@ function saveAll() {
 
             let surchargeBase = (st.ot15Hours * rate * 0.5) + (st.ot20Hours * rate * 1.0);
             if (surchargeBase > 0) {
+                // Тут тоже берем фактические или текущие? Берем текущие для простоты пересчета конца месяца
                 let addClass = surchargeBase * (settings.classP / 100);
                 let addSen = surchargeBase * (getSeniorityPercent(settings.startDate) / 100);
                 let addSenior = settings.senior ? (surchargeBase * 0.10) : 0;
@@ -1583,13 +1613,12 @@ function saveAll() {
                 st.sumSenior += addSenior;
                 st.sumMentor += addMentor;
 
-                let addPrem = (addClass + addSen + addSenior + addMentor) * (settings.premP / 100);
+                let addPrem = (addClass + addSen + addSenior + addMentor) * (premRate / 100);
                 st.sumPrem += addPrem;
                 st.dirty += addClass + addSen + addSenior + addMentor + addPrem;
             }
         }
 
-        // --- НАЛОГ 2025 ---
         let yearlyIncomeBefore = 0;
         shifts.forEach(s => {
             const d = new Date(s.date);
@@ -1662,10 +1691,26 @@ function saveAll() {
         if (holHoursEl) holHoursEl.innerText = st.holidayHours.toFixed(1) + 'ч';
         if (holMoneyEl) holMoneyEl.innerText = '+' + fmtMoney(st.holidayMoney);
 
-        document.getElementById('lbl_class').innerText = `Классность (${settings.classP}%):`; 
-        document.getElementById('lbl_sen').innerText = `Выслуга (${getSeniorityPercent(settings.startDate)}%):`; 
-        document.getElementById('lbl_prem').innerText = `Премия (${settings.premP}%):`;
-        document.getElementById('lbl_senior').innerText = `Ст. машинист (${settings.senior?10:0}%):`;
+        // --- ИСПРАВЛЕННЫЙ ВЫВОД ЛЕЙБЛОВ (ДИНАМИЧЕСКИЙ) ---
+        
+        // 1. КЛАССНОСТЬ
+        // Если в месяце использовались разные классы (например 30% и 20%), покажем "30/20%"
+        let lblClassTxt = (usedClasses.size > 0) ? Array.from(usedClasses).sort((a,b)=>b-a).join('/') : settings.classP;
+        document.getElementById('lbl_class').innerText = `Классность (${lblClassTxt}%):`; 
+
+        // 2. ВЫСЛУГА
+        let lblSenTxt = (usedSens.size > 0) ? Array.from(usedSens).sort((a,b)=>b-a).join('/') : getSeniorityPercent(settings.startDate);
+        document.getElementById('lbl_sen').innerText = `Выслуга (${lblSenTxt}%):`; 
+
+        // 3. ПРЕМИЯ
+        let lblPremTxt = (usedPrems.size > 0) ? Array.from(usedPrems).sort((a,b)=>b-a).join('/') : settings.premP;
+        document.getElementById('lbl_prem').innerText = `Премия (${lblPremTxt}%):`;
+
+        // 4. СТ. МАШИНИСТ
+        // Показываем 10% только если были смены с этой надбавкой, иначе 0 (или как в настройках)
+        let seniorPercent = hasSeniorShift ? 10 : (settings.senior ? 10 : 0);
+        document.getElementById('lbl_senior').innerText = `Ст. машинист (${seniorPercent}%):`;
+        // ----------------------------------------------------
 
         document.getElementById('st_class_money').innerText = '+' + fmtMoney(st.sumClass); 
         document.getElementById('st_sen_money').innerText = '+' + fmtMoney(st.sumSen); 
