@@ -492,19 +492,48 @@ function getMonthKey(dateStr) {
     }
 
     let touchStartX = 0;
+    let touchStartY = 0; // 1. Добавили координату Y
     let touchEndX = 0;
-    document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: false});
-    document.addEventListener('touchend', e => { touchEndX = e.changedTouches[0].screenX; handleSwipe(); }, {passive: false});
+    let touchEndY = 0;   // 2. Добавили конечную Y
+
+    // Запоминаем начало касания (и X, и Y)
+    document.addEventListener('touchstart', e => { 
+        touchStartX = e.changedTouches[0].screenX; 
+        touchStartY = e.changedTouches[0].screenY; 
+    }, {passive: false});
+
+    // Запоминаем конец касания
+    document.addEventListener('touchend', e => { 
+        touchEndX = e.changedTouches[0].screenX; 
+        touchEndY = e.changedTouches[0].screenY; 
+        handleSwipe(); 
+    }, {passive: false});
 
     function handleSwipe() {
         if (document.body.classList.contains('modal-open')) return;
-        const threshold = 70; 
-        const diff = touchEndX - touchStartX;
-        if (Math.abs(diff) > threshold) {
+        
+        const threshold = 70; // Чувствительность свайпа
+        const diffX = touchEndX - touchStartX;
+        const diffY = touchEndY - touchStartY; // Разница по вертикали
+
+        // === ГЛАВНОЕ ИСПРАВЛЕНИЕ ===
+        // Если движение по вертикали больше, чем по горизонтали — это скролл.
+        // Мы просто выходим и ничего не переключаем.
+        if (Math.abs(diffY) > Math.abs(diffX)) return;
+        // ===========================
+
+        if (Math.abs(diffX) > threshold) {
             const tabs = ['today', 'home', 'stats', 'settings'];
             const currentTab = document.querySelector('.page.active').id.replace('tab-', '');
             let idx = tabs.indexOf(currentTab);
-            if (diff < 0) { idx++; if (idx >= tabs.length) return; } else { idx--; if (idx < 0) return; }
+            
+            if (diffX < 0) { // Свайп влево (следующая вкладка)
+                idx++; 
+                if (idx >= tabs.length) return; 
+            } else { // Свайп вправо (предыдущая вкладка)
+                idx--; 
+                if (idx < 0) return; 
+            }
             switchTab(tabs[idx]);
         }
     }
