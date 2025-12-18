@@ -410,7 +410,7 @@
         <input type="checkbox" id="shiftFullMedical" style="width:20px; height:20px; margin:0;">
     </div>
 </div>
-               <div class="detail-row" style="margin-top:15px;"><label style="flex:1;">Тех. учеба (+2ч)</label><input type="checkbox" id="shiftTech"></div><div class="detail-row"><label style="flex:1;">Послерейсовый (+10 мин)</label><input type="checkbox" id="shiftPostTrip"></div><div class="detail-row" style="margin-top:15px;"><label>Наставник (+15%)</label><input type="checkbox" id="shiftMentor"></div><div class="detail-row"><label>Ст. Машинист (+10%)</label><input type="checkbox" id="shiftSenior"></div>
+               <div class="detail-row" style="margin-top:15px;"><label style="flex:1;">Тех. учеба (2ч)</label><input type="checkbox" id="shiftTech"></div><div class="detail-row"><label style="flex:1;">Послерейсовый (+10 мин)</label><input type="checkbox" id="shiftPostTrip"></div><div class="detail-row" style="margin-top:15px;"><label>Наставник (+15%)</label><input type="checkbox" id="shiftMentor"></div><div class="detail-row"><label>Ст. Машинист (+10%)</label><input type="checkbox" id="shiftSenior"></div>
             </details>
 
             <div class="btn-row">
@@ -1698,9 +1698,10 @@ function isOnlyStateHoliday(dateObj) {
         // --- ВОТ ЭТОЙ ПЕРЕМЕННОЙ НЕ ХВАТАЛО ---
         let isMentor = (shift.customMentor !== undefined) ? shift.customMentor : settings.mentor;
         // --------------------------------------
+        let uFee = settings.union ? (finalDirty * 0.01) : 0;
 
         return {
-            net: Math.round(finalDirty * 0.87), 
+            net: Math.round(finalDirty * 0.87 - uFee), 
             dirty: finalForAvg,
             hours: isWorkHoliday ? 0 : (totalWithGap), 
             duration: totalWithGap, 
