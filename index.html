@@ -60,7 +60,7 @@
         body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Roboto", sans-serif; background-color: var(--bg); margin: 0; padding: 0; color: var(--text); padding-bottom: 90px; padding-top: 60px; -webkit-tap-highlight-color: transparent; }
         
         /* ИСПРАВЛЕНО: Убрано position: fixed, которое сбрасывало скролл */
-        body.modal-open { overflow: hidden; touch-action: manipulation; }
+        body.modal-open { overflow: hidden; touch-action: none; }
 
         header { background-color: var(--card); color: var(--text); height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); position: fixed; top: 0; left: 0; right: 0; z-index: 100; }
         h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; margin: 0; color: var(--primary); }
@@ -343,7 +343,7 @@
         Поддержать
     </button>
 </div>
-        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">ГрафикБро v1.0 (Clean)</div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">ГрафикБро v1.1 (Clean)</div>
     </div>
 
     
@@ -359,7 +359,12 @@
             <label>Дата</label>
             <input type="date" id="inpDate">
             <label>Текст из графика</label>
-            <input type="text" id="inpText" placeholder="Например: м75 14:00-22:00 или БЛ" oninput="checkShiftText()">
+            <div style="position: relative; display: flex; align-items: center;">
+                <input type="text" id="inpText" placeholder="Например: м75 14:00-22:00 или БЛ" oninput="checkShiftText()" style="padding-right: 40px; margin-top: 8px;">
+                <button onclick="pasteFromClipboard()" title="Вставить" style="position: absolute; right: 5px; top: 50%; transform: translateY(-30%); background: none; border: none; cursor: pointer; font-size: 18px; padding: 5px; z-index: 10;">
+                    📋
+                </button>
+            </div>
             <label>Заметка</label>
             <textarea id="inpNote" rows="2" placeholder="Например: зайти в кадры, номера вагонов..."></textarea>
 
@@ -680,13 +685,6 @@ function getMonthKey(dateStr) {
         calBox.addEventListener('touchend', e => { let teX = e.changedTouches[0].screenX; if(teX < tsX - 50) changeMonth(1); if(teX > tsX + 50) changeMonth(-1); e.stopPropagation(); });
         setInterval(updateTodayTab, 1000);
         scrollToToday();
-
-        const textInputs = document.querySelectorAll('input[type="text"], input[type="number"], textarea');
-        textInputs.forEach(el => {
-        el.addEventListener('contextmenu', (e) => {
-            e.stopPropagation(); // Останавливаем перехват события Телеграмом
-            }, false);
-        });
     }
     
 	
@@ -2971,6 +2969,29 @@ function render(targetDate = null) {
     }
 }    
     init();
+    
+    function pasteFromClipboard() {
+        // Пробуем современный API
+        if (navigator.clipboard && navigator.clipboard.readText) {
+            navigator.clipboard.readText()
+                .then(text => {
+                    const input = document.getElementById('inpText');
+                    input.value = text;
+                    checkShiftText(); // Запускаем проверку введенного текста
+                    
+                    // Визуальный эффект (мигание рамки зеленым)
+                    input.style.borderColor = '#4caf50';
+                    setTimeout(() => input.style.borderColor = '', 300);
+                })
+                .catch(err => {
+                    console.error('Ошибка буфера:', err);
+                    alert('Не удалось получить доступ к буферу обмена. Пожалуйста, используйте Ctrl+V');
+                });
+        } else {
+            // Если браузер старый или запрещает доступ
+            alert('Ваш браузер не поддерживает кнопку вставки. Используйте Ctrl+V');
+        }
+    }
 </script>
 
 </body>
