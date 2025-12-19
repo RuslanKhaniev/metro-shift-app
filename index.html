@@ -60,7 +60,7 @@
         body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Roboto", sans-serif; background-color: var(--bg); margin: 0; padding: 0; color: var(--text); padding-bottom: 90px; padding-top: 60px; -webkit-tap-highlight-color: transparent; }
         
         /* ИСПРАВЛЕНО: Убрано position: fixed, которое сбрасывало скролл */
-        body.modal-open { overflow: hidden; touch-action: none; }
+        body.modal-open { overflow: hidden; touch-action: manipulation; }
 
         header { background-color: var(--card); color: var(--text); height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); position: fixed; top: 0; left: 0; right: 0; z-index: 100; }
         h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; margin: 0; color: var(--primary); }
@@ -680,6 +680,13 @@ function getMonthKey(dateStr) {
         calBox.addEventListener('touchend', e => { let teX = e.changedTouches[0].screenX; if(teX < tsX - 50) changeMonth(1); if(teX > tsX + 50) changeMonth(-1); e.stopPropagation(); });
         setInterval(updateTodayTab, 1000);
         scrollToToday();
+
+        const textInputs = document.querySelectorAll('input[type="text"], input[type="number"], textarea');
+        textInputs.forEach(el => {
+        el.addEventListener('contextmenu', (e) => {
+            e.stopPropagation(); // Останавливаем перехват события Телеграмом
+            }, false);
+        });
     }
     
 	
