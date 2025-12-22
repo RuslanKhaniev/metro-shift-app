@@ -169,7 +169,8 @@
             display: none; justify-content: center; align-items: center; 
             z-index: 5000; touch-action: none;
         }
-        #addModal { z-index: 6000; } 
+        #addModal { z-index: 6000; }
+        #confirmModal { z-index: 7000; }
         .modal-overlay.open { display: flex; animation: fadeIn 0.2s; }
         .modal-box { 
             background: white; padding: 25px; border-radius: 24px; 
@@ -425,7 +426,16 @@
             </div>
         </div>
     </div>
-
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-box">
+            <h3 style="margin-top:0; color:var(--primary)">Удаление</h3>
+            <div style="margin-bottom:20px; font-size:15px;">Вы точно хотите удалить эту смену навсегда?</div>
+            <div class="btn-row">
+                <button class="btn btn-cancel" onclick="closeModal('confirmModal')">Нет</button>
+                <button class="btn btn-delete" onclick="commitDelete()">Да, удалить</button>
+            </div>
+        </div>
+    </div>
     <div class="modal-overlay" id="importModal"><div class="modal-box"><h3 style="margin-top:0; color:var(--primary)">Импорт смен</h3><label>Вставьте текст списка:</label><textarea id="importText" rows="8" placeholder="1.01.25 м61 20:22-2:46..."></textarea><div class="btn-row"><button class="btn btn-cancel" onclick="closeModal('importModal')">Отмена</button><button class="btn btn-save" onclick="processImport()">Распознать</button></div></div></div>
     <div class="modal-overlay" id="calendarModal"><div class="modal-box" style="max-width: 400px;" id="calModalBox"><div class="cal-header"><button class="cal-btn" onclick="changeMonth(-1)">&#8249;</button><div class="cal-title" id="calTitle">Ноябрь 2025</div><button class="cal-btn" onclick="changeMonth(1)">&#8250;</button></div><div class="cal-grid" id="calGrid"></div><div class="btn-row"><button class="btn btn-cancel" onclick="closeModal('calendarModal')">Закрыть</button></div></div></div>
 
@@ -899,29 +909,37 @@ function saveAll() {
     render(); 
 }
 
+    // 1. Просто открываем наше новое красивое окно
     function deleteCurrentShift() {
-    const d = document.getElementById('inpDate').value; 
-    
-    if(confirm('Удалить эту смену навсегда?')) {
-        // 1. Удаляем из памяти
+        document.body.classList.add('modal-open');
+        document.getElementById('confirmModal').classList.add('open');
+    }
+
+    // 2. А эта функция срабатывает, когда нажали "Да, удалить"
+    function commitDelete() {
+        const d = document.getElementById('inpDate').value; 
+        
+        // Удаляем из массива
         shifts = shifts.filter(s => s.date !== d);
         
-        // 2. Помечаем месяц как измененный (ВАЖНО для синхронизации)
+        // Помечаем для синхронизации
         touchMeta(getMonthKey(d));
 
-        // 3. Сохраняем локально
+        // Сохраняем
         localStorage.setItem('metro_shifts', JSON.stringify(shifts));
-
-        // 4. Запускаем "тихую" синхронизацию (отправляем изменения)
         saveAllToCloud();
 
-        // 5. Обновляем экран
+        // Обновляем интерфейс
         render();
         renderCalendar();
+        
+        // Закрываем ОБА окна (и подтверждение, и редактирование смены)
+        closeModal('confirmModal');
         closeModal('addModal');
+        
+        // Скрываем кнопку удаления на всякий случай
         document.getElementById('btnDeleteShift').style.display = 'none';
     }
-}
 
     function showLoader() { document.getElementById('loader').classList.add('loader-active'); }
     function hideLoader() { document.getElementById('loader').classList.remove('loader-active'); }
