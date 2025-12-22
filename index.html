@@ -2520,25 +2520,63 @@ function render(targetDate = null) {
     }
     
     function openModal() {
-        // СБРАСЫВАЕМ ОТКРЫТИЕ ПАРАМЕТРОВ
-        document.getElementById('shiftDetailsBox').open = false;
+        // Закрываем детали, если были открыты
+        const detailsBox = document.getElementById('shiftDetailsBox');
+        if (detailsBox) detailsBox.open = false;
 
         document.body.classList.add('modal-open');
         document.getElementById('addModal').classList.add('open');
         setAutoDate();
+        
+        // Очищаем поля
         document.getElementById('inpText').value = '';
         document.getElementById('inpNote').value = '';
         document.getElementById('modalTitle').innerText = 'Новая смена';
         document.getElementById('btnSaveShift').innerText = 'Добавить';
         document.getElementById('btnDeleteShift').style.display = 'none';
-        document.getElementById('shiftRate').value = String(settings.rate).replace('.', ',');
+        
+        // Ставка
+        let showRate = (settings.rate > 0) ? settings.rate : 546.18;
+        document.getElementById('shiftRate').value = String(showRate).replace('.', ',');
+
+        // Чекбоксы
         document.getElementById('shiftMentor').checked = settings.mentor;
         document.getElementById('shiftSenior').checked = settings.senior || false;
         document.getElementById('shiftTech').checked = false;
         document.getElementById('shiftPostTrip').checked = false;
-        document.getElementById('shiftMedical').checked = false;
-        document.getElementById('shiftClassSelect').value = settings.classP;
-        document.getElementById('shiftPrem').value = String(settings.premP).replace('.', ',');
+        document.getElementById('tpStart').value = '';
+        document.getElementById('tpEnd').value = '';
+        document.getElementById('shiftFullMedical').checked = false;
+        
+        // Разблокировка
+        document.getElementById('shiftMentor').disabled = false;
+        document.getElementById('shiftSenior').disabled = false;
+        document.getElementById('shiftPostTrip').disabled = false;
+
+        // Класс
+        document.getElementById('shiftClassSelect').value = (settings.classP === false) ? 0 : settings.classP;
+
+        // === ГЛАВНОЕ ИСПРАВЛЕНИЕ: УМНАЯ ПРЕМИЯ ===
+        let showPrem = settings.premP;
+
+        // Если в настройках 0 или пусто — ищем в истории смен последнюю непустую премию
+        if (!showPrem || parseFloat(showPrem) === 0) {
+            // Ищем с конца списка (последнюю добавленную)
+            const lastShift = [...shifts].reverse().find(s => s.customPrem && parseFloat(s.customPrem) > 0);
+            
+            if (lastShift) {
+                showPrem = lastShift.customPrem; // Нашли! Берем её.
+            } else {
+                // Если истории нет вообще (совсем новый пользователь), можно оставить пусто
+                // или поставить 35 (как стандарт). Давай оставим пусто, если совсем ничего нет.
+                showPrem = ''; 
+            }
+        }
+        
+        // Вставляем значение в поле
+        document.getElementById('shiftPrem').value = showPrem ? String(showPrem).replace('.', ',') : '';
+        // ===========================================
+
         checkShiftText();
         document.getElementById('inpText').focus();
     }
