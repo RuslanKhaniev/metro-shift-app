@@ -884,24 +884,42 @@ function saveAllToCloud(cb) {
 // === ЗАМЕНИТЬ ЭТИМ ФУНКЦИИ forcePushToCloud и saveAll ===
 
 function forcePushToCloud() {
-    // 1. ЗАЩИТА ОТ "ПУСТОГО" ТЕЛЕФОНА
-    if (shifts.length === 0) {
-        alert('Внимание: Список смен пуст!\nНельзя отправлять пустые данные вручную, чтобы не стереть облако.\n\nЕсли вы хотите очистить всё - удаляйте смены через интерфейс.');
-        return; 
-    }
-    
-    // 2. ПОДТВЕРЖДЕНИЕ
-    if (!confirm('Это принудительно отправит данные с этого телефона в облако (станет главной версией). Продолжить?')) return;
+        const btn = document.querySelector('#tab-settings button'); // Находим кнопку
+        const originalText = btn.innerText;
+        const originalColor = btn.style.background;
 
-    // 3. ОБНОВЛЕНИЕ METADATA (Делаем наши данные "самыми свежими")
-    const now = new Date().getTime();
-    Object.keys(syncMeta).forEach(k => syncMeta[k] = now);
-    touchMeta('metro_settings');
-    
-    showLoader();
-    // Запускаем умную синхронизацию, она увидит свежие таймстампы и отправит всё
-    syncWithCloud();
-}
+        if (shifts.length === 0) {
+            // Ошибка: Пусто
+            btn.innerText = "Ошибка: Смен нет! ⚠️";
+            btn.style.background = "#e53935";
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.background = originalColor;
+            }, 2000);
+            return;
+        }
+        
+        // Запускаем отправку молча (или можно сделать двойное подтверждение, но обычно тут оно лишнее)
+        showLoader();
+        
+        // Обновляем мету
+        const now = new Date().getTime();
+        Object.keys(syncMeta).forEach(k => syncMeta[k] = now);
+        touchMeta('metro_settings');
+        
+        syncWithCloud();
+        
+        // Пишем на кнопке "Готово"
+        setTimeout(() => {
+            hideLoader(); // На всякий случай, если синк быстрый
+            btn.innerText = "Отправлено ✅";
+            btn.style.background = "#4caf50";
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.background = originalColor;
+            }, 2000);
+        }, 500);
+    }
 
 function saveAll() { 
     saveSettings(); 
@@ -2755,30 +2773,45 @@ function render(targetDate = null) {
     }
     
     
+    let wipeTimeout;
+    
     function wipeCurrentMonth() {
-        // 1. Берем год и месяц из вкладки "Сводка"
-        const year = statsDate.getFullYear();
-        const month = statsDate.getMonth() + 1; // 1-12
-        const mStr = String(month).padStart(2, '0');
-        const cloudKey = `s_${year}_${mStr}`;
-
-        // 2. Страшное предупреждение
-        if (!confirm(`⚠️ ВНИМАНИЕ!\n\nВы точно хотите удалить ВСЕ смены за ${mStr}.${year}?\n\nЭто действие нельзя отменить.`)) {
+        const btn = document.querySelector('.month-selector .month-btn[title="Очистить месяц"]');
+        
+        // Если это первое нажатие
+        if (!btn.classList.contains('confirm-state')) {
+            btn.classList.add('confirm-state');
+            btn.innerHTML = "Точно?"; // Меняем иконку на вопрос
+            btn.style.color = "#d32f2f"; // Делаем красной
+            
+            // Если за 3 секунды не нажал снова — возвращаем как было
+            wipeTimeout = setTimeout(() => {
+                btn.classList.remove('confirm-state');
+                btn.innerHTML = "🗑️";
+                btn.style.color = "#e53935";
+            }, 3000);
             return;
         }
 
-        // 3. Удаляем локально (оставляем только то, что НЕ относится к этому месяцу)
-        const countBefore = shifts.length;
+        // Если это ВТОРОЕ нажатие (подтверждение)
+        clearTimeout(wipeTimeout);
+        
+        // --- ЛОГИКА УДАЛЕНИЯ ---
+        const year = statsDate.getFullYear();
+        const month = statsDate.getMonth() + 1;
+        const mStr = String(month).padStart(2, '0');
+        
         shifts = shifts.filter(s => !s.date.startsWith(`${year}-${mStr}`));
-
         touchMeta(`s_${year}_${mStr}`);
-        localStorage.setItem('metro_shifts', JSON.stringify(shifts));
+        saveData(); 
+        render(); 
+        // -----------------------
 
-        // Запускаем синхронизацию
-    saveAllToCloud();
-    
-    render();
-}
+        // Возвращаем кнопку в исходное состояние
+        btn.classList.remove('confirm-state');
+        btn.innerHTML = "🗑️";
+        btn.style.color = "#e53935";
+    }
 
     function openImportModal() { 
         document.body.classList.add('modal-open'); 
@@ -2904,11 +2937,38 @@ function render(targetDate = null) {
         if(addedCount > 0) { 
             saveData(); 
             render(); 
-            closeModal('importModal'); 
-            alert(`Успешно! Добавлено дней: ${addedCount}.` + (errorCount > 0 ? `\nНе распознано строк: ${errorCount}` : '')); 
+            
+            // 1. Находим кнопку и меняем её вид
+            const btn = document.querySelector('#importModal .btn-save');
+            const originalText = btn.innerText;
+            const originalColor = btn.style.background;
+            
+            btn.innerText = `Добавлено: ${addedCount} ✅`;
+            btn.style.background = "#4caf50"; // Зеленый цвет успеха
+            
+            // 2. Ждем 1.5 секунды, чтобы ты увидел результат
+            setTimeout(() => {
+                closeModal('importModal');
+                
+                // Возвращаем кнопке прежний вид (для следующего раза)
+                btn.innerText = originalText;
+                btn.style.background = originalColor;
+            }, 1500);
+            
         } else { 
-            alert('Не удалось распознать даты. Проверьте формат.'); 
-        } 
+            // Ошибка: Кнопка краснеет (как мы делали раньше)
+            const btn = document.querySelector('#importModal .btn-save');
+            const originalText = btn.innerText;
+            const originalColor = btn.style.background;
+            
+            btn.innerText = "Нет дат ⚠️"; 
+            btn.style.background = "#e53935"; 
+            
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.background = originalColor;
+            }, 1500);
+        }
     }
     
     function renderCalendar() {
@@ -3027,25 +3087,31 @@ function render(targetDate = null) {
     init();
     
     function pasteFromClipboard() {
-        // Пробуем современный API
+        const input = document.getElementById('inpText');
+        
         if (navigator.clipboard && navigator.clipboard.readText) {
             navigator.clipboard.readText()
                 .then(text => {
-                    const input = document.getElementById('inpText');
                     input.value = text;
-                    checkShiftText(); // Запускаем проверку введенного текста
-                    
-                    // Визуальный эффект (мигание рамки зеленым)
+                    checkShiftText();
+                    // Успех - зеленая вспышка
                     input.style.borderColor = '#4caf50';
                     setTimeout(() => input.style.borderColor = '', 300);
                 })
                 .catch(err => {
-                    console.error('Ошибка буфера:', err);
-                    alert('Не удалось получить доступ к буферу обмена. Пожалуйста, используйте Ctrl+V');
+                    // Ошибка - красная вспышка (без текста)
+                    console.error(err);
+                    input.style.borderColor = '#d32f2f';
+                    input.placeholder = "Ошибка вставки. Жми Ctrl+V";
+                    setTimeout(() => {
+                        input.style.borderColor = '';
+                        input.placeholder = "Например: м75 14:00-22:00 или БЛ";
+                    }, 2000);
                 });
         } else {
-            // Если браузер старый или запрещает доступ
-            alert('Ваш браузер не поддерживает кнопку вставки. Используйте Ctrl+V');
+            // Старый браузер - красная вспышка
+            input.style.borderColor = '#d32f2f';
+            setTimeout(() => input.style.borderColor = '', 300);
         }
     }
 </script>
