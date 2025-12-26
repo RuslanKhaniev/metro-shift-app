@@ -305,13 +305,18 @@
 
             <div class="stat-row" id="row_prem"><span id="lbl_prem">Премия:</span> <span class="stat-val" id="st_prem_money">0 ₽</span></div>
             <div class="stat-row" id="row_tech" style="display:none;"><span>Тех. учеба:</span> <span class="stat-val" id="st_tech_money">0 ₽</span></div>
-
+            
             <div style="border-top:2px solid #eee; margin:10px 0;"></div>
 
             <div class="stat-row"><span>Начислено:</span> <span class="stat-val" id="st_dirty">0 ₽</span></div>
             <div class="stat-row"><span>Профсоюз (1%):</span> <span class="stat-val" id="st_union" style="color:#e53935">0 ₽</span></div>
             <div class="stat-row"><span id="lbl_tax">Налог (13%):</span> <span class="stat-val" id="st_tax" style="color:#e57373">0 ₽</span></div>
             <div id="rich_alert" style="text-align:right; font-size:10px; color:#d32f2f; font-weight:800; display:none; margin-top:-8px; margin-bottom:8px; opacity:0.8;"></div>
+
+            <div class="stat-row" id="row_bonus_base">
+                <span style="color:#90a4ae;">🏦 Сумма для годовой премии:</span> 
+                <span class="stat-val" id="st_bonus_base">0 ₽</span>
+            </div>
 
             <div class="stat-row" style="font-size:20px; border-top:2px solid #eee; margin-top:10px; padding-top:15px"><span>На руки:</span> <span class="stat-val" id="st_net" style="color:#2e7d32">0 ₽</span></div>
         </div>
@@ -2143,6 +2148,64 @@ function isOnlyStateHoliday(dateObj) {
         }
         else { tax = currentMonthIncome * 0.13; }
 
+        // =========================================================
+        // РАСЧЕТ БАЗЫ 13-й ЗАРПЛАТЫ (МЕСЯЦ + ГОДОВОЙ ИТОГ)
+        // =========================================================
+        
+        // 1. Считаем базу за ТЕКУЩИЙ месяц
+        let monthlyBonusBase = st.dirty 
+            - st.sickMoney 
+            - st.vacationMoney 
+            - st.donorMoney 
+            - st.studyMoney 
+            - st.medMoney   
+            - st.sumSen     
+            - st.techBonus; 
+        if (monthlyBonusBase < 0) monthlyBonusBase = 0;
+
+        // 2. Считаем НАКОПИТЕЛЬНЫЙ итог с начала года по текущий месяц
+        let viewedYear = statsDate.getFullYear();
+        let viewedMonth = statsDate.getMonth(); // 0 = Январь, 11 = Декабрь
+        let cumulativeBase = 0;
+
+        shifts.forEach(s => {
+            let d = new Date(s.date);
+            // Берем смены только текущего года И не позже выбранного месяца
+            // (чтобы при просмотре Октября сумма была именно по Октябрь, как в квитке)
+            if (d.getFullYear() === viewedYear && d.getMonth() <= viewedMonth) {
+                let r = calcShift(s); // Считаем каждую смену отдельно
+                if (r && r.dirty > 0) {
+                    let txt = s.text.toLowerCase();
+                    let deduction = 0;
+                    
+                    // Если тип смены полностью исключается из премии
+                    if (txt.includes('бл') || txt.includes('больничный') || 
+                        txt.includes('отпуск') || txt.includes('отп') || 
+                        txt.includes('донор') || txt.includes('кровь') ||
+                        txt.includes('упц') || txt.includes('учеба') || 
+                        txt.includes('обучение') || txt.includes('охрана') || 
+                        txt.includes('мед.ком') || txt.includes('комиссия') || 
+                        txt.includes('мед ком') || txt.includes('медком') || 
+                        txt.includes('псих') || txt.includes('освид')) {
+                        
+                        deduction = r.dirty; // Вычитаем всю сумму
+                    } else {
+                        // Если обычная смена — вычитаем только Выслугу и Тех.учебу
+                        deduction = (r.valSen || 0) + (r.techBonus || 0);
+                    }
+                    
+                    cumulativeBase += (r.dirty - deduction);
+                }
+            }
+        });
+
+        // 3. Вывод
+        const elBonus = document.getElementById('st_bonus_base');
+        if (elBonus) {
+            // Формат: + 50 000 ₽ (Итого: 1 200 000 ₽)
+            elBonus.innerHTML = `+${fmtMoney(monthlyBonusBase)} <span style="color:#90a4ae; font-size:11px; font-weight:600; margin-left:4px;">(Итог: ${fmtMoney(cumulativeBase)})</span>`;
+        }
+        
         st.union = settings.union ? (st.dirty * 0.01) : 0; 
         st.tax = tax; 
         st.net = st.dirty - st.tax - st.union;
