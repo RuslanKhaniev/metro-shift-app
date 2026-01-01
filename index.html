@@ -1705,56 +1705,64 @@ function isOnlyStateHoliday(dateObj) {
             nightMoney = (tpNight * bareRate * 0.40) + (lineNight * profileRate * 0.40) + (mainNight * mainRate * 0.40);
         }
         
-        // 4. ТАРИФ (БАЗА)
+        // 4. ТАРИФ (БАЗА) С УЧЕТОМ НОВОГО ГОДА
         const dObj = new Date(shift.date);
+        const isDec31 = (dObj.getMonth() === 11 && dObj.getDate() === 31);
         const isWorkHoliday = isOnlyStateHoliday(dObj);
+        
+        let holidayTail = 0;
+        // Если 31 декабря смена залезла за полночь (например до 25:00)
+        if (isDec31 && timeData.endMin > 1440) {
+            holidayTail = (timeData.endMin - 1440) / 60;
+        }
+
         let holidayHours = isWorkHoliday ? totalWithGap : 0;
 
+        // Считаем тариф (БАЗА) всегда как x1 (или x2 если весь день праздник)
+        let baseMultiplier = isWorkHoliday ? 2 : 1;
+        
         let nakedTariff = 0;
-        nakedTariff += tpHours * bareRate * (isWorkHoliday ? 2 : 1);
-        nakedTariff += lineWorkHours * profileRate * (isWorkHoliday ? 2 : 1);
-        nakedTariff += mainHours * mainRate * (isWorkHoliday ? 2 : 1);
+        nakedTariff += tpHours * bareRate * baseMultiplier;
+        nakedTariff += lineWorkHours * profileRate * baseMultiplier;
+        nakedTariff += mainHours * mainRate * baseMultiplier;
 
-        // =========================================================
-        // 5. БАЗА ДЛЯ НАДБАВОК (Финальная версия)
-        // =========================================================
-
+        // 5. БАЗА ДЛЯ НАДБАВОК
         let baseForSplit = nakedTariff;
         if (isWorkHoliday) baseForSplit = nakedTariff / 2; 
 
         let safeSplit = (isShortBreak || isMedical) ? false : isSplit;
         let safeShift = isMedical ? { ...shift, customMentor: false, customSenior: false } : shift;
         
-        // Получаем черновик бонусов
         const bonuses = calculateBonuses(baseForSplit, settings, safeShift, safeSplit, isTech, profileRate);
         
-        // --- ГЛАВНОЕ ИСПРАВЛЕНИЕ: БОНУСЫ ОТ ПОЛНОЙ СТАВКИ ---
         let fullBaseForBonuses = totalWithGap * profileRate; 
         
-        // 1. Классность
         let pClass = (shift.customClass !== undefined) ? shift.customClass : settings.classP;
         bonuses.class = fullBaseForBonuses * (pClass / 100);
 
-        // 2. Выслуга
         let pSen = (shift.customSen !== undefined) ? shift.customSen : getSeniorityPercent(settings.startDate);
         bonuses.sen = fullBaseForBonuses * (pSen / 100);
 
-        // 3. Ст. Машинист
         let isSenior = (shift.customSenior !== undefined) ? shift.customSenior : (settings.senior || false);
         bonuses.senior = isSenior ? (fullBaseForBonuses * 0.10) : 0;
         
-        // 4. Разрывные (От честной базы)
         if (safeSplit) {
             bonuses.split = baseForSplit * 0.30;
         }
 
-        // 5. Пересчитываем Премию
         let baseForPremShift = nakedTariff + bonuses.class + bonuses.sen + bonuses.senior + bonuses.mentor + bonuses.split;
         bonuses.premPercent = (shift.customPrem !== undefined) ? safeFloat(shift.customPrem) : settings.premP;
         let actualPremium = baseForPremShift * (bonuses.premPercent / 100);
 
-        // 6. ИТОГО (DIRTY)
-        const finalDirty = baseForPremShift + actualPremium + evMoney + nightMoney + bonuses.tech;
+        // === ДОПЛАТА ЗА НГ (Хвостик) ===
+        // Мы добавляем её в самом конце, чтобы она не увеличивала премию и классность (это просто доплата)
+        let nyMoney = 0;
+        if (holidayTail > 0) {
+            nyMoney = holidayTail * profileRate; 
+        }
+
+        // 6. ИТОГО (Добавляем nyMoney в общую кучу)
+        const finalDirty = baseForPremShift + actualPremium + evMoney + nightMoney + bonuses.tech + nyMoney;
 
         let finalForAvg = finalDirty;
         if (isAvgCalc && isWorkHoliday) {
@@ -1763,9 +1771,7 @@ function isOnlyStateHoliday(dateObj) {
              finalForAvg = finalDirty - surcharge;
         }
 
-        // --- ВОТ ЭТОЙ ПЕРЕМЕННОЙ НЕ ХВАТАЛО ---
         let isMentor = (shift.customMentor !== undefined) ? shift.customMentor : settings.mentor;
-        // --------------------------------------
         let uFee = settings.union ? (finalDirty * 0.01) : 0;
 
         return {
@@ -1783,7 +1789,10 @@ function isOnlyStateHoliday(dateObj) {
             splitBonus: bonuses.split, evBonus: evMoney, nightBonus: nightMoney, techBonus: bonuses.tech,
             valClass: bonuses.class, valSen: bonuses.sen, valSenior: bonuses.senior, 
             valMentor: bonuses.mentor, valPrem: actualPremium, 
-            mentorHours: (isMentor && !isMedical && !isTech) ? (lineWorkHours + (!isRes ? mainHours : 0)) : 0
+            mentorHours: (isMentor && !isMedical && !isTech) ? (lineWorkHours + (!isRes ? mainHours : 0)) : 0,
+            // Передаем эти данные специально для Сводки:
+            holidayTailMoney: nyMoney,
+            holidayTailHours: holidayTail
         };
     }
 
@@ -2004,6 +2013,10 @@ function isOnlyStateHoliday(dateObj) {
             if (isOnlyStateHoliday(d) && res.duration > 0) {
                 st.holidayHours += res.duration;
                 st.holidayMoney += res.dirty;
+            }
+            if (res.holidayTailMoney > 0) {
+                st.holidayHours += res.holidayTailHours;
+                st.holidayMoney += res.holidayTailMoney;
             }
         });
 
