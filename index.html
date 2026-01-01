@@ -2163,22 +2163,21 @@ function isOnlyStateHoliday(dateObj) {
             - st.techBonus; 
         if (monthlyBonusBase < 0) monthlyBonusBase = 0;
 
-        // 2. Считаем НАКОПИТЕЛЬНЫЙ итог с начала года по текущий месяц
+        // 2. Считаем НАКОПИТЕЛЬНЫЙ итог (Прошлые месяцы + Текущий)
         let viewedYear = statsDate.getFullYear();
-        let viewedMonth = statsDate.getMonth(); // 0 = Январь, 11 = Декабрь
+        let viewedMonth = statsDate.getMonth();
         let cumulativeBase = 0;
 
+        // А) Складываем только ПРОШЛЫЕ месяцы этого года
         shifts.forEach(s => {
             let d = new Date(s.date);
-            // Берем смены только текущего года И не позже выбранного месяца
-            // (чтобы при просмотре Октября сумма была именно по Октябрь, как в квитке)
-            if (d.getFullYear() === viewedYear && d.getMonth() <= viewedMonth) {
-                let r = calcShift(s); // Считаем каждую смену отдельно
+            // Строго меньше (<), чтобы не считать текущий месяц в цикле
+            if (d.getFullYear() === viewedYear && d.getMonth() < viewedMonth) {
+                let r = calcShift(s);
                 if (r && r.dirty > 0) {
                     let txt = s.text.toLowerCase();
                     let deduction = 0;
                     
-                    // Если тип смены полностью исключается из премии
                     if (txt.includes('бл') || txt.includes('больничный') || 
                         txt.includes('отпуск') || txt.includes('отп') || 
                         txt.includes('донор') || txt.includes('кровь') ||
@@ -2187,22 +2186,21 @@ function isOnlyStateHoliday(dateObj) {
                         txt.includes('мед.ком') || txt.includes('комиссия') || 
                         txt.includes('мед ком') || txt.includes('медком') || 
                         txt.includes('псих') || txt.includes('освид')) {
-                        
-                        deduction = r.dirty; // Вычитаем всю сумму
+                        deduction = r.dirty;
                     } else {
-                        // Если обычная смена — вычитаем только Выслугу и Тех.учебу
                         deduction = (r.valSen || 0) + (r.techBonus || 0);
                     }
-                    
                     cumulativeBase += (r.dirty - deduction);
                 }
             }
         });
 
+        // Б) Прибавляем точную сумму ТЕКУЩЕГО месяца
+        cumulativeBase += monthlyBonusBase;
+
         // 3. Вывод
         const elBonus = document.getElementById('st_bonus_base');
         if (elBonus) {
-            // Формат: + 50 000 ₽ (Итого: 1 200 000 ₽)
             elBonus.innerHTML = `+${fmtMoney(monthlyBonusBase)} <span style="color:#90a4ae; font-size:11px; font-weight:600; margin-left:4px;">(Итог: ${fmtMoney(cumulativeBase)})</span>`;
         }
         
