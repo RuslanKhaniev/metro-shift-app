@@ -843,7 +843,7 @@ function groupShiftsByMonth() {
         const key = getMonthKey(s.date);
         if (!grouped[key]) grouped[key] = [];
         
-        // Минификация (как у тебя была)
+        // Минификация
         const mini = { d: s.date, t: s.text };
         if(s.note) mini.n = s.note;
         if(s.customRate !== undefined) mini.cr = s.customRate;
@@ -852,16 +852,29 @@ function groupShiftsByMonth() {
         if(s.customClass !== undefined) mini.cc = s.customClass;
         if(s.customSen !== undefined) mini.ce = s.customSen;
         if(s.customPrem !== undefined) mini.cp = s.customPrem;
+        
         if(s.lineStart) mini.ls = s.lineStart;
         if(s.lineEnd) mini.le = s.lineEnd;
+        
+        // Новые поля
+        if(s.tpStart) mini.tps = s.tpStart;
+        if(s.tpEnd) mini.tpe = s.tpEnd;
+
+        // Флаги
         if(s.isTech) mini.it = 1;
         if(s.isPostTrip) mini.ip = 1;
+        
+        // ВОТ ЭТОЙ СТРОЧКИ НЕ ХВАТАЛО:
+        if(s.isFullMedical) mini.ifm = 1; 
+        
+        // Старое (на всякий случай, для совместимости)
         if(s.isMedical) mini.im = 1; 
         
         grouped[key].push(mini);
     });
     return grouped;
 }
+
 // Функция "тихого" сохранения (отправляет только то, что изменилось недавно)
 function saveAllToCloud(cb) {
     if (!tg.CloudStorage) { if(cb) cb(); return; }
@@ -1626,7 +1639,9 @@ function isOnlyStateHoliday(dateObj) {
         const isPostTrip = (shift.isPostTrip === true);
         const isSplit = (shift.autoSplit === true);
         const isShortBreak = (shift.isShortBreak === true);
-        const isRes = text.includes('рез');
+        
+        // ИСПРАВЛЕНИЕ: Теперь Отстранение (isMedical) автоматически считается Резервом
+        const isRes = text.includes('рез') || isMedical;
 
         const timeData = getShiftTimeData(text, isPostTrip);
         if (!timeData) return null; 
@@ -1637,7 +1652,14 @@ function isOnlyStateHoliday(dateObj) {
         
         let bareRate = profileRate / 1.12;       
         let reserveRate = bareRate * 1.08;       
-        let mainRate = isRes ? reserveRate : profileRate; 
+        
+        // ЛОГИКА СТАВКИ:
+        // Если это Отстранение - берем ГОЛУЮ ставку (bareRate).
+        // Если обычный резерв - берем ставку резерва (reserveRate).
+        let effectiveResRate = isMedical ? bareRate : reserveRate;
+        
+        // Применяем ставку
+        let mainRate = isRes ? effectiveResRate : profileRate; 
 
         // 2. АНАЛИЗ ВРЕМЕНИ
         let segTP = getSegmentBonusHours(shift.tpStart, shift.tpEnd);
