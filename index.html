@@ -2142,9 +2142,11 @@ function isOnlyStateHoliday(dateObj) {
         // st.sumMentor остается как был
 
         // 4. ПЕРЕСЧИТЫВАЕМ ПРЕМИЮ
-        // База премии = Реальный Тариф (с учетом дешевого резерва) + Новые Бонусы
-        // Исправил опечатку: теперь st.ot20Money на своем месте
-        let realTariffSum = st.sumNakedTariff + st.sumRes + st.ot15Money + st.ot20Money + st.holidayMoney;
+        // ИСПРАВЛЕНИЕ: Берем не st.holidayMoney (грязные), а чистую базу (Часы * Ставка)
+        let holidayBaseForPrem = st.holidayHours * settings.rate;
+
+
+        let realTariffSum = st.sumNakedTariff + st.sumRes + st.ot15Money + st.ot20Money + holidayBaseForPrem;
         
         let premBase = realTariffSum + st.sumClass + st.sumSen + st.sumSenior + st.sumMentor;
         
