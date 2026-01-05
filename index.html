@@ -1750,19 +1750,36 @@ function isOnlyStateHoliday(dateObj) {
             bonuses.split = baseForSplit * 0.30;
         }
 
-        let baseForPremShift = nakedTariff + bonuses.class + bonuses.sen + bonuses.senior + bonuses.mentor + bonuses.split;
+        // 1. Для расчета ПРЕМИИ берем только ОДИНАРНЫЙ тариф (даже если праздник)
+        let tariffForPrem = isWorkHoliday ? (nakedTariff / 2) : nakedTariff;
+
+        // 2. Собираем базу, на которую накрутится 35%
+        let baseForPremShift = tariffForPrem + bonuses.class + bonuses.sen + bonuses.senior + bonuses.mentor + bonuses.split;
+        
+        // 3. Считаем саму премию
         bonuses.premPercent = (shift.customPrem !== undefined) ? safeFloat(shift.customPrem) : settings.premP;
         let actualPremium = baseForPremShift * (bonuses.premPercent / 100);
 
         // === ДОПЛАТА ЗА НГ (Хвостик) ===
-        // Мы добавляем её в самом конце, чтобы она не увеличивала премию и классность (это просто доплата)
         let nyMoney = 0;
         if (holidayTail > 0) {
             nyMoney = holidayTail * profileRate; 
         }
 
-        // 6. ИТОГО (Добавляем nyMoney в общую кучу)
-        const finalDirty = baseForPremShift + actualPremium + evMoney + nightMoney + bonuses.tech + nyMoney;
+        // 4. ИТОГО (ГРЯЗНЫМИ)
+        // Формула: (База премии) + (Премия) + (Доплата за праздник, которой нет в базе) + (Ночные/Вечерние/Прочее)
+        
+        // Сначала берем Базу и Премию
+        let finalDirty = baseForPremShift + actualPremium;
+        
+        // Если это праздник, то в baseForPremShift лежит только половина тарифа.
+        // Вторую половину (доплату) нужно вернуть в итоговую сумму руками:
+        if (isWorkHoliday) {
+            finalDirty += (nakedTariff / 2);
+        }
+
+        // Докидываем остальные надбавки
+        finalDirty += evMoney + nightMoney + bonuses.tech + nyMoney;
 
         let finalForAvg = finalDirty;
         if (isAvgCalc && isWorkHoliday) {
