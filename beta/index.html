@@ -671,8 +671,40 @@
                 
                 // Теги
                 let tags = '';
-                if(s.text.toLowerCase().includes('отпуск')) tags += '<span class="tag" style="background:#29b6f6">ОТПУСК</span>';
-                if(s.text.toLowerCase().includes('бл')) tags += '<span class="tag" style="background:#fbc02d">БОЛЬНИЧНЫЙ</span>';
+                const lower = s.text.toLowerCase();
+                
+
+                // 1. ПРАЗДНИКИ (по тексту даты, чтобы не зависеть от поясов)
+                const md = s.date.substring(5, 10); // "01-01"
+                if (Logic.holidaysData.fixed.includes(md)) {
+                    tags += '<span class="tag" style="background:#e91e63;">🎉 ПРАЗДНИК</span> ';
+                }
+
+                // 2. СТАТУСЫ СМЕНЫ
+                if (res && res.isSick) {
+                    tags += '<span class="tag" style="background:#fbc02d; color:#3e2723">БОЛЬНИЧНЫЙ</span> ';
+                } 
+                else if (res && res.isVacation) {
+                    tags += '<span class="tag" style="background:#29b6f6">ОТПУСК</span> ';
+                }
+                else if (res && res.isDonor) {
+                    tags += '<span class="tag" style="background:#ab47bc">ДОНОР</span> ';
+                }
+                else {
+                    // Обычные рабочие статусы
+                    if (lower.includes('рез')) {
+                        tags += '<span class="tag" style="background:#5c6bc0">РЕЗЕРВ</span> ';
+                    }
+                    if (lower.includes('учеба') || lower.includes('упц') || lower.includes('обучение')) {
+                        tags += '<span class="tag" style="background:#009688">УЧЕБА</span> ';
+                    }
+                    if (lower.includes('мед') || lower.includes('комиссия')) {
+                        tags += '<span class="tag" style="background:#78909c">МЕД.КОМ</span> ';
+                    }
+                    if (lower.includes('тех')) {
+                        tags += '<span class="tag" style="background:#607d8b">ТЕХ.УЧЕБА</span> ';
+                    }
+                }
                 
                 list.innerHTML += `
                 <div class="shift-card" onclick="openDayModal('${s.date}')">
