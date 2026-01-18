@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ГрафикБро v1.1 Fix</title>
+    <title>ГрафикБро v1.0</title>
 
     <script type="text/javascript" >
        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
@@ -58,6 +58,8 @@
             --col-weekend-txt: #e53935; --col-holiday-bg: #ffebee; --col-holiday-border: #ef5350; 
         }
         body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Roboto", sans-serif; background-color: var(--bg); margin: 0; padding: 0; color: var(--text); padding-bottom: 90px; padding-top: 60px; -webkit-tap-highlight-color: transparent; }
+        
+        /* ИСПРАВЛЕНО: Убрано position: fixed, которое сбрасывало скролл */
         body.modal-open { overflow: hidden; touch-action: none; }
 
         header { background-color: var(--card); color: var(--text); height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); position: fixed; top: 0; left: 0; right: 0; z-index: 100; }
@@ -108,11 +110,25 @@
         .cal-shift { font-size: 9px; text-align: center; line-height: 1.1; width: 100%; overflow: hidden; text-overflow: ellipsis; padding: 0 2px; font-weight: 600;}
         .cal-cell.today { border-color: var(--accent); background: #fff; }
         .cal-cell.today .cal-num { color: var(--accent); }
-        .cal-cell.weekend .cal-num { color: var(--col-weekend-txt); }
-        .cal-cell.state-holiday { background: var(--col-holiday-bg); border-color: var(--col-holiday-border) !important; }
-        .cal-cell.state-holiday.has-shift.type-work { background: var(--col-work-bg); border-color: var(--col-holiday-border); }
-        .cal-cell.state-holiday.has-shift.type-work .cal-num { color: var(--col-weekend-txt); font-weight: 900; }
-        .cal-cell.state-holiday.today { border-color: var(--accent) !important; box-shadow: 0 0 10px rgba(255, 171, 0, 0.4); }
+        .cal-cell.weekend .cal-num { 
+        color: var(--col-weekend-txt); 
+        }
+        .cal-cell.state-holiday { 
+        background: var(--col-holiday-bg); 
+        border-color: var(--col-holiday-border) !important; /* !important чтобы перебить рамку обычных дней */
+        }
+        .cal-cell.state-holiday.has-shift.type-work { 
+        background: var(--col-work-bg); 
+        border-color: var(--col-holiday-border); 
+        }
+        .cal-cell.state-holiday.has-shift.type-work .cal-num { 
+        color: var(--col-weekend-txt); 
+        font-weight: 900; 
+        }
+        .cal-cell.state-holiday.today {
+        border-color: var(--accent) !important;
+        box-shadow: 0 0 10px rgba(255, 171, 0, 0.4); /* Добавим свечение, раз уж праздник */
+        }
         .cal-cell.type-work { background: var(--col-work-bg); color: var(--col-work-txt); }
         .cal-cell.type-off { background: white; color: #cfd8dc; }
         .cal-cell.type-sick { background: var(--col-sick-bg) !important; color: #f9a825 !important; border-color: var(--col-sick-border); }
@@ -123,10 +139,6 @@
         .cal-cell.holiday.has-shift.type-work { background: var(--col-work-bg); border-color: var(--col-holiday-border); }
         .cal-cell.holiday.has-shift.type-work .cal-num { color: var(--col-weekend-txt); font-weight: 900; }
         .cal-cell.empty { background: transparent; cursor: default; }
-        .cal-cell.has-note::after { content: ''; position: absolute; top: 4px; right: 4px; width: 8px; height: 8px; background-color: #ff1744; border-radius: 50%; box-shadow: 0 0 0 1px #fff; border: none;}
-        .note-icon { font-size: 14px; margin-left: 6px; cursor: help; text-decoration: none; }
-        .cal-cell.type-vacation { background: #fff3e0 !important; color: #e65100 !important; border-color: #ffe0b2 !important; }
-        .cal-cell.type-vacation .cal-num { color: #ef6c00 !important; }
         .tag { font-size: 9px; padding: 3px 8px; border-radius: 6px; color: white; font-weight: bold; letter-spacing: 0.5px; display:inline-block; margin-left:2px;}
         .tag.gray { background: #90a4ae; } .tag.orange { background: var(--accent); } .tag.teal { background: #009688; } .tag.indigo { background: #5c6bc0; } .tag.red { background: #e53935; } .tag.purple { background: #7e57c2; }
         .fab-container { position: fixed; bottom: 90px; right: 20px; display: flex; align-items: center; gap: 15px; z-index: 2000; pointer-events: auto; }
@@ -137,7 +149,7 @@
         .chart-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 0; position: relative; }
         .circular-chart { display: block; margin: 0 auto; max-width: 80%; max-height: 250px; }
         .circle-bg { fill: none; stroke: #eee; stroke-width: 3.8; }
-        .circle { fill: none; stroke-width: 3.8; stroke-linecap: butt; transition: stroke-dasharray 0.6s ease; }
+        .circle { fill: none; stroke-width: 2.8; stroke-linecap: round; transition: stroke-dasharray 0.6s ease; }
         .chart-text-group { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -40%); text-align: center; }
         .chart-val { font-size: 32px; font-weight: 800; color: var(--primary); display: block; line-height: 1;}
         .chart-label { font-size: 12px; color: #90a4ae; font-weight: 600; text-transform: uppercase; margin-top: 5px; display: block;}
@@ -151,17 +163,63 @@
         input[type="text"], input[type="number"], textarea, select { width: 100%; padding: 14px; border: 1px solid #e0e0e0; border-radius: 12px; box-sizing: border-box; font-size: 16px; margin-top: 8px; background: #f9f9f9; font-family: inherit; font-weight: 500;}
         input:focus, textarea:focus, select:focus { outline: none; border-color: var(--primary); background: white; }
         label { font-size: 11px; color: #78909c; font-weight: 800; text-transform: uppercase; margin-top: 18px; display: block; letter-spacing: 0.5px;}
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(38, 50, 56, 0.8); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 5000; touch-action: none;}
+        .modal-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(38, 50, 56, 0.8); backdrop-filter: blur(4px); 
+            display: none; justify-content: center; align-items: center; 
+            z-index: 5000; touch-action: none;
+        }
         #addModal { z-index: 6000; }
         #confirmModal { z-index: 7000; }
         .modal-overlay.open { display: flex; animation: fadeIn 0.2s; }
-        .modal-box { background: white; padding: 25px; border-radius: 24px; width: 90%; max-width: 360px; min-width: 300px; box-shadow: 0 20px 60px rgba(0,0,0,0.4); max-height: 85vh; overflow-y: auto; position: relative; z-index: 6001; transform: translate3d(0,0,0);}
+        .modal-box { 
+            background: white; padding: 25px; border-radius: 24px; 
+            width: 90%; max-width: 360px; min-width: 300px; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4); 
+            max-height: 85vh; overflow-y: auto;
+            position: relative;
+            z-index: 6001; 
+            transform: translate3d(0,0,0);
+        }
         .btn-row { display: flex; justify-content: flex-end; margin-top: 25px; gap: 10px; }
         .btn { padding: 12px 24px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; font-size: 15px; transition: 0.2s;} .btn:active { transform: scale(0.96); }
         .btn-cancel { background: transparent; color: #78909c; } .btn-save { background: var(--primary); color: white; } .btn-delete { background: #ffebee; color: #d32f2f; }
         .btn-text { background: none; border: none; color: var(--accent); font-size: 11px; font-weight: bold; cursor: pointer; text-decoration: underline; margin-top: 5px; display: block; text-align: right;}
         details { margin-top: 15px; border: 1px solid #eee; border-radius: 12px; padding: 15px; } summary { font-size: 13px; font-weight: 700; color: var(--primary); cursor: pointer; outline: none; }
         .detail-row { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; } .detail-row label { margin: 0; font-size: 13px; color: #455a64; font-weight: 500;} .detail-row input[type="checkbox"] { width: 24px; height: 24px; margin: 0; accent-color: var(--accent);} .detail-row input[type="text"] { width: 90px; padding: 8px; font-size: 14px; margin: 0; } .line-input-row { display: flex; gap: 10px; margin-top: 5px; }
+        /* --- СТИЛИ ДЛЯ ЗАМЕТОК --- */
+        
+    
+/* Вариант: КРУГЛАЯ ТОЧКА */
+.cal-cell.has-note::after {
+    content: ''; 
+    position: absolute; 
+    top: 4px;      /* Отступ сверху */
+    right: 4px;    /* Отступ справа */
+    width: 8px;    /* Размер точки */
+    height: 8px;
+    background-color: #ff1744; /* Красный цвет */
+    border-radius: 50%;        /* Делает круг */
+    box-shadow: 0 0 0 1px #fff; /* Белая обводка, чтобы отделять от фона */
+    border: none;
+}
+    /* Иконка в списке смен */
+    .note-icon {
+    font-size: 14px;
+    margin-left: 6px;
+    cursor: help;
+    text-decoration: none;
+    }
+    /* Стиль для отпуска (Голубой) */
+    .cal-cell.type-vacation { 
+            background: #fff3e0 !important; /* Светло-оранжевый фон */
+            color: #e65100 !important;      /* Темно-оранжевый текст */
+            border-color: #ffe0b2 !important; /* Рамка чуть темнее фона */
+        }
+        /* Цвет цифры числа */
+        .cal-cell.type-vacation .cal-num { 
+            color: #ef6c00 !important; 
+        }
     </style>
 </head>
 <body>
@@ -190,12 +248,14 @@
         <div class="card">
             <h3 style="margin-top:0; color:var(--primary); display:flex; justify-content:space-between; align-items:center;">
                 <span>📊 Сводка</span>
-                <div class="month-selector">
-                    <button class="month-btn" onclick="changeStatsMonth(-1)">&#8249;</button>
-                    <div class="month-display" id="statsMonthDisplay"></div>
-                    <button class="month-btn" onclick="changeStatsMonth(1)">&#8250;</button>
-                    <button class="month-btn" style="color: #e53935; margin-left: 5px;" onclick="wipeCurrentMonth()" title="Очистить месяц">🗑️</button>
-                </div>
+                
+
+<div class="month-selector">
+    <button class="month-btn" onclick="changeStatsMonth(-1)">&#8249;</button>
+    <div class="month-display" id="statsMonthDisplay"></div>
+    <button class="month-btn" onclick="changeStatsMonth(1)">&#8250;</button>
+    <button class="month-btn" style="color: #e53935; margin-left: 5px;" onclick="wipeCurrentMonth()" title="Очистить месяц">🗑️</button>
+</div>
             </h3>
             <div class="chart-container">
                 <svg viewBox="0 0 36 36" class="circular-chart">
@@ -205,7 +265,7 @@
                 </svg>
                 <div class="chart-text-group"><span class="chart-val" id="chartValue">0</span><span class="chart-label">Часов</span></div>
             </div>
-            <div class="stat-row"><span>Норма:</span> <span class="stat-val" id="st_norm">0</span></div>
+            <div class="stat-row"><span>Норма (36ч):</span> <span class="stat-val" id="st_norm">0</span></div>
             <div class="stat-row"><span>Отработано:</span> <span class="stat-val" id="st_hours">0</span></div>
             <div class="stat-row" style="background:#fff3e0; margin:0 -10px; padding:10px; border-radius:8px; margin-bottom:5px;"><span>Переработка:</span> <span class="stat-val" id="st_over" style="font-size:16px;">0</span></div>
         </div>
@@ -281,51 +341,87 @@
             </div>
         </div>
         <div class="card" style="background: linear-gradient(135deg, #263238 0%, #37474f 100%); color: white; text-align: center; margin-top: 15px;">
-            <h3 style="margin-top:0; margin-bottom: 8px; color:white; font-size: 16px;">🤝 Развитие проекта</h3>
-            <div style="font-size:12px; opacity:0.8; margin-bottom:15px; line-height: 1.4;">
-                Приложение бесплатное. Если оно помогает в работе — буду благодарен за поддержку.
-            </div>
-            <button onclick="openDonation()" style="background: var(--accent); color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 800; width: 100%; font-size: 14px; box-shadow: 0 4px 15px rgba(255, 171, 0, 0.3);">
-                Поддержать
-            </button>
-        </div>
-        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">ГрафикБро v1.1 (Fix)</div>
+    <h3 style="margin-top:0; margin-bottom: 8px; color:white; font-size: 16px;">🤝 Развитие проекта</h3>
+    <div style="font-size:12px; opacity:0.8; margin-bottom:15px; line-height: 1.4;">
+        Приложение бесплатное. Если оно помогает в работе — буду благодарен за поддержку (оплата сервера и обновлений).
+    </div>
+    <button onclick="openDonation()" style="background: var(--accent); color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 800; width: 100%; font-size: 14px; box-shadow: 0 4px 15px rgba(255, 171, 0, 0.3);">
+        Поддержать
+    </button>
+</div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">ГрафикБро v1.1 (Clean)</div>
+    </div>
+
+    
+</div>
+    
+    
+</div>
     </div>
 
     <div class="modal-overlay" id="addModal">
-        <div class="modal-box">
+	<div class="modal-box">
             <h3 style="margin-top:0; color:var(--primary)" id="modalTitle">Новая смена</h3>
-            <label>Дата</label><input type="date" id="inpDate">
+            <label>Дата</label>
+            <input type="date" id="inpDate">
             <label>Текст из графика</label>
             <div style="position: relative; display: flex; align-items: center;">
                 <input type="text" id="inpText" placeholder="Например: м75 14:00-22:00 или БЛ" oninput="checkShiftText()" style="padding-right: 40px; margin-top: 8px;">
-                <button onclick="pasteFromClipboard()" title="Вставить" style="position: absolute; right: 5px; top: 50%; transform: translateY(-30%); background: none; border: none; cursor: pointer; font-size: 18px; padding: 5px; z-index: 10;">📋</button>
+                <button onclick="pasteFromClipboard()" title="Вставить" style="position: absolute; right: 5px; top: 50%; transform: translateY(-30%); background: none; border: none; cursor: pointer; font-size: 18px; padding: 5px; z-index: 10;">
+                    📋
+                </button>
             </div>
-            <label>Заметка</label><textarea id="inpNote" rows="2" placeholder="Например: зайти в кадры, номера вагонов..."></textarea>
-            
+            <label>Заметка</label>
+            <textarea id="inpNote" rows="2" placeholder="Например: зайти в кадры, номера вагонов..."></textarea>
+
             <div id="sickDetailsBox" style="display:none; background:#e8f5e9; padding:15px; border-radius:12px; margin-top:15px; border:1px solid #c8e6c9;">
                 <h4 style="margin:0 0 10px 0; color:#2e7d32;">🚑 Параметры больничного</h4>
-                <label id="lbl_year_1">Доход за прошлый год</label><input type="text" inputmode="decimal" id="sickInc1">
-                <label id="lbl_year_2">Доход за позапрошлый год</label><input type="text" inputmode="decimal" id="sickInc2">
-                <label>Стаж</label><select id="sickPercent"><option value="100">100%</option><option value="80">80%</option><option value="60">60%</option></select>
+                <label id="lbl_year_1">Доход за прошлый год</label>
+                <input type="text" inputmode="decimal" id="sickInc1" placeholder="Сумма из 2-НДФЛ (код 2000)">
+                <label id="lbl_year_2">Доход за позапрошлый год</label>
+                <input type="text" inputmode="decimal" id="sickInc2" placeholder="Сумма из 2-НДФЛ (код 2000)">
+                <label>Стаж (процент оплаты)</label>
+                <select id="sickPercent">
+                    <option value="100">100% (8+ лет стажа)</option>
+                    <option value="80">80% (5-8 лет стажа)</option>
+                    <option value="60">60% (до 5 лет стажа)</option>
+                </select>
+                <div style="margin-top:10px; font-size:11px; color:#558b2f;">* Суммы сохранятся для всех БЛ в этом году</div>
             </div>
 
             <details id="shiftDetailsBox">
-                <summary>⚙️ Параметры</summary>
-                <div class="detail-row"><label>Ставка (₽/час)</label><input type="text" inputmode="decimal" id="shiftRate"></div>
-                <div id="rateHint" style="display:none; font-size:9px; color:#ef6c00; margin-top:4px; font-weight:700;">📉 Резерв (вредность 8%)</div>
-                <div class="detail-row"><label>Премия (%)</label><input type="text" inputmode="decimal" id="shiftPrem"></div>
+                <summary>⚙️ Параметры этой смены</summary>
+                <div class="detail-row">
+    <label>Ставка (₽/час)</label>
+    <div style="text-align: right;">
+        <input type="text" inputmode="decimal" id="shiftRate">
+        <div id="rateHint" style="display:none; font-size:9px; color:#ef6c00; margin-top:4px; font-weight:700;">
+            📉 Резерв (вредность 8%)
+        </div>
+    </div>
+</div>
+
+<div class="detail-row">
+    <label>Премия (%)</label>
+    <input type="text" inputmode="decimal" id="shiftPrem">
+</div>
                 <div class="detail-row"><label>Класс</label><select id="shiftClassSelect"><option value="0">Без класса</option><option value="30">1 класс</option><option value="20">2 класс</option><option value="10">3 класс</option></select></div>
-                <div id="lineWorkContainer" style="display:none;"><div class="line-input-row" style="margin-top:15px;"><input type="time" id="lineStart"><span style="align-self:center">-</span><input type="time" id="lineEnd"></div><div style="font-size:10px; color:#90a4ae; margin-top:5px;">Время на линии</div></div>
-                <div style="margin-top:15px; background:#e3f2fd; padding:10px; border-radius:12px; border:1px solid #bbdefb;">
-                    <label style="color:#1565c0; margin-top:0; font-size:12px; font-weight:800; display:block; margin-bottom:5px;">🏥 ТП / Отстранение</label>
-                    <div class="line-input-row"><input type="time" id="tpStart"><span style="align-self:center">-</span><input type="time" id="tpEnd"></div>
-                    <div class="detail-row" style="margin-top:8px;"><label style="color:#c62828; font-weight:bold; font-size:12px;">⛔ Полное снятие</label><input type="checkbox" id="shiftFullMedical" style="width:20px; height:20px; margin:0;"></div>
-                </div>
-                <div class="detail-row" style="margin-top:15px;"><label style="flex:1;">Тех. учеба</label><input type="checkbox" id="shiftTech"></div>
-                <div class="detail-row"><label style="flex:1;">Послерейсовый</label><input type="checkbox" id="shiftPostTrip"></div>
-                <div class="detail-row" style="margin-top:15px;"><label>Наставник</label><input type="checkbox" id="shiftMentor"></div>
-                <div class="detail-row"><label>Ст. Машинист</label><input type="checkbox" id="shiftSenior"></div>
+                <div id="lineWorkContainer" style="display:none;"><div class="line-input-row" style="margin-top:15px;"><input type="time" id="lineStart"><span style="align-self:center">-</span><input type="time" id="lineEnd"></div><div style="font-size:10px; color:#90a4ae; margin-top:5px;">Время работы на линии</div></div>
+               <div style="margin-top:15px; background:#e3f2fd; padding:10px; border-radius:12px; border:1px solid #bbdefb;">
+    <label style="color:#1565c0; margin-top:0; font-size:12px; font-weight:800; display:block; margin-bottom:5px;">🏥 Терапевтический пункт / Отстранение</label>
+    
+    <div class="line-input-row">
+        <input type="time" id="tpStart" placeholder="Начало">
+        <span style="align-self:center; color:#1565c0; font-weight:bold;">-</span>
+        <input type="time" id="tpEnd" placeholder="Конец">
+    </div>
+    
+    <div class="detail-row" style="margin-top:8px;">
+        <label style="color:#c62828; font-weight:bold; font-size:12px;">⛔ Не допуск (Полное снятие)</label>
+        <input type="checkbox" id="shiftFullMedical" style="width:20px; height:20px; margin:0;">
+    </div>
+</div>
+               <div class="detail-row" style="margin-top:15px;"><label style="flex:1;">Тех. учеба (2ч)</label><input type="checkbox" id="shiftTech"></div><div class="detail-row"><label style="flex:1;">Послерейсовый (+10 мин)</label><input type="checkbox" id="shiftPostTrip"></div><div class="detail-row" style="margin-top:15px;"><label>Наставник (+15%)</label><input type="checkbox" id="shiftMentor"></div><div class="detail-row"><label>Ст. Машинист (+10%)</label><input type="checkbox" id="shiftSenior"></div>
             </details>
 
             <div class="btn-row">
@@ -335,9 +431,18 @@
             </div>
         </div>
     </div>
-    <div class="modal-overlay" id="confirmModal"><div class="modal-box"><h3 style="margin-top:0">Удаление</h3><div>Точно удалить?</div><div class="btn-row"><button class="btn btn-cancel" onclick="closeModal('confirmModal')">Нет</button><button class="btn btn-delete" onclick="commitDelete()">Да</button></div></div></div>
-    <div class="modal-overlay" id="importModal"><div class="modal-box"><h3 style="margin-top:0">Импорт</h3><textarea id="importText" rows="8"></textarea><div class="btn-row"><button class="btn btn-cancel" onclick="closeModal('importModal')">Отмена</button><button class="btn btn-save" onclick="processImport()">ОК</button></div></div></div>
-    <div class="modal-overlay" id="calendarModal"><div class="modal-box" style="max-width: 400px;" id="calModalBox"><div class="cal-header"><button class="cal-btn" onclick="changeMonth(-1)">&#8249;</button><div class="cal-title" id="calTitle"></div><button class="cal-btn" onclick="changeMonth(1)">&#8250;</button></div><div class="cal-grid" id="calGrid"></div><div class="btn-row"><button class="btn btn-cancel" onclick="closeModal('calendarModal')">Закрыть</button></div></div></div>
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-box">
+            <h3 style="margin-top:0; color:var(--primary)">Удаление</h3>
+            <div style="margin-bottom:20px; font-size:15px;">Вы точно хотите удалить эту смену навсегда?</div>
+            <div class="btn-row">
+                <button class="btn btn-cancel" onclick="closeModal('confirmModal')">Нет</button>
+                <button class="btn btn-delete" onclick="commitDelete()">Да, удалить</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="importModal"><div class="modal-box"><h3 style="margin-top:0; color:var(--primary)">Импорт смен</h3><label>Вставьте текст списка:</label><textarea id="importText" rows="8" placeholder="1.01.25 м61 20:22-2:46..."></textarea><div class="btn-row"><button class="btn btn-cancel" onclick="closeModal('importModal')">Отмена</button><button class="btn btn-save" onclick="processImport()">Распознать</button></div></div></div>
+    <div class="modal-overlay" id="calendarModal"><div class="modal-box" style="max-width: 400px;" id="calModalBox"><div class="cal-header"><button class="cal-btn" onclick="changeMonth(-1)">&#8249;</button><div class="cal-title" id="calTitle">Ноябрь 2025</div><button class="cal-btn" onclick="changeMonth(1)">&#8250;</button></div><div class="cal-grid" id="calGrid"></div><div class="btn-row"><button class="btn btn-cancel" onclick="closeModal('calendarModal')">Закрыть</button></div></div></div>
 
     <nav class="bottom-nav">
         <div class="nav-item" id="nav-today" onclick="switchTab('today')"><svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg><span>Сегодня</span></div>
@@ -346,319 +451,1931 @@
         <div class="nav-item" onclick="switchTab('settings')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg><span>Профиль</span></div>
     </nav>
 
-    <script src="calc_logic.js"></script>
-    <script src="calculator.js"></script>
+<script>
+    
 
-    <script>
-        // --- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ---
-        let shifts = JSON.parse(localStorage.getItem('metro_shifts')) || [];
-        let settings = JSON.parse(localStorage.getItem('metro_settings')) || { 
-            rate: 546.18, classP: 0, premP: 35, mentor: false, senior: false, 
-            startDate: "", union: true, sickData: {}, sickPercent: 100 
-        };
-        let syncMeta = JSON.parse(localStorage.getItem('metro_sync_meta')) || {};
-        let calDate = new Date();
-        let statsDate = new Date();
-        let preventRender = false;
-        let isFirstLoad = true;
-        const tg = window.Telegram.WebApp;
+    let shifts = JSON.parse(localStorage.getItem('metro_shifts')) || [];
+    let settings = JSON.parse(localStorage.getItem('metro_settings')) || { 
+    rate: 546.18, classP: false, premP: 35, mentor: false, senior: false, 
+    startDate: "", union: true, sickData: {}, sickPercent: 100 
+    };
+    // --- 1. НОВАЯ ПЕРЕМЕННАЯ ДЛЯ МЕТАДАННЫХ ---
+let syncMeta = JSON.parse(localStorage.getItem('metro_sync_meta')) || {};
 
-        // --- ФУНКЦИИ-ОБЕРТКИ (МЫ УБРАЛИ ДУБЛИРУЮЩУЮ ЛОГИКУ) ---
+// --- 2. ФУНКЦИЯ ОБНОВЛЕНИЯ ВРЕМЕНИ (Вызывать при любом изменении) ---
+function touchMeta(key) {
+    syncMeta[key] = new Date().getTime();
+    localStorage.setItem('metro_sync_meta', JSON.stringify(syncMeta));
+}
+
+// Вспомогательная: получить ключ месяца по дате (например "2025-11-01" -> "s_2025_11")
+function getMonthKey(dateStr) {
+    if (!dateStr) return null;
+    const y = dateStr.substring(0, 4);
+    const m = dateStr.substring(5, 7);
+    return `s_${y}_${m}`;
+}
+    let calDate = new Date();
+    let statsDate = new Date();
+    let preventRender = false;
+    let isFirstLoad = true;
+    const tg = window.Telegram.WebApp;
+    
+    function saveData() {
+        // --- АВТОЧИСТКА ДУБЛЕЙ (FIX) ---
+        const uniqueMap = new Map();
+        shifts.forEach(s => {
+            if (s.date && s.date.length >= 10) {
+                const cleanDate = s.date.trim().substring(0, 10);
+                s.date = cleanDate;
+                uniqueMap.set(cleanDate, s);
+            }
+        });
+        shifts = Array.from(uniqueMap.values());
+        // -------------------------------
+
+        localStorage.setItem('metro_shifts', JSON.stringify(shifts));
+        localStorage.setItem('metro_settings', JSON.stringify(settings));
+        saveAllToCloud();
+    }
+    
+    function saveSettings() {
+        settings.rate = safeFloat(document.getElementById('set_rate').value);
+        settings.classP = parseInt(document.getElementById('set_class').value);
+        settings.premP = safeFloat(document.getElementById('set_prem').value);
+        settings.mentor = document.getElementById('set_mentor').checked;
+        settings.senior = document.getElementById('set_senior').checked;
+        settings.startDate = document.getElementById('set_start_date').value;
+        settings.union = document.getElementById('set_union').checked;
+        touchMeta('metro_settings');
+        calcExpDisplay();
+    }
+
+    let touchStartX = 0;
+    let touchStartY = 0; // 1. Добавили координату Y
+    let touchEndX = 0;
+    let touchEndY = 0;   // 2. Добавили конечную Y
+
+    // Запоминаем начало касания (и X, и Y)
+    document.addEventListener('touchstart', e => { 
+        touchStartX = e.changedTouches[0].screenX; 
+        touchStartY = e.changedTouches[0].screenY; 
+    }, {passive: false});
+
+    // Запоминаем конец касания
+    document.addEventListener('touchend', e => { 
+        touchEndX = e.changedTouches[0].screenX; 
+        touchEndY = e.changedTouches[0].screenY; 
+        handleSwipe(); 
+    }, {passive: false});
+
+    function handleSwipe() {
+        if (document.body.classList.contains('modal-open')) return;
         
-        function calcShift(shiftRaw) {
-            if (!shiftRaw || !shiftRaw.text) return null;
-            
-            // 1. Парсим текст (Logic)
-            let parsed = Logic.parseShift(shiftRaw.text, shiftRaw.date);
-            
-            // 2. Переносим флаги, которые могли быть посчитаны ранее
-            // (Но для надежности лучше считать всё здесь)
-            
-            // 3. Подтягиваем настройки конкретной смены
-            let effectiveSettings = JSON.parse(JSON.stringify(settings));
-            if (shiftRaw.customRate !== undefined) effectiveSettings.rate = shiftRaw.customRate;
-            if (shiftRaw.customClass !== undefined) effectiveSettings.classP = shiftRaw.customClass;
-            if (shiftRaw.customPrem !== undefined) effectiveSettings.premP = shiftRaw.customPrem;
-            if (shiftRaw.customMentor !== undefined) effectiveSettings.mentor = shiftRaw.customMentor;
-            if (shiftRaw.customSenior !== undefined) effectiveSettings.senior = shiftRaw.customSenior;
+        const threshold = 70; // Чувствительность свайпа
+        const diffX = touchEndX - touchStartX;
+        const diffY = touchEndY - touchStartY; // Разница по вертикали
 
-            // 4. Передаем ручные уточнения
-            parsed.lineStart = shiftRaw.lineStart;
-            parsed.lineEnd = shiftRaw.lineEnd;
-            parsed.tpStart = shiftRaw.tpStart;
-            parsed.tpEnd = shiftRaw.tpEnd;
-            parsed.isFullMedical = (shiftRaw.isFullMedical === true);
-            parsed.isTech = (shiftRaw.isTech === true);
-            parsed.isPostTrip = (shiftRaw.isPostTrip === true);
+        // === ГЛАВНОЕ ИСПРАВЛЕНИЕ ===
+        // Если движение по вертикали больше, чем по горизонтали — это скролл.
+        // Мы просто выходим и ничего не переключаем.
+        if (Math.abs(diffY) > Math.abs(diffX)) return;
+        // ===========================
 
-            // 5. Отправляем в Калькулятор
-            return Calculator.calculateShift(parsed, effectiveSettings);
+        if (Math.abs(diffX) > threshold) {
+            const tabs = ['today', 'home', 'stats', 'settings'];
+            const currentTab = document.querySelector('.page.active').id.replace('tab-', '');
+            let idx = tabs.indexOf(currentTab);
+            
+            if (diffX < 0) { // Свайп влево (следующая вкладка)
+                idx++; 
+                if (idx >= tabs.length) return; 
+            } else { // Свайп вправо (предыдущая вкладка)
+                idx--; 
+                if (idx < 0) return; 
+            }
+            switchTab(tabs[idx]);
+        }
+    }
+
+    const holidaysData = {
+        // Фиксированные праздники (Статья 112 ТК РФ) - это НЕ МЕНЯЕТСЯ
+        fixed: ["01-01", "01-02", "01-03", "01-04", "01-05", "01-06", "01-07", "01-08", "02-23", "03-08", "05-01", "05-09", "06-12", "11-04"],
+        
+        // Рабочие субботы (когда страна работает за другой день)
+        workOnWeekend: [
+            "2024-04-27", "2024-11-02", "2024-12-28", 
+            "2025-11-01" 
+            // В 2026 году рабочих суббот нет!
+        ],
+        
+        // Выходные среди недели (официальные переносы Правительства)
+        // ВАЖНО: Для машинистов это ОБЫЧНЫЕ выходные (оплата x1), не путать с праздниками!
+        restOnWorkday: [
+            // ... 2024 и 2025 ...
+            "2024-04-29", "2024-04-30", "2024-05-10", "2024-12-30", "2024-12-31",
+            "2025-05-02", "2025-05-08", "2025-06-13", "2025-11-03", "2025-12-31",
+            
+            // === 2026 ГОД ===
+            "2026-01-09", // пятница (за 3 января)
+            "2026-12-31"  // четверг (за 4 января)
+        ],
+        
+        // Предпраздничные дни (сокращенные на 1 час)
+        short: [
+            // ... 2024 и 2025 ...
+            "2024-02-22", "2024-03-07", "2024-05-08", "2024-06-11", "2024-11-02", 
+            "2025-03-07", "2025-04-30", "2025-06-11", "2025-11-01",
+            
+            // === 2026 ГОД ===
+            "2026-04-30", // перед 1 мая
+            "2026-05-08", // перед 9 мая
+            "2026-06-11", // перед 12 июня
+            "2026-11-03"  // перед 4 ноября
+        ]
+    };
+
+    function safeFloat(val) {
+        if (!val) return 0;
+        let str = String(val).replace(/\s/g, '').replace(',', '.');
+        const n = parseFloat(str);
+        if (isNaN(n) || !isFinite(n)) return 0;
+        return n;
+    }
+
+    function getIsoDate(dateObj) { 
+        if (!dateObj || !(dateObj instanceof Date) || isNaN(dateObj.getTime())) return "";
+        const y = dateObj.getFullYear(); 
+        const m = String(dateObj.getMonth() + 1).padStart(2, '0'); 
+        const d = String(dateObj.getDate()).padStart(2, '0'); 
+        return `${y}-${m}-${d}`; 
+    }
+
+    function fmtMoney(val) { if (isNaN(val)) return "0 ₽"; return Math.round(val).toLocaleString() + ' ₽'; }
+    
+    function isHoliday(dateObj) {
+        if (!dateObj) return false;
+        if (!(dateObj instanceof Date)) dateObj = new Date(dateObj);
+        if (isNaN(dateObj.getTime())) return false;
+        const isoDate = getIsoDate(dateObj);
+        const md = isoDate.slice(5);
+        const day = dateObj.getDay();
+        const year = dateObj.getFullYear();
+        if (year >= 2024 && year <= 2026) {
+            if (holidaysData.workOnWeekend.includes(isoDate)) return false;
+            if (holidaysData.restOnWorkday.includes(isoDate)) return true;
+            if (holidaysData.fixed.includes(md)) return true;
+            if (day === 0 || day === 6) return true;
+            return false;
+        }
+        if (day === 0 || day === 6) return true;
+        if (holidaysData.fixed.includes(md)) return true;
+        return false;
+    }
+
+    function getMonthNorm(year, month) {
+        if (year == null || month == null) return 160;
+        let workDays = 0;
+        let shortDays = 0;
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        for (let d = 1; d <= daysInMonth; d++) {
+            const current = new Date(year, month, d);
+            if (!isHoliday(current)) {
+                workDays++;
+                const iso = getIsoDate(current);
+                if (year >= 2024 && year <= 2026) {
+                    if (holidaysData.short.includes(iso)) shortDays++;
+                    else {
+                        const tomorrow = new Date(year, month, d + 1);
+                        const tomIso = getIsoDate(tomorrow).slice(5);
+                        if (holidaysData.fixed.includes(tomIso)) shortDays++;
+                    }
+                } else {
+                    const tomorrow = new Date(year, month, d + 1);
+                    const tomIso = getIsoDate(tomorrow).slice(5);
+                    if (holidaysData.fixed.includes(tomIso)) shortDays++;
+                }
+            }
+        }
+        const norm = (workDays * 7.2) - shortDays;
+        return norm > 0 ? parseFloat(norm.toFixed(1)) : 1;
+    }
+
+    function updateCloudStatus(msg, isError = false) {
+        const el = document.getElementById('cloudStatus');
+        if(el) { el.innerText = "Облако: " + msg; el.style.color = isError ? "#e53935" : "#2e7d32"; }
+    }
+	
+    
+
+    function init() {
+        // --- ЖЕЛЕЗНАЯ ЧИСТКА ДУБЛЕЙ ПРИ ЗАПУСКЕ (FIX) ---
+        if (shifts && shifts.length > 0) {
+            const uniqueMap = new Map();
+            shifts.forEach(s => {
+                // ВАЖНО: Отрезаем мусор (пробелы) и берем только первые 10 символов даты
+                if (s.date && s.date.length >= 10) {
+                    const cleanDate = s.date.trim().substring(0, 10);
+                    s.date = cleanDate; // Исправляем саму смену
+                    uniqueMap.set(cleanDate, s); // Перезаписываем (останется только одна)
+                }
+            });
+            shifts = Array.from(uniqueMap.values());
+            // Сохраняем чистую базу сразу
+            localStorage.setItem('metro_shifts', JSON.stringify(shifts));
         }
 
-        function calculateRestIntervals() {
-            // Эта функция теперь просто вызывает логику из calc_logic.js, если нужно
-            // Но calc_logic.js работает с массивом.
-            // Пока оставим пустым, так как calculator.js считает смену изолированно,
-            // А правило 50% мы можем реализовать позже, если потребуется супер-точность.
-            // Для "Зеленой зоны" (по квитку) это не критично.
+        normalizeShifts(); 
+        render(); 
+        updateUI(); 
+        tg.ready(); 
+        tg.expand();
+        if (typeof ym !== 'undefined' && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            ym(105574700, 'userParams', { telegram_id: tg.initDataUnsafe.user.id });
+        }
+        if (tg.CloudStorage) { showLoader(); syncWithCloud(); } else { hideLoader(); }
+        document.addEventListener('keydown', function(event) { if (event.key === "Escape") { closeModal('addModal'); closeModal('importModal'); closeModal('calendarModal'); } });
+        const calBox = document.getElementById('calModalBox'); let tsX = 0;
+        calBox.addEventListener('touchstart', e => { tsX = e.changedTouches[0].screenX; e.stopPropagation(); });
+        calBox.addEventListener('touchend', e => { let teX = e.changedTouches[0].screenX; if(teX < tsX - 50) changeMonth(1); if(teX > tsX + 50) changeMonth(-1); e.stopPropagation(); });
+        setInterval(updateTodayTab, 1000);
+        scrollToToday();
+    }
+    
+	
+    function syncWithCloud() {
+    if (!tg.CloudStorage) { hideLoader(); return; }
+    
+    // 1. Получаем список всех ключей
+    tg.CloudStorage.getKeys((err, keys) => {
+        if (err) { hideLoader(); updateCloudStatus("Ошибка доступа", true); return; }
+        if (!keys) keys = [];
+        
+        // Фильтруем наши ключи + добавляем 'metro_sync_meta'
+        // Нам нужно скачать МЕТУ из облака, чтобы сравнить
+        const metaKey = 'metro_sync_meta';
+        const dataKeys = keys.filter(k => k.startsWith('s_') || k === 'metro_settings');
+        
+        if (dataKeys.length === 0 && !keys.includes(metaKey)) {
+            // Облако пустое -> Отправляем всё наше туда
+            saveAllToCloud(() => { hideLoader(); updateCloudStatus("Облако создано"); });
+            return;
         }
 
-        // --- РЕНДЕР СВОДКИ (ИСПРАВЛЕННЫЙ) ---
-        function renderStats() {
-            // 1. Заголовок месяца
-            const year = statsDate.getFullYear();
-            const month = statsDate.getMonth();
-            const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
-            document.getElementById('statsMonthDisplay').innerText = `${monthNames[month]} ${year}`;
+        // 2. Скачиваем Облачную МЕТУ и Данные
+        const allKeysToFetch = [...dataKeys, metaKey];
+        
+        tg.CloudStorage.getItems(allKeysToFetch, (err, values) => {
+            hideLoader();
+            if (err) { updateCloudStatus("Ошибка чтения", true); return; }
 
-            // 2. Фильтр смен
-            const monthlyShifts = shifts.filter(s => {
-                const d = new Date(s.date);
-                return d.getFullYear() === year && d.getMonth() === month;
+            const cloudMeta = values[metaKey] ? JSON.parse(values[metaKey]) : {};
+            let hasChanges = false;
+            let keysToPush = [];
+            
+            // --- ЛОГИКА СЛИЯНИЯ ---
+            
+            // А. Обработка НАСТРОЕК
+            if (values['metro_settings']) {
+                const cloudTime = cloudMeta['metro_settings'] || 0;
+                const localTime = syncMeta['metro_settings'] || 0;
+                
+                if (cloudTime > localTime) {
+                    // Облако новее -> Берем из облака
+                    try { 
+                        settings = JSON.parse(values['metro_settings']); 
+                        syncMeta['metro_settings'] = cloudTime; // Синхронизируем время
+                        hasChanges = true;
+                    } catch(e){}
+                } else if (localTime > cloudTime) {
+                    // Телефон новее -> Будем отправлять в облако
+                    keysToPush.push('metro_settings');
+                }
+            }
+
+            // Б. Обработка МЕСЯЦЕВ (СМЕН)
+            // Собираем множество всех ключей месяцев (и локальных, и облачных)
+            const allMonthKeys = new Set([...Object.keys(syncMeta).filter(k=>k.startsWith('s_')), ...dataKeys.filter(k=>k.startsWith('s_'))]);
+            
+            let newShifts = [...shifts]; // Копия текущих смен
+
+            allMonthKeys.forEach(key => {
+                const cloudTime = cloudMeta[key] || 0;
+                const localTime = syncMeta[key] || 0;
+                
+                if (cloudTime > localTime) {
+                    // В ОБЛАКЕ СВЕЖЕЕ (или на телефоне вообще нет этого месяца) -> ЗАГРУЖАЕМ
+                    // 1. Удаляем все локальные смены этого месяца
+                    const [_, y, m] = key.split('_'); // s_2025_11
+                    const prefix = `${y}-${m}`;
+                    newShifts = newShifts.filter(s => !s.date.startsWith(prefix));
+                    
+                    // 2. Добавляем смены из облака
+                    if (values[key]) {
+                        try {
+                            const chunk = JSON.parse(values[key]);
+                            if (Array.isArray(chunk)) {
+                                chunk.forEach(mini => newShifts.push(normalizeOne(mini)));
+                            }
+                        } catch(e) {}
+                    }
+                    // 3. Обновляем локальную метку времени, чтобы знать, что мы актуальны
+                    syncMeta[key] = cloudTime;
+                    hasChanges = true;
+                    
+                } else if (localTime > cloudTime) {
+                    // НА ТЕЛЕФОНЕ СВЕЖЕЕ (я редактировал оффлайн) -> ОТПРАВЛЯЕМ
+                    keysToPush.push(key);
+                }
             });
 
-            // 3. Подготовка переменных
-            let totalHours = 0; // Факт (для круга)
-            let dirty = 0;
-            
-            // --- НОВЫЙ ПОДХОД: ПРЯМОЕ СУММИРОВАНИЕ ИЗ CALCULATOR.JS ---
-            // Мы создаем объект-аккумулятор, повторяющий структуру details
-            let acc = {
-                tariffLine: 0, tariffRes: 0, tariffBase: 0,
-                split: 0, ev: 0, night: 0,
-                class: 0, senior: 0, mentor: 0, tech: 0, prem: 0,
-                sick: 0, vacation: 0, donor: 0, med: 0, study: 0
-            };
-            
-            let sickDeduction = 0; // Для снижения нормы
+            if (hasChanges) {
+                shifts = newShifts;
+                localStorage.setItem('metro_shifts', JSON.stringify(shifts));
+                localStorage.setItem('metro_settings', JSON.stringify(settings));
+                localStorage.setItem('metro_sync_meta', JSON.stringify(syncMeta));
+                render();
+            }
 
-            monthlyShifts.forEach(s => {
-                const res = calcShift(s);
-                if (!res) return;
+            // 3. Если есть что отправить (то, что новее на телефоне) - отправляем
+            if (keysToPush.length > 0) {
+                pushSpecificKeys(keysToPush, cloudMeta);
+            } else {
+                updateCloudStatus("Синхронизировано");
+            }
+        });
+    });
+}
 
-                // Снижение нормы (БЛ, Отпуск)
-                if (res.isSick || res.isVacation || (res.isDonor && !Logic.isWeekendOrHoliday(new Date(s.date)))) {
-                    if (!Logic.isWeekendOrHoliday(new Date(s.date))) {
-                        sickDeduction += 7.2;
+// Отправка только нужных ключей + обновление меты в облаке
+function pushSpecificKeys(keysToPush, currentCloudMeta) {
+    updateCloudStatus("Отправка...");
+    
+    // Готовим данные
+    const grouped = groupShiftsByMonth(); // Функция ниже
+    
+    keysToPush.forEach(key => {
+        // Обновляем мету, которую отправим в облако
+        currentCloudMeta[key] = syncMeta[key];
+        
+        let valueStr = "";
+        if (key === 'metro_settings') {
+            valueStr = JSON.stringify(settings);
+        } else {
+            // Это месяц. Если смен нет (мы удалили все), отправляем пустой массив "[]"
+            valueStr = JSON.stringify(grouped[key] || []);
+        }
+        
+        // Отправляем значение
+        tg.CloudStorage.setItem(key, valueStr, (err)=>{});
+    });
+    
+    // В конце отправляем обновленный файл МЕТАДАННЫХ
+    tg.CloudStorage.setItem('metro_sync_meta', JSON.stringify(currentCloudMeta), (err) => {
+        if (!err) updateCloudStatus("Синхронизировано");
+    });
+}
+
+// Вспомогательная: Группировка смен для сохранения
+function groupShiftsByMonth() {
+    const grouped = {};
+    shifts.forEach(s => {
+        const key = getMonthKey(s.date);
+        if (!grouped[key]) grouped[key] = [];
+        
+        // Минификация
+        const mini = { d: s.date, t: s.text };
+        if(s.note) mini.n = s.note;
+        if(s.customRate !== undefined) mini.cr = s.customRate;
+        if(s.customMentor !== undefined) mini.cm = s.customMentor;
+        if(s.customSenior !== undefined) mini.cs = s.customSenior;
+        if(s.customClass !== undefined) mini.cc = s.customClass;
+        if(s.customSen !== undefined) mini.ce = s.customSen;
+        if(s.customPrem !== undefined) mini.cp = s.customPrem;
+        
+        if(s.lineStart) mini.ls = s.lineStart;
+        if(s.lineEnd) mini.le = s.lineEnd;
+        
+        // Новые поля
+        if(s.tpStart) mini.tps = s.tpStart;
+        if(s.tpEnd) mini.tpe = s.tpEnd;
+
+        // Флаги
+        if(s.isTech) mini.it = 1;
+        if(s.isPostTrip) mini.ip = 1;
+        
+        // ВОТ ЭТОЙ СТРОЧКИ НЕ ХВАТАЛО:
+        if(s.isFullMedical) mini.ifm = 1; 
+        
+        // Старое (на всякий случай, для совместимости)
+        if(s.isMedical) mini.im = 1; 
+        
+        grouped[key].push(mini);
+    });
+    return grouped;
+}
+
+// Функция "тихого" сохранения (отправляет только то, что изменилось недавно)
+function saveAllToCloud(cb) {
+    if (!tg.CloudStorage) { if(cb) cb(); return; }
+    
+    // Ищем ключи, которые менялись за последние 10 секунд
+    const changedKeys = Object.keys(syncMeta).filter(k => {
+        return (new Date().getTime() - (syncMeta[k] || 0)) < 10000;
+    });
+
+    // Если есть изменения, отправляем их через умную функцию pushSpecificKeys
+    if (changedKeys.length > 0) {
+        // Нам нужна "текущая" мета из облака, но у нас её нет под рукой в "тихом" режиме.
+        // Поэтому передаем пустой объект {} - pushSpecificKeys сама разберется и перезапишет мету.
+        // (Это упрощение допустимо, так как pushSpecificKeys в твоем коде обновляет currentCloudMeta)
+        // НО ЛУЧШЕ вызвать полную синхронизацию для надежности, если логика сложная.
+        // В твоем случае используем pushSpecificKeys с локальной метой:
+        pushSpecificKeys(changedKeys, { ...syncMeta }); 
+    }
+    
+    if(cb) cb();
+}
+
+
+// Функция для ручной кнопки "Отправить в облако" (Force Push)
+// === ЗАМЕНИТЬ ЭТИМ ФУНКЦИИ forcePushToCloud и saveAll ===
+
+function forcePushToCloud() {
+        const btn = document.querySelector('#tab-settings button'); // Находим кнопку
+        const originalText = btn.innerText;
+        const originalColor = btn.style.background;
+
+        if (shifts.length === 0) {
+            // Ошибка: Пусто
+            btn.innerText = "Ошибка: Смен нет! ⚠️";
+            btn.style.background = "#e53935";
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.background = originalColor;
+            }, 2000);
+            return;
+        }
+        
+        // Запускаем отправку молча (или можно сделать двойное подтверждение, но обычно тут оно лишнее)
+        showLoader();
+        
+        // Обновляем мету
+        const now = new Date().getTime();
+        Object.keys(syncMeta).forEach(k => syncMeta[k] = now);
+        touchMeta('metro_settings');
+        
+        syncWithCloud();
+        
+        // Пишем на кнопке "Готово"
+        setTimeout(() => {
+            hideLoader(); // На всякий случай, если синк быстрый
+            btn.innerText = "Отправлено ✅";
+            btn.style.background = "#4caf50";
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.background = originalColor;
+            }, 2000);
+        }, 500);
+    }
+
+function saveAll() { 
+    saveSettings(); 
+    saveData(); 
+    render(); 
+}
+
+    // 1. Просто открываем наше новое красивое окно
+    function deleteCurrentShift() {
+        document.body.classList.add('modal-open');
+        document.getElementById('confirmModal').classList.add('open');
+    }
+
+    // 2. А эта функция срабатывает, когда нажали "Да, удалить"
+    function commitDelete() {
+        const d = document.getElementById('inpDate').value; 
+        
+        // Удаляем из массива
+        shifts = shifts.filter(s => s.date !== d);
+        
+        // Помечаем для синхронизации
+        touchMeta(getMonthKey(d));
+
+        // Сохраняем
+        localStorage.setItem('metro_shifts', JSON.stringify(shifts));
+        saveAllToCloud();
+
+        // Обновляем интерфейс
+        render();
+        renderCalendar();
+        
+        // Закрываем ОБА окна (и подтверждение, и редактирование смены)
+        closeModal('confirmModal');
+        closeModal('addModal');
+        
+        // Скрываем кнопку удаления на всякий случай
+        document.getElementById('btnDeleteShift').style.display = 'none';
+    }
+
+    function showLoader() { document.getElementById('loader').classList.add('loader-active'); }
+    function hideLoader() { document.getElementById('loader').classList.remove('loader-active'); }
+
+    function normalizeOne(s) { 
+        if (s.d) { 
+            // Это сжатый формат (из облака или памяти)
+            let obj = { 
+                date: s.d, text: s.t, note: s.n, 
+                customRate: s.cr, customMentor: s.cm, customSenior: s.cs, 
+                customClass: s.cc, customSen: s.ce, customPrem: s.cp, 
+                lineStart: s.ls, lineEnd: s.le, isTech: !!s.it, isPostTrip: !!s.ip,
+                
+                // Новые поля
+                tpStart: s.tps, tpEnd: s.tpe, isFullMedical: !!s.ifm
+            }; 
+            
+            // 🔥 СПАСЕНИЕ СТАРЫХ ДАННЫХ
+            // Если есть старый флаг 'im' (старый мед.отвод), превращаем его в новый
+            if (s.im) obj.isFullMedical = true;
+            
+            return obj;
+        } 
+        
+        // Это обычный формат
+        // Если встретили старый isMedical — обновляем его на новый лад
+        if (s.isMedical) {
+            s.isFullMedical = true;
+            delete s.isMedical; // Удаляем старое, чтобы не мусорить
+        }
+
+        return s; 
+    }
+    function normalizeShifts() { shifts = shifts.map(s => normalizeOne(s)); }
+
+    function updateUI() {
+        document.getElementById('set_rate').value = String(settings.rate).replace('.',',');
+        document.getElementById('set_class').value = settings.classP;
+        document.getElementById('set_prem').value = String(settings.premP).replace('.',',');
+        document.getElementById('set_mentor').checked = settings.mentor;
+        document.getElementById('set_senior').checked = settings.senior || false;
+        document.getElementById('set_start_date').value = settings.startDate || "";
+        document.getElementById('set_union').checked = settings.union !== false;
+        calcExpDisplay();
+    }
+
+    function scrollToToday() { 
+        setTimeout(() => { 
+            const todayEl = document.querySelector('.shift-card.today'); 
+            // Было: behavior: 'smooth' (плавно/долго)
+            // Стало: behavior: 'auto' (мгновенно)
+            if (todayEl) todayEl.scrollIntoView({ block: 'center', behavior: 'auto' }); 
+        }, 100); // Можно даже уменьшить таймер с 200 до 100, чтобы срабатывало быстрее
+    }
+    
+    function switchTab(tabName) { 
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); 
+        document.getElementById('tab-' + tabName).classList.add('active'); 
+        const tabs = ['today', 'home', 'stats', 'settings'];
+        const targetIdx = tabs.indexOf(tabName);
+        document.querySelectorAll('.nav-item').forEach((el, idx) => {
+            if(idx === targetIdx) el.classList.add('active');
+            else el.classList.remove('active');
+        });
+        if(tabName==='home') { scrollToToday(); } 
+        const titles = { 'today':'Сегодня', 'home': 'Мои смены', 'stats': 'Статистика', 'settings': 'Профиль' }; 
+        document.getElementById('headerTitle').innerText = titles[tabName]; 
+        document.querySelector('header .header-btn').style.display = (tabName === 'home') ? 'flex' : 'none'; 
+        if(tabName==='today') updateTodayTab(); 
+        if(tabName==='stats') renderStats(); 
+    }
+
+    function updateTodayTab() {
+        if(!document.getElementById('tab-today').classList.contains('active')) return;
+        const now = new Date(); const nowTs = now.getTime();
+        let currentShift = null, nextShift = null, prevShiftEnd = 0;
+        const sorted = [...shifts].sort((a,b) => new Date(a.date) - new Date(b.date));
+        for (let i = 0; i < sorted.length; i++) {
+            const s = sorted[i]; let times = [...s.text.matchAll(/(\d{1,2}[:\.]\d{2})/g)]; if (times.length < 2) continue;
+            const baseDate = new Date(s.date); const [sh, sm] = times[0][0].replace('.',':').split(':').map(Number); const [eh, em] = times[1][0].replace('.',':').split(':').map(Number);
+            const startDate = new Date(baseDate); startDate.setHours(sh, sm, 0, 0); const endDate = new Date(baseDate); if (eh < sh) endDate.setDate(endDate.getDate() + 1); endDate.setHours(eh, em, 0, 0);
+            if (nowTs >= startDate.getTime() && nowTs < endDate.getTime()) { currentShift = { data: s, start: startDate, end: endDate }; }
+            if (!currentShift && !nextShift && startDate.getTime() > nowTs) { nextShift = { data: s, start: startDate }; }
+            if (endDate.getTime() < nowTs) { prevShiftEnd = endDate.getTime(); }
+        }
+        const container = document.getElementById('todayContent'); let html = '';
+        if (currentShift) {
+            const totalMs = currentShift.end - currentShift.start; const elapsedMs = now - currentShift.start; const percent = Math.min(100, (elapsedMs / totalMs) * 100);
+            const res = calcShift(currentShift.data); let unionFee = settings.union ? (res.dirty * 0.01) : 0; let tax = res.dirty * 0.13; let netTotal = res.dirty - tax - unionFee; const currentEarned = (elapsedMs / totalMs) * netTotal;
+            html = `<div class="hero-widget theme-work"><div class="widget-header"><div class="widget-title">СЕЙЧАС НА СМЕНЕ</div><div class="widget-icon">🚅</div></div><div class="widget-main-value">${Math.floor(currentEarned)} ₽</div><div class="widget-sub-value">из ${Math.round(netTotal)} ₽</div><div class="progress-track"><div class="progress-fill" style="width: ${percent}%"></div></div><div class="progress-labels"><span>${currentShift.start.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span><span>Конец: ${currentShift.end.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span></div></div><div class="info-grid"><div class="info-card"><div class="info-label">Маршрут</div><div class="info-val">${currentShift.data.text.split(' ')[0]}</div></div><div class="info-card"><div class="info-label">Осталось</div><div class="info-val">${msToTime(currentShift.end - now)}</div></div></div>`;
+        } else {
+            let restText = "Н/Д", percentRest = 0, label = "ОТДЫХ", fullRestDesc = "";
+            if (prevShiftEnd > 0) {
+                if (nextShift) { label = "МЕЖСМЕННЫЙ ОТДЫХ"; const totalRestMs = nextShift.start.getTime() - prevShiftEnd; const passedRestMs = nowTs - prevShiftEnd; percentRest = Math.min(100, (passedRestMs / totalRestMs) * 100); restText = msToTime(totalRestMs); const prevEndDate = new Date(prevShiftEnd); const prevEndStr = prevEndDate.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) + ` (${prevEndDate.getDate()}.${prevEndDate.getMonth()+1})`; const nextStartStr = nextShift.start.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) + ` (${nextShift.start.getDate()}.${nextShift.start.getMonth()+1})`; fullRestDesc = `<div class="widget-sub-value" style="font-size:13px; margin-top:10px;">С ${prevEndStr}</div><div class="widget-sub-value" style="font-size:13px;">До ${nextStartStr}</div><div style="margin-top:20px; font-size:12px; opacity:0.8">Уже прошло: ${msToTime(passedRestMs)}</div>`; } 
+                else { const passed = nowTs - prevShiftEnd; restText = msToTime(passed); fullRestDesc = `<div class="widget-sub-value">прошло с прошлой смены</div>`; }
+            }
+            html = `<div class="hero-widget theme-rest"><div class="widget-header"><div class="widget-title">${label}</div><div class="widget-icon">🛋️</div></div><div class="widget-main-value">${restText}</div>${fullRestDesc}${nextShift ? `<div class="progress-track"><div class="progress-fill" style="width: ${percentRest}%"></div></div>` : ''}</div>`;
+            if (nextShift) { const timeToStart = nextShift.start - now; html += `<div class="info-grid"><div class="info-card"><div class="info-label">Следующая</div><div class="info-val">${nextShift.start.getDate()}.${nextShift.start.getMonth()+1}</div></div><div class="info-card"><div class="info-label">До смены</div><div class="info-val" style="color:var(--accent)">${msToTime(timeToStart)}</div></div></div>`; }
+        }
+        container.innerHTML = html;
+    }
+    function msToTime(duration) { let minutes = Math.floor((duration / (1000 * 60)) % 60); let hours = Math.floor((duration / (1000 * 60 * 60))); return hours + "ч " + minutes + "м"; }
+    
+    function getSeniorityPercent(d) { 
+        if(!d) return 0; 
+        const s = new Date(d); 
+        if (isNaN(s.getTime())) return 0;
+        const n = new Date(); 
+        if (s > n) return 0; 
+        
+        const y = (n - s) / (1000 * 60 * 60 * 24 * 365.25); 
+
+        if (y >= 20) return 30; 
+        if (y >= 15) return 25; 
+        if (y >= 10) return 20; 
+        if (y >= 5) return 15; 
+        if (y >= 3) return 10; 
+        
+        // РАНЬШЕ: if (y >= 1) return 5; else return 0;
+        
+        // ТЕПЕРЬ: Всем новичкам (от 0 до 3 лет) сразу даем 5%
+        return 5; 
+    }
+
+    function calcExpDisplay() { 
+        const d = document.getElementById('set_start_date').value; 
+        const t = document.getElementById('set_exp_text'); 
+        
+        if(!d) { t.innerText = "Стаж не указан"; return; } 
+        
+        const s = new Date(d); 
+        if(isNaN(s.getTime())) { t.innerText = "Ошибка даты"; return; }
+        
+        const n = new Date(); 
+        // Считаем точное количество лет (с дробной частью для точности проверки)
+        const yearsFloat = (n - s) / (1000 * 60 * 60 * 24 * 365.25);
+        const yFull = Math.floor(yearsFloat); 
+        
+        const p = getSeniorityPercent(d); 
+        
+        // Если стаж меньше 1 года, но процент уже 5 — значит работает поддержка
+        if (yearsFloat < 1 && p === 5) {
+            t.innerHTML = `Стаж: < 1 года <span style="color:#2e7d32; font-weight:800;">(Поддержка 5% 🔥)</span>`;
+        } else {
+            t.innerText = `Стаж: ~${yFull} лет (Выслуга ${p}%)`; 
+        }
+    }
+
+    // === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (HELPER FUNCTIONS) ===
+
+    // 1. Парсинг времени и расчет часов (Общая, Ночь, Вечер)
+    function getShiftTimeData(text, isPostTrip) {
+        let times = [...text.matchAll(/(\d{1,2}[:\.]\d{2})/g)];
+        if (times.length < 2) return null;
+
+        // Внутренний парсер времени
+        const parse = (t) => {
+            let m = t.match(/(\d{1,2})[:\.](\d{2})/);
+            return m ? parseInt(m[1]) * 60 + parseInt(m[2]) : 0;
+        };
+
+        let s = parse(times[0][0]);
+        let e = parse(times[1][0]);
+        
+        if (e < s) e += 24 * 60; // Переход через полночь
+        if (isPostTrip) e += 10; // Добавляем послерейсовый
+
+        let totalMinutes = e - s;
+        let nightMins = 0;
+        let evMins = 0;
+
+        // Поминутный перебор для точности (как было в оригинале)
+        for (let m = s; m < e; m++) {
+            let t = m % 1440;
+            if (t >= 1320 || t < 360) nightMins++;      // 22:00 - 06:00
+            else if (t >= 960 && t < 1320) evMins++;    // 16:00 - 22:00
+        }
+
+        let totalHours = totalMinutes / 60;
+        // Мы убрали переменную payAsFullNight, теперь считаем честно
+
+        return {
+            totalHours: totalHours,
+            nightHours: nightMins / 60, // Просто делим минуты на 60
+            evHours: evMins / 60,       // Просто делим минуты на 60
+            isFullNight: false,         // Всегда false, так как такой оплаты нет
+            startMin: s,
+            endMin: e
+};
+    }
+
+    function getEffectiveRate(shift, text, isMedical) {
+    // 1. Берем "грязную" ставку (например 546.18)
+    // Если в смене её нет, берем из настроек
+    let baseRate = (shift.customRate !== undefined) ? safeFloat(shift.customRate) : settings.rate;
+    
+    // Защита от нуля
+    if (baseRate === 0) baseRate = 546.18; 
+
+    // 2. Мед.отвод: убираем 12% (оставляем голый тариф)
+    if (isMedical) {
+        return baseRate / 1.12;
+    }
+    
+    // 3. Резерв: убираем 12%, добавляем 8%
+    if (text.includes('рез')) {
+        return (baseRate / 1.12) * 1.08;
+    }
+    
+    // 4. Обычная линия: оставляем ставку как есть
+    return baseRate;
+}
+
+    // 3. Расчет надбавок (возвращает объект с суммами)
+    function calculateBonuses(baseSum, settings, shift, isSplit, isTech, rate) {
+        // Получаем проценты из настроек или смены
+        let pClass = (shift.customClass !== undefined) ? shift.customClass : settings.classP;
+        let pSen = (shift.customSen !== undefined) ? shift.customSen : getSeniorityPercent(settings.startDate);
+        let pPrem = (shift.customPrem !== undefined) ? safeFloat(shift.customPrem) : settings.premP;
+        
+        // Флаги
+        let isMentor = (shift.customMentor !== undefined) ? shift.customMentor : settings.mentor;
+        let isSenior = (shift.customSenior !== undefined) ? shift.customSenior : (settings.senior || false);
+
+        // Расчет денег
+        let valClass = baseSum * (pClass / 100);
+        let valSen = baseSum * (pSen / 100);
+        let valSenior = isSenior ? baseSum * 0.10 : 0;
+        let valMentor = isMentor ? baseSum * 0.15 : 0;
+        let valSplit = isSplit ? baseSum * 0.30 : 0;
+        
+        // Тех. учеба считается хитро: база/1.245 * 2
+        let valTech = 0;
+        if (isTech) {
+            let baseForTech = rate / 1.245; 
+            valTech = baseForTech * 2;
+        }
+
+        return {
+            class: valClass,
+            sen: valSen,
+            senior: valSenior,
+            mentor: valMentor,
+            split: valSplit,
+            tech: valTech,
+            premPercent: pPrem,
+            // Сумма всех надбавок (без премии)
+            subTotal: baseSum + valClass + valSen + valSenior + valMentor + valSplit
+        };
+    }
+    function getShiftTimes(shift) { let times = [...shift.text.matchAll(/(\d{1,2}[:\.]\d{2})/g)]; if (times.length < 2) return null; let startHM = times[0][0].replace('.',':').split(':').map(Number); let endHM = times[1][0].replace('.',':').split(':').map(Number); let start = new Date(shift.date); start.setHours(startHM[0], startHM[1], 0, 0); let end = new Date(shift.date); end.setHours(endHM[0], endHM[1], 0, 0); if (end <= start) { end.setDate(end.getDate() + 1); } return { start, end }; }
+    
+    function getRawNightStats(text, isPostTrip) {
+        let times = [...text.matchAll(/(\d{1,2}[:\.]\d{2})/g)];
+        if (times.length < 2) return { dur: 0, night: 0 };
+        
+        let s = times[0][0].replace('.',':').split(':').map(Number);
+        let e = times[1][0].replace('.',':').split(':').map(Number);
+        let sMin = s[0]*60 + s[1];
+        let eMin = e[0]*60 + e[1];
+        
+        if (eMin < sMin) eMin += 24*60;
+        if (isPostTrip) eMin += 10;
+
+        let dur = eMin - sMin;
+        let night = 0;
+
+        for (let m = sMin; m < eMin; m++) {
+            let t = m % 1440;
+            if (t >= 1320 || t < 360) night++; // 22:00 - 06:00
+        }
+        return { dur: dur, night: night };
+    }
+
+    function calculateRestIntervals() {
+        // Сортируем смены по времени
+        shifts.sort((a,b) => { 
+            let tA = getShiftTimes(a), tB = getShiftTimes(b); 
+            if(!tA) return 1; if(!tB) return -1; 
+            return tA.start - tB.start; 
+        }); 
+        
+        // Сбрасываем старые флаги
+        shifts.forEach(s => { 
+            s.autoSplit = false; 
+            s.isShortBreak = false; 
+            s.gapMinutes = 0;
+            s.forceFullNight = false; // Новый флаг для "Полной ночи"
+        });
+
+        // 3. Проходим по сменам и ищем разрывы
+        // Используем Set, чтобы не обрабатывать вторую часть разрыва дважды
+        let processedIndices = new Set();
+
+        for (let i = 0; i < shifts.length; i++) { 
+            if (processedIndices.has(i)) continue;
+
+            let curr = shifts[i]; 
+            let next = (i + 1 < shifts.length) ? shifts[i+1] : null; 
+            
+            let tCurr = getShiftTimes(curr); 
+            let tNext = next ? getShiftTimes(next) : null; 
+            
+            let isSplitPair = false;
+
+            // Проверка на разрыв (Gap < 8 часов)
+            if (tCurr && tNext) { 
+                let diffMs = tNext.start - tCurr.end; 
+                let diffMinutes = Math.floor(diffMs / (1000 * 60)); 
+
+                if (diffMinutes >= 0 && diffMinutes < 480) { 
+                    isSplitPair = true;
+                    // Маркируем разрыв/неразывную
+                    if (diffMinutes < 150) {
+                        curr.isShortBreak = true;
+                        curr.gapMinutes = diffMinutes;
+                        next.isShortBreak = true; 
+                    } else {
+                        curr.autoSplit = true; 
+                        next.autoSplit = true; 
                     }
+                    processedIndices.add(i + 1); // Запоминаем, что next мы уже обработали
+                } 
+            }
+
+        // === ЛОГИКА НОЧНЫХ (ТЗ) ===
+            
+            if (isSplitPair) {
+                // СЦЕНАРИЙ 1: ЭТО РАЗРЫВ -> Считаем сумму
+                let stat1 = getRawNightStats(curr.text, curr.isPostTrip);
+                let stat2 = getRawNightStats(next.text, next.isPostTrip);
+
+                let totalDur = stat1.dur + stat2.dur;
+                let totalNight = stat1.night + stat2.night;
+
+                // Если длительность 0 (защита), то 0
+                let ratio = (totalDur > 0) ? (totalNight / totalDur) : 0;
+
+                if (ratio >= 0.50) {
+                    // >= 50% ночи -> ОБЕ смены полная ночь
+                    curr.forceFullNight = true;
+                    next.forceFullNight = true;
                 }
-
-                // Суммируем деньги "Грязными" (общая куча)
-                if (res.dirty) dirty += res.dirty;
-
-                // Суммируем часы (Факт)
-                // ВНИМАНИЕ: Для графика берем часы только РАБОЧИХ смен (где платят тариф)
-                if (!res.isSick && !res.isVacation && !res.isDonor) {
-                    totalHours += (res.hours || 0);
+            } else {
+                // СЦЕНАРИЙ 2: ОБЫЧНАЯ СМЕНА -> Считаем только её
+                let stat = getRawNightStats(curr.text, curr.isPostTrip);
+                let ratio = (stat.dur > 0) ? (stat.night / stat.dur) : 0;
+                
+                if (ratio >= 0.50) {
+                    curr.forceFullNight = true;
                 }
+            }
+        } 
+    }    
 
-                // Суммируем детали (если они есть)
-                if (res.parts) {
-                    acc.tariffLine += (res.parts.tariffLine.m || 0);
-                    acc.tariffRes += (res.parts.tariffRes.m || 0);
-                    acc.tariffBase += (res.parts.tariffBase.m || 0);
+        for (let i = 0; i < shifts.length - 1; i++) { 
+            let curr = shifts[i]; 
+            let next = shifts[i+1]; 
+            let tCurr = getShiftTimes(curr); 
+            let tNext = getShiftTimes(next); 
+
+            if (tCurr && tNext) { 
+                let diffMs = tNext.start - tCurr.end; 
+                let diffMinutes = Math.floor(diffMs / (1000 * 60)); 
+
+                // Если смены рядом (разрыв от 0 до 8 часов)
+                if (diffMinutes >= 0 && diffMinutes < 480) { 
                     
-                    acc.split += (res.parts.splitLine.m + res.parts.splitRes.m + res.parts.splitBase.m);
-                    
-                    acc.ev += (res.parts.evLine.m + res.parts.evRes.m + res.parts.evBase.m);
-                    acc.night += (res.parts.nightLine.m + res.parts.nightRes.m + res.parts.nightBase.m);
-                    
-                    acc.class += (res.parts.class || 0);
-                    acc.senior += (res.parts.senior || 0);
-                    acc.mentor += (res.parts.mentor || 0);
-                    acc.tech += (res.parts.tech || 0);
-                    
-                    acc.med += (res.parts.med || 0);
-                    acc.study += (res.parts.study || 0);
+                    if (diffMinutes < 150) {
+                        // === СЦЕНАРИЙ: НЕРАЗРЫВНАЯ (Gap < 2.5 ч) ===
+                        // Записываем минуты простоя в ПЕРВУЮ часть
+                        curr.isShortBreak = true;
+                        curr.gapMinutes = diffMinutes;
+                        
+                        // Вторую часть тоже помечаем (чтобы убрать у нее статус Split)
+                        next.isShortBreak = true; 
+                    } else {
+                        // === СЦЕНАРИЙ: РАЗРЫВНАЯ (>= 2.5 ч) ===
+                        curr.autoSplit = true; 
+                        next.autoSplit = true; 
+                    }
+                } 
+            } 
+        } 
+    
+
+// === 1. РАСЧЕТ СРЕДНЕГО ДНЕВНОГО (ЧЕСТНЫЙ, ПО ФАКТУ ОТРАБОТАННОГО) ===
+    function calculateAverageDaily(targetDateStr) {
+    const targetDate = new Date(targetDateStr);
+    
+    // 1. Определяем границы (максимум 12 месяцев назад)
+    let minDateLimit = new Date(targetDate);
+    minDateLimit.setFullYear(minDateLimit.getFullYear() - 1);
+    minDateLimit.setDate(1); // Первое число месяца год назад
+
+    // 2. Ищем самую раннюю ВАЛИДНУЮ смену (не БЛ/Отпуск), чтобы понять старт отсчета
+    let validShifts = shifts.filter(s => {
+        const txt = s.text.toLowerCase();
+        return !txt.includes('бл') && !txt.includes('больничный') && 
+               !txt.includes('отпуск') && !txt.includes('отп') && !txt.includes('донор');
+    });
+
+    if (validShifts.length === 0) return 0; // Совсем нет данных
+
+    // Находим дату первой смены
+    let earliestDate = validShifts.reduce((min, s) => {
+        const d = new Date(s.date);
+        return d < min ? d : min;
+    }, new Date(targetDate));
+
+    // Если первая смена была раньше чем год назад, обрезаем годом.
+    let startDate = (earliestDate < minDateLimit) ? minDateLimit : new Date(earliestDate);
+    startDate.setDate(1); // Считаем всегда с 1 числа месяца начала работы
+
+    let totalMoney = 0;
+    let totalDaysCoef = 0; 
+    
+    // Курсор бежит по месяцам от старта до даты отпуска
+    let cursor = new Date(startDate);
+    
+    while (cursor < targetDate) {
+        // Проверка, чтобы не выйти за текущий месяц отпуска
+        if (cursor.getFullYear() === targetDate.getFullYear() && cursor.getMonth() === targetDate.getMonth()) break;
+        
+        const y = cursor.getFullYear();
+        const m = cursor.getMonth();
+        const daysInMonth = new Date(y, m + 1, 0).getDate(); // Сколько дней в этом месяце (30, 31, 28)
+
+        // Собираем смены за этот конкретный месяц
+        const monthShifts = shifts.filter(s => {
+            const d = new Date(s.date);
+            return d.getFullYear() === y && d.getMonth() === m;
+        });
+
+        let excludedDays = 0;
+        let monthMoney = 0;
+
+        // 1. Считаем деньги (только с рабочих смен) и исключаемые дни
+        monthShifts.forEach(s => {
+            const txt = s.text.toLowerCase();
+            // Если это рабочий день (не исключение)
+            if (!txt.includes('бл') && !txt.includes('больничный') && 
+                !txt.includes('отпуск') && !txt.includes('донор')) {
+                
+                let res = calcShift(s, true); // true = режим расчета среднего
+                if (res && res.dirty > 0) {
+                    monthMoney += res.dirty;
+                }
+            }
+            // Если это исключаемый день - запоминаем для коэффициента
+            if (txt.includes('бл') || txt.includes('больничный') || 
+                txt.includes('отпуск') || txt.includes('отп') || txt.includes('донор')) {
+                excludedDays++;
+            }
+        });
+
+        // 2. Считаем коэффициент дней (29.3)
+        if (excludedDays === 0 && monthMoney > 0) {
+            // Полный месяц
+            totalDaysCoef += 29.3;
+        } else {
+            // Неполный месяц
+            const workedDays = daysInMonth - excludedDays;
+            if (workedDays > 0) {
+                totalDaysCoef += (29.3 / daysInMonth) * workedDays;
+            }
+        }
+
+        totalMoney += monthMoney;
+        cursor.setMonth(cursor.getMonth() + 1); // Следующий месяц
+    }
+
+    if (totalDaysCoef === 0) return 0;
+    return totalMoney / totalDaysCoef;
+}
+
+    // === 2. НОВАЯ ФУНКЦИЯ: РАСЧЕТ СРЕДНЕГО ЧАСОВОГО (ДЛЯ ДОНОРА/КОМАНДИРОВКИ) ===
+    // Делим Деньги на Реально Отработанные Часы
+    function calculateAverageHourly(targetDateStr) {
+    const targetDate = new Date(targetDateStr);
+    // Берем период 12 месяцев назад
+    let minDate = new Date(targetDate);
+    minDate.setFullYear(minDate.getFullYear() - 1);
+    
+    let totalMoney = 0;
+    let totalHours = 0;
+
+    shifts.forEach(s => {
+        const sDate = new Date(s.date);
+        // Берем смены за прошлый год, но ДО текущей даты
+        if (sDate < minDate || sDate >= targetDate) return;
+
+        let txt = s.text.toLowerCase();
+        
+        // 1. ИСПРАВЛЕНИЕ: Добавил проверку на "отп"
+        if (txt.includes('бл') || txt.includes('больничный') || 
+            txt.includes('отпуск') || txt.includes('отп') || txt.includes('донор')) return;
+
+        // Считаем деньги и ЧАСЫ за эту смену
+        let res = calcShift(s, true); 
+        
+        // 2. ИСПРАВЛЕНИЕ: Используем res.duration вместо res.hours
+        // res.hours может быть 0, если это работа в праздник (1 мая),
+        // но фактически часы были отработаны, и на них нужно делить.
+        if (res && res.dirty > 0 && res.duration > 0) {
+            totalMoney += res.dirty;
+            totalHours += res.duration; 
+        }
+    });
+
+    if (totalHours === 0) return 0;
+    return totalMoney / totalHours;
+}
+    
+    // Функция проверяет ТОЛЬКО государственные праздники РФ (для оплаты х2)
+function isOnlyStateHoliday(dateObj) {
+    if (!dateObj) return false;
+    
+    // Защита: если пришла строка, делаем из нее дату
+    if (!(dateObj instanceof Date)) dateObj = new Date(dateObj);
+    
+    // Получаем "MM-DD"
+    const isoDate = getIsoDate(dateObj); // формат YYYY-MM-DD
+    const md = isoDate.slice(5);         // берем только месяц-день (например "05-09")
+
+    // Список праздников согласно ст. 112 ТК РФ
+    // Эти дни ВСЕГДА оплачиваются вдвойне
+    const fixedHolidays = [
+        "01-01", "01-02", "01-03", "01-04", "01-05", "01-06", "01-07", "01-08", // Новогодние каникулы
+        "02-23", // День защитника Отечества
+        "03-08", // Международный женский день
+        "05-01", // Праздник Весны и Труда
+        "05-09", // День Победы
+        "06-12", // День России
+        "11-04"  // День народного единства
+    ];
+
+    // Проверяем: если день в списке — это праздник
+    return fixedHolidays.includes(md);
+}
+// === НОВАЯ ФУНКЦИЯ: ПРОВЕРЯЕТ ТОЛЬКО ГОСУДАРСТВЕННЫЕ ПРАЗДНИКИ (Игнорирует СБ/ВС) ===
+    function calcShift(shift, isAvgCalc = false) {
+        if (!shift || !shift.text || String(shift.text).trim() === "") return null;
+        let text = shift.text.toLowerCase();
+
+        // --- ВНУТРЕННЯЯ ФУНКЦИЯ ---
+        function getSegmentBonusHours(startStr, endStr) {
+            if (!startStr || !endStr) return { night: 0, ev: 0, dur: 0 };
+            let s = startStr.split(':').map(Number);
+            let e = endStr.split(':').map(Number);
+            let sMin = s[0]*60 + s[1];
+            let eMin = e[0]*60 + e[1];
+            if (eMin < sMin) eMin += 24*60;
+            
+            let night = 0, ev = 0;
+            for (let m = sMin; m < eMin; m++) {
+                let t = m % 1440;
+                if (t >= 1320 || t < 360) night++;      // 22:00 - 06:00
+                else if (t >= 960 && t < 1320) ev++;    // 16:00 - 22:00
+            }
+            return { night: night/60, ev: ev/60, dur: (eMin - sMin)/60 };
+        }
+        // --------------------------
+
+        // БЛОК 1: СПЕЦ. ТИПЫ
+        if (text.includes('отпуск') || text.includes('отп')) {
+            if (isAvgCalc) return null; 
+            let avgDaily = calculateAverageDaily(shift.date);
+            if (avgDaily === 0) avgDaily = (safeFloat(settings.rate) || 546.18) * 8;
+            let unionFee = settings.union ? (avgDaily * 0.01) : 0;
+            return { net: Math.round(avgDaily * 0.87 - unionFee), dirty: avgDaily, hours: 0, duration: 0, isRes: false, isFull: false, night: 0, ev: 0, isSplit: false, isTrain: false, isTech: false, evBonus: 0, nightBonus: 0, splitBonus: 0, techBonus: 0, valClass: 0, valSen: 0, valSenior: 0, valMentor: 0, valPrem: 0, mentorHours: 0, tpHours: 0, lineWorkHours: 0 };
+        }
+        if (text.includes('бл') || text.includes('больничный')) {
+            if (isAvgCalc) return null;
+            const sickDate = new Date(shift.date);
+            const sickYear = sickDate.getFullYear();
+            const daysInMonth = new Date(sickYear, sickDate.getMonth() + 1, 0).getDate();
+            const MROT_TABLE = { 2023: 16242, 2024: 19242, 2025: 22440 };
+            const MROT = MROT_TABLE[sickYear] || 22440; 
+            const years = getSickYears(shift.date);
+            const FSS_LIMITS_LOCAL = { 2022: 1032000, 2023: 1917000, 2024: 2225000, 2025: 2753000 };
+            let inc1 = (settings.sickData && settings.sickData[years[0]]) || 0;
+            let inc2 = (settings.sickData && settings.sickData[years[1]]) || 0;
+            const limit1 = FSS_LIMITS_LOCAL[years[0]] || 2225000;
+            const limit2 = FSS_LIMITS_LOCAL[years[1]] || 2225000;
+            inc1 = Math.min(inc1, limit1); inc2 = Math.min(inc2, limit2);
+            const avgByIncome = (inc1 + inc2) / 730;
+            const avgByMrot = (MROT * 24) / 730;
+            let averageDaily = Math.max(avgByIncome, avgByMrot); 
+            let dailyDirty = averageDaily * ((settings.sickPercent || 100) / 100);
+            const minDayPayment = MROT / daysInMonth;
+            if (dailyDirty < minDayPayment) dailyDirty = minDayPayment;
+            return { net: Math.round(dailyDirty * 0.87), dirty: dailyDirty, hours: 0, duration: 0, isRes: false, isFull: false, night: 0, ev: 0, isSplit: false, isTrain: false, isTech: false, evBonus: 0, nightBonus: 0, splitBonus: 0, techBonus: 0, valClass: 0, valSen: 0, valSenior: 0, valMentor: 0, valPrem: 0, mentorHours: 0, tpHours: 0, lineWorkHours: 0 };
+        }
+        if (text.includes('вых')) return null;
+        if (text.includes('донор') || text.includes('кровь')) {
+            if (isAvgCalc) return null;
+            
+            // Всегда платим 7.2 (или средний), так как это Оплачиваемый выходной
+            let payHours = 7.2; 
+            
+            let totalDirty = 0;
+            if (payHours > 0) {
+                let avgHourly = calculateAverageHourly(shift.date);
+                if (avgHourly > 0) { 
+                    totalDirty = avgHourly * payHours; 
+                } else {
+                    // Если истории нет, считаем по текущей ставке + премия
+                    let fakeShift = { ...shift, text: "7.2", customMentor: settings.mentor, customSenior: settings.senior };
+                    let rate = settings.rate;
+                    let bonuses = calculateBonuses(payHours * rate, settings, fakeShift, false, false, rate);
+                    totalDirty = bonuses.subTotal + (bonuses.subTotal * (bonuses.premPercent / 100));
+                }
+            }
+
+            let unionFee = settings.union ? (totalDirty * 0.01) : 0;
+            return { 
+                net: Math.round(totalDirty * 0.87 - unionFee), 
+                dirty: totalDirty, 
+                hours: isHoliday(new Date(shift.date)) ? 0 : 7.2, // Часы в отработку не идут, если выходной
+                duration: 7.2, 
+                isRes: false, isFull: false, night: 0, ev: 0, isSplit: false, isTrain: false, isTech: false, 
+                evBonus: 0, nightBonus: 0, splitBonus: 0, techBonus: 0, 
+                valClass: 0, valSen: 0, valSenior: 0, valMentor: 0, valPrem: 0, 
+                mentorHours: 0, tpHours: 0, lineWorkHours: 0 
+            };
+        }
+        
+        // Учеба/Комиссия
+        if (text.includes('упц') || text.includes('учеба') || text.includes('обучение') || 
+            text.includes('охрана') || text.includes('корпоратив') || text.includes('повышение') || 
+            text.includes('культура') || text.includes('мед.ком') || 
+            text.includes('комиссия') || text.includes('мед ком') || text.includes('медком') ||
+            text.includes('псих') || text.includes('освид')) {
+            
+            // ПО УМОЛЧАНИЮ (Учеба, УПЦ, Охрана труда) -> 7.2 часа
+            let hours = 7.2; 
+
+            // ЕСЛИ ЭТО МЕДИЦИНА (Медкомиссия, Психолог, Освидетельствование) -> 6 часов
+            if (text.includes('мед.ком') || text.includes('комиссия') || text.includes('мед ком') || 
+                text.includes('медком') || text.includes('псих') || text.includes('освид')) {
+                hours = 6.0;
+            }
+
+            let rate = getEffectiveRate(shift, text, false);
+            let bonuses = calculateBonuses(hours * rate, settings, shift, false, false, rate);
+            let baseSum = (hours * rate) + bonuses.class + bonuses.sen; 
+            let total = baseSum * (1 + bonuses.premPercent / 100);
+            return { 
+                net: Math.round(total * 0.87), dirty: total, hours: hours, duration: hours, 
+                isRes: false, isFull: false, night: 0, ev: 0, isSplit: false, isTrain: true, isTech: false, 
+                evBonus: 0, nightBonus: 0, splitBonus: 0, techBonus: 0, 
+                valClass: bonuses.class, valSen: bonuses.sen, valPrem: baseSum * (bonuses.premPercent/100), 
+                valSenior: 0, valMentor: 0, mentorHours: 0, tpHours: 0, lineWorkHours: 0
+            };
+        }
+
+        // БЛОК 2: СТАНДАРТНАЯ СМЕНА
+        const isMedical = (shift.isFullMedical === true) || (shift.isMedical === true);
+        const isTech = (shift.isTech === true);
+        const isPostTrip = (shift.isPostTrip === true);
+        const isSplit = (shift.autoSplit === true);
+        const isShortBreak = (shift.isShortBreak === true);
+        
+        // ИСПРАВЛЕНИЕ: Теперь Отстранение (isMedical) автоматически считается Резервом
+        const isRes = text.includes('рез') || isMedical;
+
+        const timeData = getShiftTimeData(text, isPostTrip);
+        if (!timeData) return null; 
+
+        // 1. СТРАТЕГИЯ СТАВОК
+        let profileRate = (shift.customRate !== undefined) ? safeFloat(shift.customRate) : settings.rate;
+        if (profileRate === 0) profileRate = 546.18;
+        
+        let bareRate = profileRate / 1.12;       
+        let reserveRate = bareRate * 1.08;       
+        
+        // ЛОГИКА СТАВКИ:
+        // Если это Отстранение - берем ГОЛУЮ ставку (bareRate).
+        // Если обычный резерв - берем ставку резерва (reserveRate).
+        let effectiveResRate = isMedical ? bareRate : reserveRate;
+        
+        // Применяем ставку
+        let mainRate = isRes ? effectiveResRate : profileRate; 
+
+        // 2. АНАЛИЗ ВРЕМЕНИ
+        let segTP = getSegmentBonusHours(shift.tpStart, shift.tpEnd);
+        let segLine = getSegmentBonusHours(shift.lineStart, shift.lineEnd);
+        
+        let totalHours = timeData.totalHours;
+        let tpHours = segTP.dur;
+        let lineWorkHours = segLine.dur;
+        
+        let addedGapHours = 0;
+        if (isShortBreak && shift.gapMinutes && shift.gapMinutes > 0) addedGapHours = shift.gapMinutes / 60;
+        let totalWithGap = totalHours + addedGapHours;
+
+        let mainHours = Math.max(0, totalWithGap - tpHours - lineWorkHours);
+
+        // 3. РАСЧЕТ НОЧНЫХ/ВЕЧЕРНИХ (ПРАВИЛО 50%)
+        let evMoney = 0;
+        let nightMoney = 0;
+        let totalNight = 0;
+        let totalEv = 0;
+
+        if (shift.forceFullNight) {
+            // === ПОЛНАЯ НОЧЬ ===
+            nightMoney += tpHours * bareRate * 0.40;
+            nightMoney += lineWorkHours * profileRate * 0.40;
+            nightMoney += mainHours * mainRate * 0.40;
+            nightMoney += addedGapHours * mainRate * 0.40; 
+
+            totalNight = totalWithGap; 
+            totalEv = 0;
+        } else {
+            // === ОБЫЧНЫЙ РАСЧЕТ ===
+            totalNight = timeData.nightHours + (isShortBreak ? addedGapHours : 0);
+            totalEv = timeData.evHours;
+
+            let tpNight = segTP.night; let tpEv = segTP.ev;
+            let lineNight = segLine.night; let lineEv = segLine.ev;
+            
+            let mainNight = Math.max(0, totalNight - tpNight - lineNight);
+            let mainEv = Math.max(0, totalEv - tpEv - lineEv);
+
+            evMoney = (tpEv * bareRate * 0.20) + (lineEv * profileRate * 0.20) + (mainEv * mainRate * 0.20);
+            nightMoney = (tpNight * bareRate * 0.40) + (lineNight * profileRate * 0.40) + (mainNight * mainRate * 0.40);
+        }
+        
+        // 4. ТАРИФ (БАЗА) С УЧЕТОМ НОВОГО ГОДА
+        const dObj = new Date(shift.date);
+        const isDec31 = (dObj.getMonth() === 11 && dObj.getDate() === 31);
+        const isWorkHoliday = isOnlyStateHoliday(dObj);
+        
+        let holidayTail = 0;
+        // Если 31 декабря смена залезла за полночь (например до 25:00)
+        if (isDec31 && timeData.endMin > 1440) {
+            holidayTail = (timeData.endMin - 1440) / 60;
+        }
+
+        let holidayHours = isWorkHoliday ? totalWithGap : 0;
+
+        // Считаем тариф (БАЗА) всегда как x1 (или x2 если весь день праздник)
+        let baseMultiplier = isWorkHoliday ? 2 : 1;
+        
+        let nakedTariff = 0;
+        nakedTariff += tpHours * bareRate * baseMultiplier;
+        nakedTariff += lineWorkHours * profileRate * baseMultiplier;
+        nakedTariff += mainHours * mainRate * baseMultiplier;
+
+        // 5. БАЗА ДЛЯ НАДБАВОК
+        let baseForSplit = nakedTariff;
+        if (isWorkHoliday) baseForSplit = nakedTariff / 2; 
+
+        let safeSplit = (isShortBreak || isMedical) ? false : isSplit;
+        let safeShift = isMedical ? { ...shift, customMentor: false, customSenior: false } : shift;
+        
+        const bonuses = calculateBonuses(baseForSplit, settings, safeShift, safeSplit, isTech, profileRate);
+        
+        let fullBaseForBonuses = totalWithGap * profileRate; 
+        
+        let pClass = (shift.customClass !== undefined) ? shift.customClass : settings.classP;
+        bonuses.class = fullBaseForBonuses * (pClass / 100);
+
+        let pSen = (shift.customSen !== undefined) ? shift.customSen : getSeniorityPercent(settings.startDate);
+        bonuses.sen = fullBaseForBonuses * (pSen / 100);
+
+        let isSenior = (shift.customSenior !== undefined) ? shift.customSenior : (settings.senior || false);
+        bonuses.senior = isSenior ? (fullBaseForBonuses * 0.10) : 0;
+        
+        if (safeSplit) {
+            bonuses.split = baseForSplit * 0.30;
+        }
+
+        // 1. Для расчета ПРЕМИИ берем только ОДИНАРНЫЙ тариф (даже если праздник)
+        let tariffForPrem = isWorkHoliday ? (nakedTariff / 2) : nakedTariff;
+
+        // 2. Собираем базу, на которую накрутится 35%
+        let baseForPremShift = tariffForPrem + bonuses.class + bonuses.sen + bonuses.senior + bonuses.mentor + bonuses.split;
+        
+        // 3. Считаем саму премию
+        bonuses.premPercent = (shift.customPrem !== undefined) ? safeFloat(shift.customPrem) : settings.premP;
+        let actualPremium = baseForPremShift * (bonuses.premPercent / 100);
+
+        // === ДОПЛАТА ЗА НГ (Хвостик) ===
+        let nyMoney = 0;
+        if (holidayTail > 0) {
+            nyMoney = holidayTail * profileRate; 
+        }
+
+        // 4. ИТОГО (ГРЯЗНЫМИ)
+        // Формула: (База премии) + (Премия) + (Доплата за праздник, которой нет в базе) + (Ночные/Вечерние/Прочее)
+        
+        // Сначала берем Базу и Премию
+        let finalDirty = baseForPremShift + actualPremium;
+        
+        // Если это праздник, то в baseForPremShift лежит только половина тарифа.
+        // Вторую половину (доплату) нужно вернуть в итоговую сумму руками:
+        if (isWorkHoliday) {
+            finalDirty += (nakedTariff / 2);
+        }
+
+        // Докидываем остальные надбавки
+        finalDirty += evMoney + nightMoney + bonuses.tech + nyMoney;
+
+        let finalForAvg = finalDirty;
+        if (isAvgCalc && isWorkHoliday) {
+             let k = (1 + bonuses.premPercent / 100);
+             let surcharge = (holidayHours * profileRate) * k; 
+             finalForAvg = finalDirty - surcharge;
+        }
+
+        let isMentor = (shift.customMentor !== undefined) ? shift.customMentor : settings.mentor;
+        let uFee = settings.union ? (finalDirty * 0.01) : 0;
+
+        return {
+            net: Math.round(finalDirty * 0.87 - uFee), 
+            dirty: finalForAvg,
+            hours: isWorkHoliday ? 0 : (totalWithGap), 
+            duration: totalWithGap, 
+            isRes: isRes, isFull: false, isFullMed: isMedical,
+            night: totalNight, ev: totalEv, 
+            isSplit: safeSplit, isTrain: false, isTech: isTech,
+            tpHours: tpHours,
+            lineWorkHours: lineWorkHours, 
+            tariffMoney: nakedTariff,     
+            gapHours: addedGapHours,
+            splitBonus: bonuses.split, evBonus: evMoney, nightBonus: nightMoney, techBonus: bonuses.tech,
+            valClass: bonuses.class, valSen: bonuses.sen, valSenior: bonuses.senior, 
+            valMentor: bonuses.mentor, valPrem: actualPremium, 
+            mentorHours: (isMentor && !isMedical && !isTech) ? (lineWorkHours + (!isRes ? mainHours : 0)) : 0,
+            // Передаем эти данные специально для Сводки:
+            holidayTailMoney: nyMoney,
+            holidayTailHours: holidayTail
+        };
+    }
+
+    // Таймер для защиты от наложений анимации
+    let animTimer = null;
+
+    function drawProgress(percent, labelValue) { 
+        const circle = document.getElementById('circlePath'); 
+        const circleOver = document.getElementById('circlePathOver'); 
+        const textVal = document.getElementById('chartValue'); 
+        
+        // Если была старая анимация - отменяем
+        if (animTimer) clearTimeout(animTimer);
+
+        let mainPercent = percent;
+        let overPercent = 0;
+
+        // Расчет процентов
+        if (mainPercent > 100) {
+            overPercent = mainPercent - 100; 
+            mainPercent = 100; 
+            if (overPercent > 100) overPercent = 100; 
+        } else {
+            if (mainPercent < 0) mainPercent = 0;
+        }
+
+        // 1. Запускаем ОРАНЖЕВЫЙ круг (сразу)
+        circle.style.strokeDasharray = `${mainPercent}, 100`; 
+
+        // 2. Работаем с ЗЕЛЕНЫМ кругом
+        if (circleOver) {
+            if (overPercent > 0) {
+                // ШАГ А: Скрываем зеленый, пока он ждет (прозрачность 0)
+                circleOver.style.opacity = '0';
+                circleOver.style.strokeDasharray = `0, 100`;
+                circleOver.style.display = 'block'; 
+
+                // ШАГ Б: Ждем 600мс (пока оранжевый доедет до 100%)
+                animTimer = setTimeout(() => {
+                    // ШАГ В: Проявляем и запускаем рост
+                    circleOver.style.opacity = '1'; 
+                    circleOver.style.strokeDasharray = `${overPercent}, 100`;
+                }, 600); 
+            } else {
+                // Если переработки нет
+                circleOver.style.display = 'none';
+                circleOver.style.opacity = '0';
+            }
+        }
+        
+        textVal.innerText = labelValue.toFixed(1); 
+    }
+    function changeStatsMonth(dir) { statsDate.setMonth(statsDate.getMonth() + dir); renderStats(); }
+
+    function renderStats() {
+        calculateRestIntervals();
+        const year = statsDate.getFullYear(); const month = statsDate.getMonth();
+        const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+        document.getElementById('statsMonthDisplay').innerText = `${monthNames[month]} ${year}`;
+        const monthlyShifts = shifts.filter(s => { const d = new Date(s.date); return d.getFullYear() === year && d.getMonth() === month; });
+        
+        let st = { count: 0, hours: 0, night: 0, ev: 0, res: 0, dirty: 0, sick: 0, donor: 0, net: 0, union: 0, tax: 0, splitBonus: 0, evBonus: 0, nightBonus: 0, techBonus: 0, splitHours: 0, sumClass: 0, sumSen: 0, sumPrem: 0, sumSenior: 0, sumMentor: 0, ot15Hours: 0, ot15Money: 0, ot20Hours: 0, ot20Money: 0, mentorHours: 0, 
+           holidayHours: 0, holidayMoney: 0, 
+           sickMoney: 0, vacationMoney: 0, donorMoney: 0, medMoney: 0, studyMoney: 0, sumTariff: 0, sumRes: 0, tariffHours: 0, resHours: 0, totalFactHours: 0, sumNakedTariff: 0 }; 
+        
+        let sickDeduction = 0;
+        let usedClasses = new Set();
+        let usedPrems = new Set();
+        let usedSens = new Set();
+        let hasSeniorShift = false;
+
+        monthlyShifts.forEach(s => {
+            let text = s.text.toLowerCase();
+            const d = new Date(s.date);
+
+            // =========================================================
+            // 1. ВЫЧЕТЫ ИЗ НОРМЫ
+            // =========================================================
+            // Сюда входят ТОЛЬКО те, кто уменьшает норму (БЛ, Отпуск, Донор в будни)
+            // Учебу и Медкомиссию сюда НЕ пишем — норма для них остается полной.
+            if (text.includes('бл') || text.includes('больничный') || 
+                text.includes('отпуск') || text.includes('отп') || 
+                text.includes('донор') || text.includes('кровь')) {
+                
+                // Вычитаем норму ТОЛЬКО в будни
+                if (!isHoliday(d)) { 
+                    sickDeduction += 7.2; 
                 }
                 
-                // Спец. типы (деньги лежат в dirty, но для красоты разложим)
-                if (res.isSick) acc.sick += res.dirty;
-                if (res.isVacation) acc.vacation += res.dirty;
-                if (res.isDonor) acc.donor += res.dirty;
-            });
-
-            // 4. Расчет Нормы и Переработки
-            let norm = Logic.getMonthNorm(year, month);
-            if (sickDeduction > 0) norm -= sickDeduction;
-            norm = Math.max(0, parseFloat(norm.toFixed(1)));
-            
-            const overtime = Math.max(0, totalHours - norm);
-            
-            // Расчет доплаты за переработку
-            const otPay = Calculator.calculateOvertimePay(overtime, settings);
-            dirty += otPay.total; // Добавляем переработку к итогу
-
-            // 5. Расчет ПРЕМИИ (Здесь, в конце месяца!)
-            // База: Тарифы + Разрыв + Ночь/Вечер + Класс + Бригадир
-            const bonusBase = 
-                acc.tariffLine + acc.tariffRes + acc.tariffBase +
-                acc.split +
-                acc.ev + acc.night +
-                acc.class + acc.senior;
-            
-            // Если были настройки смены, берем средний или последний? 
-            // Для простоты берем глобальный % (или можно усложнить)
-            const premMoney = bonusBase * (settings.premP / 100);
-            
-            // Добавляем премию в общую кучу
-            dirty += premMoney;
-            acc.prem = premMoney; // Записываем для отображения
-
-            // 6. Налоги
-            const union = settings.union ? (dirty * 0.01) : 0;
-            const tax = dirty * 0.13;
-            const net = dirty - union - tax;
-
-            // 7. ВЫВОД НА ЭКРАН (DOM)
-            document.getElementById('st_norm').innerText = norm + ' ч';
-            document.getElementById('st_hours').innerText = totalHours.toFixed(1) + ' ч';
-            
-            const overEl = document.getElementById('st_over');
-            overEl.innerText = (overtime > 0 ? "+" : "") + overtime.toFixed(1);
-            overEl.style.color = overtime > 0 ? "#2e7d32" : "#90a4ae";
-
-            // Круг
-            const percent = (norm > 0) ? (totalHours / norm) * 100 : 0;
-            drawProgress(percent, totalHours);
-
-            // Таблица (функция helper)
-            const row = (id, val) => {
-                const el = document.getElementById(id);
-                if(el) {
-                    el.style.display = (val > 1) ? 'flex' : 'none';
-                    const vEl = el.querySelector('.stat-val');
-                    if(vEl) vEl.innerText = fmtMoney(val);
-                }
-            };
-
-            row('row_tariff', acc.tariffLine);
-            row('row_res', acc.tariffRes + acc.tariffBase); // Резерв + База
-            row('row_split', acc.split);
-            
-            // ПРЕМИЯ (Вставляем принудительно)
-            const elPrem = document.getElementById('st_prem_money');
-            if(elPrem) elPrem.innerText = fmtMoney(acc.prem);
-            // Если 0, можно скрыть строку, но лучше оставить
-            
-            row('row_ev', acc.ev);
-            row('row_night', acc.night);
-            
-            row('row_class', acc.class);
-            row('row_senior', acc.senior);
-            row('row_mentor', acc.mentor); // Красная зона (внизу)
-            row('row_tech', acc.tech);
-            
-            row('row_ot15', otPay.total); // Пока просто общая сумма
-            
-            // Спец. типы
-            row('row_sick', acc.sick);
-            row('row_vacation', acc.vacation);
-            row('row_donor', acc.donor);
-            row('row_med', acc.med);
-            row('row_study', acc.study);
-
-            // Итоги
-            document.getElementById('st_dirty').innerText = fmtMoney(dirty);
-            document.getElementById('st_union').innerText = '-' + fmtMoney(union);
-            document.getElementById('st_tax').innerText = '-' + fmtMoney(tax);
-            document.getElementById('st_net').innerText = fmtMoney(net);
-            
-            // База для 13-й (Грязные минус красная зона)
-            const yearBase = dirty - acc.mentor - acc.sick - acc.vacation - acc.donor - acc.med - acc.study - acc.tech;
-            document.getElementById('st_bonus_base').innerText = fmtMoney(yearBase);
-        }
-
-        // --- Вспомогательные функции (оставляем как есть) ---
-        function touchMeta(key) { syncMeta[key] = new Date().getTime(); localStorage.setItem('metro_sync_meta', JSON.stringify(syncMeta)); }
-        function getMonthKey(dateStr) { if (!dateStr) return null; return `s_${dateStr.substring(0, 4)}_${dateStr.substring(5, 7)}`; }
-        function safeFloat(val) { if (!val) return 0; let n = parseFloat(String(val).replace(/\s/g, '').replace(',', '.')); return isFinite(n) ? n : 0; }
-        function getIsoDate(d) { if(!d) return ""; const y = d.getFullYear(); const m = String(d.getMonth()+1).padStart(2,'0'); const day = String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
-        function fmtMoney(val) { return Math.round(val || 0).toLocaleString() + ' ₽'; }
-        function updateCloudStatus(msg, err) { const el = document.getElementById('cloudStatus'); if(el) { el.innerText = "Облако: " + msg; el.style.color = err ? "#e53935" : "#2e7d32"; } }
-        function showLoader() { document.getElementById('loader').classList.add('loader-active'); }
-        function hideLoader() { document.getElementById('loader').classList.remove('loader-active'); }
-        function normalizeOne(s) { 
-            if(s.d) return { date: s.d, text: s.t, note: s.n, customRate: s.cr, customMentor: s.cm, customSenior: s.cs, customClass: s.cc, customSen: s.ce, customPrem: s.cp, lineStart: s.ls, lineEnd: s.le, tpStart: s.tps, tpEnd: s.tpe, isTech: !!s.it, isPostTrip: !!s.ip, isFullMedical: !!s.ifm }; 
-            if(s.isMedical) { s.isFullMedical = true; delete s.isMedical; } return s; 
-        }
-        function normalizeShifts() { shifts = shifts.map(normalizeOne); }
-        function scrollToToday() { setTimeout(() => { const el = document.querySelector('.shift-card.today'); if(el) el.scrollIntoView({block:'center',behavior:'auto'}); }, 100); }
-        function switchTab(t) { document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.getElementById('tab-'+t).classList.add('active'); document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); document.getElementById('nav-'+t)?.classList.add('active'); if(t==='home') scrollToToday(); if(t==='stats') renderStats(); }
-        function changeStatsMonth(d) { statsDate.setMonth(statsDate.getMonth()+d); renderStats(); }
-        function getSickYears(dStr) { const y = new Date(dStr || new Date()).getFullYear(); return [y-2, y-1]; }
-        function setAutoDate() { document.getElementById('inpDate').valueAsDate = new Date(); }
-        
-        // --- ЗАПУСК ---
-        function init() {
-            if(shifts.length>0) {
-                // Дедупликация
-                const map = new Map(); shifts.forEach(s => { if(s.date) map.set(s.date.substring(0,10), s); }); shifts = Array.from(map.values()); localStorage.setItem('metro_shifts', JSON.stringify(shifts));
+                if (text.includes('бл') || text.includes('больничный')) st.sick++;
+                if (text.includes('донор') || text.includes('кровь')) st.donor++;
             }
-            normalizeShifts();
-            render();
-            updateUI();
-            tg.ready(); tg.expand();
-            if(tg.CloudStorage) { showLoader(); syncWithCloud(); } else { hideLoader(); }
-            // Свайпы и прочее
-            document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; touchStartY = e.changedTouches[0].screenY; }, {passive: false});
-            document.addEventListener('touchend', e => { 
-                if(document.body.classList.contains('modal-open')) return;
-                let dx = e.changedTouches[0].screenX - touchStartX; 
-                let dy = e.changedTouches[0].screenY - touchStartY;
-                if(Math.abs(dx) > 70 && Math.abs(dy) < Math.abs(dx)) {
-                    const tabs = ['today', 'home', 'stats', 'settings'];
-                    let idx = tabs.indexOf(document.querySelector('.page.active').id.replace('tab-', ''));
-                    if(dx < 0 && idx < 3) switchTab(tabs[idx+1]);
-                    if(dx > 0 && idx > 0) switchTab(tabs[idx-1]);
+
+            // =========================================================
+            // 2. БАЗОВЫЙ РАСЧЕТ
+            // =========================================================
+            let res = calcShift(s);
+            if (!res) return; 
+
+            // =========================================================
+            // 3. ИЗОЛЯЦИЯ (Кто получает деньги и УХОДИТ)
+            // =========================================================
+            // Эти типы смен получают деньги, но ЧАСЫ в "Отработано" не идут (0 часов факта)
+            
+            // А. ДОНОР
+            if (text.includes('донор') || text.includes('кровь')) {
+                st.donorMoney += res.dirty;
+                return; // <-- Прерываем, часы в факт не идут
+            }
+
+            // Б. БОЛЬНИЧНЫЙ
+            if (text.includes('бл') || text.includes('больничный')) {
+                st.sickMoney += res.dirty;
+                return; // <-- Прерываем
+            }
+
+            // В. ОТПУСК
+            if (text.includes('отпуск') || text.includes('отп')) {
+                st.vacationMoney += res.dirty;
+                return; // <-- Прерываем
+            }
+
+            // =========================================================
+            // 4. СПЕЦ. РАБОТА (Кто получает деньги и ОСТАЕТСЯ)
+            // =========================================================
+            // Эти типы смен идут в зачет часов ("Отработано"), перекрывая норму
+            
+            // Г. МЕДКОМИССИЯ
+            if (text.includes('мед.ком') || text.includes('комиссия') || 
+                text.includes('мед ком') || text.includes('медком') || 
+                text.includes('псих') || text.includes('освид')) {
+                st.medMoney += res.dirty;
+                // return НЕТ! Идем вниз считать часы
+            }
+
+            // Д. УЧЕБА / ОХРАНА
+            else if (text.includes('упц') || text.includes('учеба') || 
+                text.includes('обучение') || text.includes('охрана')) {
+                st.studyMoney += res.dirty;
+                // return НЕТ! Идем вниз считать часы
+            }
+
+            // =========================================================
+            // 5. РАСЧЕТ ЧАСОВ И НАДБАВОК (ОБЩИЙ БЛОК)
+            // =========================================================
+            
+            // Сюда доходят: Обычные смены, Резерв, Учеба, Медкомиссия
+            
+            if (res.dirty > 0) {
+                let factClass = (s.customClass !== undefined) ? s.customClass : settings.classP;
+                usedClasses.add(factClass);
+                let factPrem = (s.customPrem !== undefined) ? parseFloat(s.customPrem) : settings.premP;
+                usedPrems.add(factPrem);
+                let factSen = (s.customSen !== undefined) ? s.customSen : getSeniorityPercent(settings.startDate);
+                usedSens.add(factSen);
+                if (res.valSenior > 0) hasSeniorShift = true;
+            }
+
+            st.count++;
+            
+            // ВАЖНО: Здесь добавляются часы в факт!
+            st.totalFactHours += res.duration; 
+            st.hours += res.hours; 
+            
+            st.night += res.night;
+            st.ev += (res.ev || 0);
+            if (res.isRes) st.res++;
+            
+            // Временное накопление (для промежуточных целей)
+            st.dirty += res.dirty; 
+            
+            st.splitBonus += (res.splitBonus || 0);
+            st.evBonus += (res.evBonus || 0);
+            st.nightBonus += (res.nightBonus || 0);
+            st.techBonus += (res.techBonus || 0);
+            if (res.isSplit) st.splitHours += res.hours;
+
+            // Считаем надбавки
+            st.sumClass += (res.valClass || 0);
+            st.sumSen += (res.valSen || 0);
+            st.sumSenior += (res.valSenior || 0);
+            st.sumMentor += (res.valMentor || 0);
+            st.sumPrem += (res.valPrem || 0);
+            st.mentorHours += (res.mentorHours || 0);
+
+            // ЛОГИКА ТАРИФА (ЧТОБЫ НЕ ЗАДВОИЛОСЬ)
+            if (res.isRes) { 
+                if (res.lineWorkHours > 0) {
+                    st.tariffHours += res.lineWorkHours;
+                    st.sumNakedTariff += res.lineWorkHours * settings.rate;
+                    let pureResHours = Math.max(0, res.duration - res.lineWorkHours);
+                    st.resHours += pureResHours;
+                    let resRate = (settings.rate / 1.12) * 1.08;
+                    st.sumRes += pureResHours * resRate; 
+                } else {
+                    st.sumRes += (res.tariffMoney || 0);
+                    st.resHours += res.duration; 
                 }
-            }, {passive: false});
+            } 
+            // ВАЖНО: res.isTrain = true для Учебы и Комиссии.
+            // Поэтому они НЕ попадут в этот блок, и тариф (sumNakedTariff) не начислится второй раз.
+            // Их деньги уже лежат в st.studyMoney / st.medMoney.
+            else if (!res.isTrain && !res.isTech) { 
+                st.sumTariff += (res.tariffMoney || 0); 
+                if (res.tpHours > 0) {
+                    st.resHours += res.tpHours;
+                    let bareRate = settings.rate / 1.12; 
+                    let tpMoney = res.tpHours * bareRate;
+                    st.sumRes += tpMoney;
+                    let pureLineHours = res.hours - res.tpHours;
+                    if (pureLineHours > 0) st.sumNakedTariff += pureLineHours * settings.rate; 
+                } else {
+                    if (res.hours > 0) st.sumNakedTariff += res.hours * settings.rate; 
+                }
+            }
+            
+            // Праздники
+            if (isOnlyStateHoliday(d) && res.duration > 0) {
+                st.holidayHours += res.duration;
+                st.holidayMoney += res.dirty;
+            }
+            if (res.holidayTailMoney > 0) {
+                st.holidayHours += res.holidayTailHours;
+                st.holidayMoney += res.holidayTailMoney;
+            }
+        });
+
+        let norm = getMonthNorm(year, month); let displayNorm = norm + ' ч';
+        if (sickDeduction > 0) { norm -= sickDeduction; norm = parseFloat(norm.toFixed(1)); displayNorm = `${norm} ч (снижена на ${sickDeduction.toFixed(1)})`; }
+        const overtime = st.hours - norm; let percent = (norm > 0) ? (st.hours / norm) * 100 : 0; drawProgress(percent, st.hours);
+
+        if (overtime > 0) {
+            let rate = settings.rate; 
+            let premRate = settings.premP;
+            if(usedPrems.size > 0) premRate = Math.max(...usedPrems);
+
+            if (overtime <= 2) { 
+                st.ot15Hours = overtime; 
+                let base15 = st.ot15Hours * rate * 0.5; 
+                st.ot15Money = base15; 
+                st.sumPrem += base15 * (premRate / 100); 
+            } else { 
+                st.ot15Hours = 2; 
+                let base15 = 2 * rate * 0.5; 
+                st.ot15Money = base15; 
+                st.sumPrem += base15 * (premRate / 100);
+
+                st.ot20Hours = overtime - 2; 
+                let base20 = st.ot20Hours * rate * 1.0; 
+                st.ot20Money = base20;
+                st.sumPrem += base20 * (premRate / 100);
+            }
+            
+            st.dirty += st.ot15Money + st.ot20Money + (st.ot15Money + st.ot20Money) * (premRate / 100);
+
+            let surchargeBase = (st.ot15Hours * rate * 0.5) + (st.ot20Hours * rate * 1.0);
+            if (surchargeBase > 0) {
+                let addClass = surchargeBase * (settings.classP / 100);
+                let addSen = surchargeBase * (getSeniorityPercent(settings.startDate) / 100);
+
+            // Эти две строки просто удаляем или ставим 0, чтобы они не добавлялись к деньгам
+            let addSenior = 0; 
+            let addMentor = 0;
+
+            st.sumClass += addClass;
+            st.sumSen += addSen;
+            // st.sumSenior += 0; // Исключено, так как Ст. машинист не суммируется с переработкой
+            // st.sumMentor += 0;  // Исключено, так как Наставник не суммируется с переработкой
+
+            let addPrem = (addClass + addSen) * (premRate / 100); 
+            st.sumPrem += addPrem;
+            st.dirty += addClass + addSen + addPrem; 
+            }
         }
 
-        // Остальные функции UI (addShift, openModal, etc) остались без изменений, 
-        // так как они просто вызывают HTML элементы. 
-        // Я их не дублирую здесь, чтобы не раздувать ответ, 
-        // они уже есть в твоем файле. Главное - мы исправили renderStats и calcShift.
+        // --- 1. ФИНАЛЬНЫЙ РАСЧЕТ ЧАСОВ ПО ТАРИФУ (Код 0030) ---
+        // Логика: (Отработано без праздников) - (Часы резерва) - (Часы переработки) = Чистый Тариф
+        let hoursForTariff = st.hours - st.resHours; 
+        if (overtime > 0) {
+            hoursForTariff -= overtime;
+        }
+        st.tariffHours = hoursForTariff; // Записываем результат (должно получиться 133.90)
+
+        st.sumNakedTariff = st.tariffHours * settings.rate;
+        // --- ФИНАЛЬНАЯ ФИКСАЦИЯ НАДБАВОК (ПЕРЕОПРЕДЕЛЕНИЕ) ---
+
+        // 1. Объявляем часы для пересчета (OT Total = 16.6 ч)
+        const OT_TOTAL_HOURS = st.ot15Hours + st.ot20Hours; 
+        const OT_BASE_0720 = OT_TOTAL_HOURS; // Код 0720 = OT Total (16.6ч)
+
+        // 2. Считаем БАЗУ В ЧАСАХ (173.83 ч) по формуле, которую ты вычислил:
+        const BONUS_HOURS_BASE = st.tariffHours + st.resHours + OT_TOTAL_HOURS + OT_BASE_0720 + st.holidayHours - 1; 
+
+        // 3. Считаем БАЗУ В ДЕНЬГАХ (90,421.20 ₽)
+        const BONUS_BASE_MONEY = BONUS_HOURS_BASE * settings.rate; 
+
+        // 4. ПЕРЕОПРЕДЕЛЯЕМ ФИНАЛЬНЫЕ СУММЫ (OVERRIDE)
+        let pClass = settings.classP;
+        let pSen = getSeniorityPercent(settings.startDate);
+        let hasSenior = settings.senior || false; 
+
+        st.sumClass = BONUS_BASE_MONEY * (pClass / 100);    
+        st.sumSen = BONUS_BASE_MONEY * (pSen / 100);        
+        st.sumSenior = hasSenior ? (BONUS_BASE_MONEY * 0.10) : 0;
+
+        // ========================================================================
+        // ФИНАЛЬНЫЙ ПЕРЕСЧЕТ (Fix v2.0)
+        // Логика: Пересчитываем надбавки от Полной Базы, чтобы не штрафовать за Резерв
+        // ========================================================================
         
-        // ВНИМАНИЕ: Функции render(), addShift(), openModal(), saveData(), syncWithCloud() 
-        // и прочие нужно оставить из предыдущего файла или скопировать сюда. 
-        // Я сократил их здесь для ясности, но в реальном файле они должны быть!
+        // 1. Считаем Базу Часов по твоей формуле
+        let totalOvertime = st.ot15Hours + st.ot20Hours;
         
-        // Полный код этих функций есть в твоем исходнике. 
-        // Ключевое изменение выше - это function calcShift и function renderStats.
+        // Формула переработки для базы: "Часы + Часы - 1"
+        let otPartForBase = 0;
+        if (totalOvertime > 0) {
+            otPartForBase = totalOvertime + totalOvertime - 1;
+        }
+
+        // Собираем часы: Линия + Резерв + Праздники + Переработка(по хитрой формуле)
+        let bonusBaseHours = st.tariffHours + st.resHours + st.holidayHours + otPartForBase;
+
+        // 2. Считаем БАЗУ В ДЕНЬГАХ (Используем ставку 12% из профиля)
+        let fullBaseMoney = bonusBaseHours * settings.rate;
+
+        // 3. ПЕРЕЗАПИСЫВАЕМ БОНУСЫ (Используем знак =, чтобы не задвоилось)
         
-        function updateUI() {
-            document.getElementById('set_rate').value = String(settings.rate).replace('.',',');
-            document.getElementById('set_prem').value = String(settings.premP).replace('.',',');
-            document.getElementById('set_class').value = settings.classP;
-            document.getElementById('set_mentor').checked = settings.mentor;
-            document.getElementById('set_senior').checked = settings.senior;
-            document.getElementById('set_union').checked = settings.union;
-            document.getElementById('set_start_date').value = settings.startDate;
-            calcExpDisplay();
+        // Классность
+        if (usedClasses.size > 0) {
+             let maxClass = Math.max(...usedClasses); 
+             st.sumClass = fullBaseMoney * (maxClass / 100);
+        } else if (settings.classP > 0) {
+             st.sumClass = fullBaseMoney * (settings.classP / 100);
+        }
+
+        // Выслуга
+        let userSen = getSeniorityPercent(settings.startDate);
+        st.sumSen = fullBaseMoney * (userSen / 100);
+
+        // Ст. Машинист
+        let isSeniorTotal = settings.senior || hasSeniorShift;
+        if (isSeniorTotal) {
+             st.sumSenior = fullBaseMoney * 0.10;
         }
         
-        function saveAll() {
-            settings.rate = safeFloat(document.getElementById('set_rate').value);
-            settings.premP = safeFloat(document.getElementById('set_prem').value);
-            settings.classP = parseInt(document.getElementById('set_class').value);
-            settings.mentor = document.getElementById('set_mentor').checked;
-            settings.senior = document.getElementById('set_senior').checked;
-            settings.union = document.getElementById('set_union').checked;
-            settings.startDate = document.getElementById('set_start_date').value;
-            localStorage.setItem('metro_settings', JSON.stringify(settings));
-            touchMeta('metro_settings');
-            render();
+        // Наставник (не трогаем, он считается только от факта езды)
+        // st.sumMentor остается как был
+
+        // 4. ПЕРЕСЧИТЫВАЕМ ПРЕМИЮ
+        // ИСПРАВЛЕНИЕ: Берем не st.holidayMoney (грязные), а чистую базу (Часы * Ставка)
+        let holidayBaseForPrem = st.holidayHours * settings.rate;
+
+
+        let realTariffSum = st.sumNakedTariff + st.sumRes + st.ot15Money + st.ot20Money + holidayBaseForPrem;
+        
+        let premBase = realTariffSum + st.sumClass + st.sumSen + st.sumSenior + st.sumMentor;
+        
+        let premP = (usedPrems.size > 0) ? Math.max(...usedPrems) : settings.premP;
+        st.sumPrem = premBase * (premP / 100);
+
+        // 5. ПЕРЕСЧИТЫВАЕМ ИТОГОВОЕ НАЧИСЛЕНИЕ (DIRTY)
+        // Собираем всё заново, чтобы старые расчеты стерлись
+        st.dirty = premBase + st.sumPrem + 
+                   st.evBonus + st.nightBonus + st.splitBonus + st.techBonus + 
+                   st.sickMoney + st.vacationMoney + st.donorMoney + st.medMoney + st.studyMoney;
+
+        // ========================================================================
+
+        // --- КОНЕЦ ПЕРЕСЧЕТА ---
+
+        let yearlyIncomeBefore = 0;
+        shifts.forEach(s => {
+            const d = new Date(s.date);
+            if (d.getFullYear() === year && d.getMonth() < month) {
+                let r = calcShift(s);
+                if (r && r.dirty) yearlyIncomeBefore += r.dirty;
+            }
+        });
+
+        const TAX_LIMIT = 2400000;
+        let tax = 0;
+        let currentMonthIncome = st.dirty;
+
+        if (yearlyIncomeBefore >= TAX_LIMIT) { tax = currentMonthIncome * 0.15; }
+        else if (yearlyIncomeBefore + currentMonthIncome > TAX_LIMIT) {
+            let part13 = TAX_LIMIT - yearlyIncomeBefore; 
+            if (part13 < 0) part13 = 0;
+            let part15 = currentMonthIncome - part13;    
+            tax = (part13 * 0.13) + (part15 * 0.15);
+        }
+        else { tax = currentMonthIncome * 0.13; }
+
+        // =========================================================
+        // РАСЧЕТ БАЗЫ 13-й ЗАРПЛАТЫ (МЕСЯЦ + ГОДОВОЙ ИТОГ)
+        // =========================================================
+        
+        // 1. Считаем базу за ТЕКУЩИЙ месяц
+        let monthlyBonusBase = st.dirty 
+            - st.sickMoney 
+            - st.vacationMoney 
+            - st.donorMoney 
+            - st.studyMoney 
+            - st.medMoney   
+            - st.sumSen     
+            - st.techBonus; 
+        if (monthlyBonusBase < 0) monthlyBonusBase = 0;
+
+        // 2. Считаем НАКОПИТЕЛЬНЫЙ итог (Прошлые месяцы + Текущий)
+        let viewedYear = statsDate.getFullYear();
+        let viewedMonth = statsDate.getMonth();
+        let cumulativeBase = 0;
+
+        // А) Складываем только ПРОШЛЫЕ месяцы этого года
+        shifts.forEach(s => {
+            let d = new Date(s.date);
+            // Строго меньше (<), чтобы не считать текущий месяц в цикле
+            if (d.getFullYear() === viewedYear && d.getMonth() < viewedMonth) {
+                let r = calcShift(s);
+                if (r && r.dirty > 0) {
+                    let txt = s.text.toLowerCase();
+                    let deduction = 0;
+                    
+                    if (txt.includes('бл') || txt.includes('больничный') || 
+                        txt.includes('отпуск') || txt.includes('отп') || 
+                        txt.includes('донор') || txt.includes('кровь') ||
+                        txt.includes('упц') || txt.includes('учеба') || 
+                        txt.includes('обучение') || txt.includes('охрана') || 
+                        txt.includes('мед.ком') || txt.includes('комиссия') || 
+                        txt.includes('мед ком') || txt.includes('медком') || 
+                        txt.includes('псих') || txt.includes('освид')) {
+                        deduction = r.dirty;
+                    } else {
+                        deduction = (r.valSen || 0) + (r.techBonus || 0);
+                    }
+                    cumulativeBase += (r.dirty - deduction);
+                }
+            }
+        });
+
+        // Б) Прибавляем точную сумму ТЕКУЩЕГО месяца
+        cumulativeBase += monthlyBonusBase;
+
+        // 3. Вывод
+        const elBonus = document.getElementById('st_bonus_base');
+        if (elBonus) {
+            elBonus.innerHTML = `+${fmtMoney(monthlyBonusBase)} <span style="color:#90a4ae; font-size:11px; font-weight:600; margin-left:4px;">(Итог: ${fmtMoney(cumulativeBase)})</span>`;
         }
         
-        function render(targetDate = null) {
+        st.union = settings.union ? (st.dirty * 0.01) : 0; 
+        st.tax = tax; 
+        st.net = st.dirty - st.tax - st.union;
+
+        const taxLabel = document.getElementById('lbl_tax');
+        const taxVal = document.getElementById('st_tax');
+        const richAlert = document.getElementById('rich_alert');
+        
+        if (taxLabel && taxVal) {
+            if (yearlyIncomeBefore + currentMonthIncome > TAX_LIMIT) {
+                const isFullRich = yearlyIncomeBefore >= TAX_LIMIT;
+                taxLabel.innerText = isFullRich ? "Налог (15%):" : "Налог (13-15%):";
+                taxLabel.style.color = "#d32f2f"; taxLabel.style.fontWeight = "bold"; taxVal.style.fontWeight = "bold";
+                if (richAlert) { richAlert.style.display = "block"; richAlert.innerText = "🎩 Уровень 'Богач' разблокирован! (2.4млн+)"; }
+            } else {
+                taxLabel.innerText = "Налог (13%):";
+                taxLabel.style.color = ""; taxLabel.style.fontWeight = ""; taxVal.style.fontWeight = "";
+                if (richAlert) richAlert.style.display = "none";
+            }
+            taxVal.innerText = '-' + fmtMoney(st.tax);
+        }
+
+        // 2. ОБНОВЛЯЕМ ВЫВОД ЧАСОВ ТАРИФА (СЕРЫЕ ЧАСЫ)
+        document.getElementById('st_norm').innerText = displayNorm; 
+        document.getElementById('st_hours').innerText = st.totalFactHours.toFixed(2) + ' ч'; 
+        const overEl = document.getElementById('st_over');
+        if (overtime > 0) { overEl.innerText = "+" + overtime.toFixed(1) + " ч"; overEl.style.color = "#2e7d32"; } 
+        else if (overtime < 0) { overEl.innerText = overtime.toFixed(1) + " ч"; overEl.style.color = "#c62828"; } 
+        else { overEl.innerText = "0 ч"; overEl.style.color = "var(--primary)"; }
+
+        const toggleRow = (id, moneyVal) => { const el = document.getElementById(id); if (el) el.style.display = (moneyVal > 0.1) ? 'flex' : 'none'; };
+
+        document.getElementById('st_ev_hours').innerText = st.ev.toFixed(1) + 'ч'; 
+        document.getElementById('st_ev_money').innerText = '+' + fmtMoney(st.evBonus);
+        document.getElementById('st_night_hours').innerText = st.night.toFixed(1) + 'ч'; 
+        document.getElementById('st_night_money').innerText = '+' + fmtMoney(st.nightBonus);
+        document.getElementById('st_split_hours').innerText = st.splitHours.toFixed(1) + 'ч'; 
+        document.getElementById('st_split_money').innerText = '+' + fmtMoney(st.splitBonus);
+        document.getElementById('st_ot15_hours').innerText = (st.ot15Hours > 0 ? '+' : '') + st.ot15Hours.toFixed(1) + 'ч'; 
+        document.getElementById('st_ot15_money').innerText = '+' + fmtMoney(st.ot15Money);
+        document.getElementById('st_ot20_hours').innerText = (st.ot20Hours > 0 ? '+' : '') + st.ot20Hours.toFixed(1) + 'ч'; 
+        document.getElementById('st_ot20_money').innerText = '+' + fmtMoney(st.ot20Money);
+
+        const holHoursEl = document.getElementById('st_holiday_hours'); const holMoneyEl = document.getElementById('st_holiday_money');
+        if (holHoursEl) holHoursEl.innerText = st.holidayHours.toFixed(1) + 'ч';
+        if (holMoneyEl) holMoneyEl.innerText = '+' + fmtMoney(st.holidayMoney);
+        
+        let lblClassTxt = (usedClasses.size > 0) ? Array.from(usedClasses).sort((a,b)=>b-a).join('/') : settings.classP;
+        document.getElementById('lbl_class').innerText = `Классность (${lblClassTxt}%):`; 
+        let lblSenTxt = (usedSens.size > 0) ? Array.from(usedSens).sort((a,b)=>b-a).join('/') : getSeniorityPercent(settings.startDate);
+        document.getElementById('lbl_sen').innerText = `Выслуга (${lblSenTxt}%):`; 
+        let lblPremTxt = (usedPrems.size > 0) ? Array.from(usedPrems).sort((a,b)=>b-a).join('/') : settings.premP;
+        document.getElementById('lbl_prem').innerText = `Премия (${lblPremTxt}%):`;
+        let seniorPercent = hasSeniorShift ? 10 : (settings.senior ? 10 : 0);
+        document.getElementById('lbl_senior').innerText = `Ст. машинист (${seniorPercent}%):`;
+
+        document.getElementById('st_class_money').innerText = '+' + fmtMoney(st.sumClass); 
+        document.getElementById('st_sen_money').innerHTML = 
+            `<span style="color:#90a4ae; font-size:13px; font-weight:600; margin-right:8px;">${bonusBaseHours.toFixed(2)}ч</span>` + 
+            '+' + fmtMoney(st.sumSen); 
+        document.getElementById('st_prem_money').innerText = '+' + fmtMoney(st.sumPrem);
+        document.getElementById('st_tech_money').innerText = '+' + fmtMoney(st.techBonus);
+        document.getElementById('st_senior_money').innerText = '+' + fmtMoney(st.sumSenior);
+        
+        document.getElementById('st_mentor_hours').innerText = st.mentorHours.toFixed(1) + 'ч'; 
+        document.getElementById('st_mentor_money').innerText = '+' + fmtMoney(st.sumMentor);
+
+        // --- ВЫВОД ЧАСОВ ПО ТАРИФУ ---
+        document.getElementById('st_tariff_money').innerHTML = 
+            `<span style="color:#90a4ae; font-size:13px; font-weight:600; margin-right:8px;">${st.tariffHours.toFixed(2)}ч</span>` + 
+    '+' + fmtMoney(st.sumNakedTariff); // <--- Используем sumNakedTariff!
+        // -----------------------------
+
+        // --- ВЫВОД ЧАСОВ РЕЗЕРВА ---
+        document.getElementById('st_res_money').innerHTML = 
+            `<span style="color:#90a4ae; font-size:13px; font-weight:600; margin-right:8px;">${st.resHours.toFixed(2)}ч</span>` + 
+            '+' + fmtMoney(st.sumRes);
+        // -----------------------------
+        
+        toggleRow('row_tariff', st.sumTariff);
+        toggleRow('row_res', st.sumRes);
+        document.getElementById('st_dirty').innerText = fmtMoney(st.dirty);
+        document.getElementById('st_union').innerText = '-' + fmtMoney(st.union); 
+        document.getElementById('st_net').innerText = fmtMoney(st.net);
+
+        toggleRow('row_ev', st.evBonus);
+        toggleRow('row_night', st.nightBonus);
+        toggleRow('row_split', st.splitBonus);
+        toggleRow('row_ot15', st.ot15Money);
+        toggleRow('row_ot20', st.ot20Money);
+        toggleRow('row_holiday', st.holidayMoney);
+        document.getElementById('st_sick_days').innerText = st.sick + ' дн.';
+        document.getElementById('st_sick_money').innerText = '+' + fmtMoney(st.sickMoney);
+        document.getElementById('st_vacation_money').innerText = '+' + fmtMoney(st.vacationMoney);
+        document.getElementById('st_donor_money').innerText = '+' + fmtMoney(st.donorMoney);
+        toggleRow('row_sick', st.sickMoney);
+        toggleRow('row_vacation', st.vacationMoney);
+        toggleRow('row_donor', st.donorMoney);
+        document.getElementById('st_med_money').innerText = '+' + fmtMoney(st.medMoney);
+        document.getElementById('st_study_money').innerText = '+' + fmtMoney(st.studyMoney);
+        toggleRow('row_med', st.medMoney);
+        toggleRow('row_study', st.studyMoney);
+        toggleRow('row_class', st.sumClass);
+        toggleRow('row_sen', st.sumSen);
+        toggleRow('row_prem', st.sumPrem);
+        toggleRow('row_tech', st.techBonus);
+        toggleRow('row_senior', st.sumSenior);
+        toggleRow('row_mentor', st.sumMentor);
+    }
+
+function render(targetDate = null) {
         if (preventRender && !targetDate) return;
 
         const list = document.getElementById('shiftList');
         if(list.offsetHeight > 0) list.style.minHeight = list.offsetHeight + 'px';
         
         const scrollPos = window.scrollY; 
-        
+        calculateRestIntervals();
         const fragment = document.createDocumentFragment();
         shifts.sort((a,b) => new Date(a.date) - new Date(b.date));
         
@@ -682,26 +2399,27 @@
 
             let res = calcShift(s); 
             
-            // --- 1. ВОССТАНОВЛЕНИЕ ТЕКСТА И ВРЕМЕНИ ---
+            // РАЗДЕЛЯЕМ ТЕКСТ
             let title = s.text.split(' ')[0]; 
             let details = s.text.substring(title.length).trim();
             let lowerText = s.text.toLowerCase(); 
 
-            // Спец. типы (БЛ, Отпуск...)
+            // 1. ОПРЕДЕЛЯЕМ, СПЕЦИАЛЬНЫЙ ЛИ ЭТО ТИП (БЛ, Отпуск, Донор)
             const isSpecialType = lowerText.includes('бл') || lowerText.includes('больничный') || 
                                   lowerText.includes('отпуск') || lowerText.includes('отп') || 
                                   lowerText.includes('донор') || lowerText.includes('кровь');
 
+            // 2. РУЧНОЕ ФОРМИРОВАНИЕ ОПИСАНИЯ ДЛЯ СПЕЦ. ТИПОВ
             if (isSpecialType) {
                 // Если выходной/праздник — 0 часов вычета. Если будни — 7.2.
-                let val = !Logic.isWeekendOrHoliday(new Date(s.date)) ? 7.2 : 0;
+                let val = !isHoliday(new Date(s.date)) ? 7.2 : 0;
                 let hoursInfo = `(${val}ч)`;
                 
                 if(details) details += ` ${hoursInfo}`;
                 else details = hoursInfo;
             }
 
-            // Рабочие смены: добавляем (X.Xч) в конец строки
+            // 3. СТАНДАРТНОЕ ФОРМИРОВАНИЕ (ДЛЯ РАБОЧИХ СМЕН)
             if (res) {
                 let extraInfo = "";
 
@@ -716,7 +2434,9 @@
                     let pureWork = res.hours - res.gapHours;
                     extraInfo = `(${pureWork.toFixed(1)} + ${res.gapHours.toFixed(1)}ч)`;
                 } 
-                // Показываем обычную длительность ТОЛЬКО если это НЕ спец. тип (чтобы не дублировать)
+                // ВАЖНОЕ ИСПРАВЛЕНИЕ:
+                // Показываем обычную длительность ТОЛЬКО если это НЕ спец. тип.
+                // Иначе для донора будет дублироваться (0ч) и (7.2ч)
                 else if (res.duration > 0 && !isSpecialType) {
                     extraInfo = `(${res.duration.toFixed(1)}ч)`;
                 }
@@ -725,7 +2445,7 @@
                 else details = extraInfo;
             }
             
-            // --- 2. ВОССТАНОВЛЕНИЕ ТЕГОВ ---
+            // --- ТЕГИ (ОСТАЮТСЯ БЕЗ ИЗМЕНЕНИЙ) ---
             let tags = '';
             
             if (s.isFullMedical) {
@@ -737,15 +2457,13 @@
             if (lowerText.includes('отпуск') || lowerText.includes('отп')) {
                 tags += '<span class="tag" style="background: linear-gradient(135deg, #4fc3f7, #2196f3);">ОТПУСК</span> ';
             }
-            if (lowerText.includes('донор') || lowerText.includes('кровь')) {
+            if (lowerText.includes('донор')) {
                 tags += '<span class="tag donor" style="background:#ab47bc;">ДОНОР</span> ';
             }
 
-            // Праздники (Исправлено: проверка по строке даты, чтобы не зависеть от поясов)
-            const md = s.date.substring(5, 10); // "01-01"
             const isNonWork = isSpecialType || lowerText.includes('выходной') || lowerText.includes('вых');
-            
-            if (Logic.holidaysData.fixed.includes(md) && !isNonWork) {
+
+            if (isOnlyStateHoliday(new Date(s.date)) && !isNonWork) {
                 tags += '<span class="tag" style="background:#e91e63;">🎉 ПРАЗДНИК x2</span> ';
             }
 
@@ -753,14 +2471,15 @@
 
             if (res) { 
                 if (res.isTrain) {
-                     if (lowerText.includes('мед') || lowerText.includes('комисс') || lowerText.includes('псих')) {
+                     if (lowerText.includes('мед.ком') || lowerText.includes('комиссия') || 
+                        lowerText.includes('мед ком') || lowerText.includes('медком') || 
+                        lowerText.includes('псих') || lowerText.includes('освид')) {
                         tags += '<span class="tag teal" style="background:#00897b">МЕД. КОМИССИЯ</span> ';
                     } else {
                         tags += '<span class="tag teal">ОБУЧЕНИЕ</span> ';
                     }
                 }
-                // Резерв (исключаем полное отстранение, чтобы не было двух тегов)
-                if (res.isRes && !res.isFullMed) tags += '<span class="tag gray">РЕЗЕРВ</span> '; 
+                if (res.isRes) tags += '<span class="tag gray">РЕЗЕРВ</span> '; 
                 if (s.lineStart) tags += '<span class="tag orange">ВЫЕЗД</span> '; 
                 if (res.isTech) tags += '<span class="tag teal">+УЧЕБА</span> '; 
             }
@@ -769,6 +2488,8 @@
             let div = document.createElement('div'); 
             div.className = 'shift-card'; 
             
+            // Логика "Сегодня"
+            const todayStr = getIsoDate(new Date()); // Нужно, так как мы внутри цикла
             if(s.date === todayStr) { 
                 div.classList.add('today'); 
                 div.innerHTML = `<div class="today-badge">СЕГОДНЯ</div>`; 
@@ -776,7 +2497,6 @@
             div.onclick = () => openDayModal(s.date);
             div.id = 'card-' + s.date; 
             
-            // Логика "Будущее/Прошлое" для цвета денег
             let isDone = false;
             let now = new Date();
             let todayZero = new Date(now); todayZero.setHours(0,0,0,0);
@@ -785,31 +2505,18 @@
             if (sDateZero < todayZero) {
                 isDone = true; 
             } else if (sDateZero.getTime() === todayZero.getTime()) {
-                // Если сегодня - проверяем время окончания
-                let parsedT = Logic.parseShift(s.text, s.date);
-                if (parsedT && parsedT.endTimestamp && now > parsedT.endTimestamp) isDone = true;
+                let times = getShiftTimes(s);
+                if (times && now > times.end) isDone = true;
             }
 
             let moneyHTML = ''; 
-            if (res && res.net > 0) { 
+            if (res) { 
                 const moneyClass = isDone ? 'money-val' : 'money-val future'; 
                 moneyHTML = `<div class="${moneyClass}">+${res.net}</div>`; 
             }
             
             let d = new Date(s.date);
-            
-            // Вставляем всё на место
-            div.innerHTML += `
-                <div class="date-box">
-                    <span class="date-day">${d.getDate()}</span>
-                    <span class="date-dow">${d.toLocaleString('ru',{weekday:'short'})}</span>
-                </div>
-                <div class="shift-info">
-                    <div class="shift-title">${title} ${tags}</div>
-                    <div class="shift-sub">${details}</div>
-                </div>
-                <div style="text-align:right">${moneyHTML}</div>`;
-                
+            div.innerHTML += `<div class="date-box"><span class="date-day">${d.getDate()}</span><span class="date-dow">${d.toLocaleString('ru',{weekday:'short'})}</span></div><div class="shift-info"><div class="shift-title">${title} ${tags}</div><div class="shift-sub">${details}</div></div><div style="text-align:right">${moneyHTML}</div>`;
             fragment.appendChild(div);
         });
         
@@ -832,9 +2539,697 @@
             }
         }, 50);
     }
+    
+    function addShift() { 
+        let d = document.getElementById('inpDate').value; 
+        let t = document.getElementById('inpText').value;
+        let n = document.getElementById('inpNote').value; 
+        let low = t.trim().toLowerCase();
 
-        // Запуск
-        init();
-    </script>
+        // Автозамены
+        if (low === 'отп') t = 'отпуск';
+        if (low.includes('охр')) t = 'Охрана труда';
+        else if (low.includes('корп')) t = 'Корпоративный университет';
+        else if (low.includes('обучение')) t = 'Обучение';
+        else if (low.includes('повыш')) t = 'Повышение квалификации';
+        else if (low.includes('культур')) t = 'Культура обслуживания';
+        else if (low === 'упц') t = 'УПЦ';
+        else if (low.includes('мед.ком') || low.includes('мед ком') || low.includes('медком')) t = 'Мед. комиссия';
+        
+        // БОЛЬНИЧНЫЙ
+        if (t.toLowerCase().includes('бл') || t.toLowerCase().includes('больничный')) {
+            const years = getSickYears(d);
+            const inc1 = safeFloat(document.getElementById('sickInc1').value);
+            const inc2 = safeFloat(document.getElementById('sickInc2').value);
+            const perc = parseInt(document.getElementById('sickPercent').value);
+            if (!settings.sickData) settings.sickData = {};
+            settings.sickData[years[0]] = inc1;
+            settings.sickData[years[1]] = inc2;
+            settings.sickPercent = perc;
+            localStorage.setItem('metro_settings', JSON.stringify(settings));
+            touchMeta('metro_settings');
+        }
+
+        let sRate = safeFloat(document.getElementById('shiftRate').value); 
+        let sPrem = safeFloat(document.getElementById('shiftPrem').value); 
+        let sMentor = document.getElementById('shiftMentor').checked; 
+        let sSenior = document.getElementById('shiftSenior').checked; 
+        let sClass = parseInt(document.getElementById('shiftClassSelect').value); 
+        let sSen = getSeniorityPercent(settings.startDate); 
+        let sTech = document.getElementById('shiftTech').checked; 
+        let sPost = document.getElementById('shiftPostTrip').checked; 
+        let sFullMed = document.getElementById('shiftFullMedical').checked;
+
+        let sTpStart = document.getElementById('tpStart').value;
+        let sTpEnd = document.getElementById('tpEnd').value;
+
+        // === ИСПРАВЛЕНИЕ: ЗАЩИТА ТЕРАПЕВТИЧЕСКОГО ПУНКТА ===
+        // Если время не указано ИЛИ Начало == Конец (например 00:00 - 00:00)
+        // То мы принудительно стираем эти данные.
+        if (!sTpStart || !sTpEnd || sTpStart === sTpEnd) {
+            sTpStart = null;
+            sTpEnd = null;
+        }
+        // ====================================================
+
+        let lStart = document.getElementById('lineStart').value; 
+        let lEnd = document.getElementById('lineEnd').value; 
+
+        // ЗАЩИТА ВЫЕЗДА (которую мы делали раньше)
+        if (!t.toLowerCase().includes('рез')) {
+            lStart = null;
+            lEnd = null;
+        } else {
+            if (!lStart || !lEnd || lStart === lEnd) {
+                lStart = null;
+                lEnd = null;
+            }
+        }
+
+        let checkText = t.toLowerCase();
+        if (checkText.includes('отпуск') || checkText.includes('отп') || 
+            checkText.includes('бл') || checkText.includes('больничный') || 
+            checkText.includes('донор')) {
+            sFullMed = false; 
+        }
+        
+        if(d && t) { 
+            preventRender = true; 
+            shifts = shifts.filter(s => s.date !== d); 
+            shifts.push({ 
+                date:d, text:t, note: n, 
+                customRate: sRate, customMentor: sMentor, 
+                customSenior: sSenior, customClass: sClass, customSen: sSen, 
+                customPrem: sPrem, 
+                
+                lineStart: lStart, 
+                lineEnd: lEnd,     
+                
+                isTech: sTech, isPostTrip: sPost,
+                
+                // Теперь sTpStart будет null, если он пустой или кривой
+                tpStart: sTpStart, 
+                tpEnd: sTpEnd, 
+                isFullMedical: sFullMed
+            });
+
+            const targetDate = new Date(d);
+            const targetMonth = targetDate.getMonth();
+            const targetYear = targetDate.getFullYear();
+            const lowerText = t.toLowerCase();
+            const isSpecialType = lowerText.includes('бл') || lowerText.includes('отпуск') || lowerText.includes('донор');
+            if (!isSpecialType && sRate > 0) {
+                settings.rate = sRate;
+                settings.premP = sPrem;
+                shifts.forEach(s => {
+                    const sd = new Date(s.date);
+                    if (sd.getMonth() === targetMonth && sd.getFullYear() === targetYear) {
+                        const sTxt = s.text.toLowerCase();
+                        if (!sTxt.includes('бл') && !sTxt.includes('больничный') && 
+                            !sTxt.includes('отпуск') && !sTxt.includes('донор')) {
+                            s.customRate = sRate;
+                            s.customPrem = sPrem;
+                        }
+                    }
+                });
+            }
+            touchMeta(getMonthKey(d));
+            saveData(); 
+            if(document.getElementById('calendarModal').classList.contains('open')) {
+                renderCalendar();
+                renderStats();
+            } else {
+                render(d); 
+            }
+            closeModal('addModal'); 
+            setTimeout(() => { 
+                preventRender = false; 
+                const el = document.getElementById('card-' + d);
+                if(el) el.scrollIntoView({block: "center", behavior: "auto"});
+            }, 100);
+        } 
+    }
+    
+    function openModal() {
+        // Закрываем детали, если были открыты
+        const detailsBox = document.getElementById('shiftDetailsBox');
+        if (detailsBox) detailsBox.open = false;
+
+        document.body.classList.add('modal-open');
+        document.getElementById('addModal').classList.add('open');
+        setAutoDate();
+        
+        // Очищаем поля
+        document.getElementById('inpText').value = '';
+        document.getElementById('inpNote').value = '';
+        document.getElementById('modalTitle').innerText = 'Новая смена';
+        document.getElementById('btnSaveShift').innerText = 'Добавить';
+        document.getElementById('btnDeleteShift').style.display = 'none';
+        
+        // Ставка
+        let showRate = (settings.rate > 0) ? settings.rate : 546.18;
+        document.getElementById('shiftRate').value = String(showRate).replace('.', ',');
+
+        // Чекбоксы
+        document.getElementById('shiftMentor').checked = settings.mentor;
+        document.getElementById('shiftSenior').checked = settings.senior || false;
+        document.getElementById('shiftTech').checked = false;
+        document.getElementById('shiftPostTrip').checked = false;
+        document.getElementById('tpStart').value = '';
+        document.getElementById('tpEnd').value = '';
+        document.getElementById('shiftFullMedical').checked = false;
+        
+        // Разблокировка
+        document.getElementById('shiftMentor').disabled = false;
+        document.getElementById('shiftSenior').disabled = false;
+        document.getElementById('shiftPostTrip').disabled = false;
+
+        // Класс
+        document.getElementById('shiftClassSelect').value = (settings.classP === false) ? 0 : settings.classP;
+
+        // === ГЛАВНОЕ ИСПРАВЛЕНИЕ: УМНАЯ ПРЕМИЯ ===
+        let showPrem = settings.premP;
+
+        // Если в настройках 0 или пусто — ищем в истории смен последнюю непустую премию
+        if (!showPrem || parseFloat(showPrem) === 0) {
+            // Ищем с конца списка (последнюю добавленную)
+            const lastShift = [...shifts].reverse().find(s => s.customPrem && parseFloat(s.customPrem) > 0);
+            
+            if (lastShift) {
+                showPrem = lastShift.customPrem; // Нашли! Берем её.
+            } else {
+                // Если истории нет вообще (совсем новый пользователь), можно оставить пусто
+                // или поставить 35 (как стандарт). Давай оставим пусто, если совсем ничего нет.
+                showPrem = ''; 
+            }
+        }
+        
+        // Вставляем значение в поле
+        document.getElementById('shiftPrem').value = showPrem ? String(showPrem).replace('.', ',') : '';
+        // ===========================================
+
+        checkShiftText();
+        document.getElementById('inpText').focus();
+    }
+    // 1. ФУНКЦИЯ ОТКРЫТИЯ ОКНА (ИСПРАВЛЕННАЯ)
+    function openDayModal(dateStr) {
+        const details = document.getElementById('shiftDetailsBox');
+        if(details) details.open = false;
+
+        document.body.classList.add('modal-open');
+        document.getElementById('sickInc1').value = ''; 
+        document.getElementById('sickInc2').value = '';
+        document.getElementById('inpDate').value = dateStr;
+        const shift = shifts.find(s => s.date === dateStr);
+        const delBtn = document.getElementById('btnDeleteShift');
+        const saveBtn = document.getElementById('btnSaveShift');
+        const title = document.getElementById('modalTitle');
+        
+        // --- СБРОС ПОЛЕЙ (ЧТОБЫ НЕ ЗАЛИПАЛИ) ---
+        // 1. Сбрасываем Выезд
+        document.getElementById('lineStart').value = '';
+        document.getElementById('lineEnd').value = '';
+        
+        // 2. Сбрасываем Терапевтический пункт и Отстранение
+        document.getElementById('tpStart').value = '';
+        document.getElementById('tpEnd').value = '';
+        document.getElementById('shiftFullMedical').checked = false;
+        // ---------------------------------------
+
+        const currentProfileRate = (settings.rate > 0) ? settings.rate : 546.18;
+
+        if (shift) {
+            // === РЕДАКТИРОВАНИЕ ===
+            document.getElementById('inpText').value = shift.text;
+            document.getElementById('inpNote').value = shift.note || '';
+            
+            let showRate = (shift.customRate !== undefined) ? shift.customRate : currentProfileRate;
+            document.getElementById('shiftRate').value = String(showRate).replace('.', ',');
+
+            document.getElementById('shiftMentor').checked = shift.customMentor !== undefined ? shift.customMentor : settings.mentor;
+            document.getElementById('shiftSenior').checked = shift.customSenior !== undefined ? shift.customSenior : (settings.senior || false);
+            document.getElementById('shiftTech').checked = shift.isTech !== undefined ? shift.isTech : false;
+            document.getElementById('shiftPostTrip').checked = shift.isPostTrip !== undefined ? shift.isPostTrip : false;
+            
+            // Заполняем ТП, только если он есть в сохраненной смене
+            if (shift.tpStart) document.getElementById('tpStart').value = shift.tpStart;
+            if (shift.tpEnd) document.getElementById('tpEnd').value = shift.tpEnd;
+            document.getElementById('shiftFullMedical').checked = (shift.isFullMedical === true);
+
+            let defaultClass = (settings.classP === false) ? 0 : settings.classP;
+            document.getElementById('shiftClassSelect').value = (shift.customClass !== undefined) ? shift.customClass : defaultClass;
+            
+            let premVal = (shift.customPrem !== undefined) ? shift.customPrem : settings.premP;
+            document.getElementById('shiftPrem').value = String(premVal).replace('.', ',');
+            
+            if (shift.lineStart) document.getElementById('lineStart').value = shift.lineStart;
+            if (shift.lineEnd) document.getElementById('lineEnd').value = shift.lineEnd;
+            
+            title.innerText = 'Редактирование';
+            saveBtn.innerText = 'Сохранить';
+            delBtn.style.display = 'block';
+        } else {
+            // === НОВАЯ СМЕНА ===
+            document.getElementById('inpText').value = '';
+            document.getElementById('inpNote').value = '';
+            document.getElementById('shiftRate').value = String(currentProfileRate).replace('.', ',');
+            
+            document.getElementById('shiftMentor').checked = settings.mentor;
+            document.getElementById('shiftSenior').checked = settings.senior || false;
+            document.getElementById('shiftTech').checked = false;
+            document.getElementById('shiftPostTrip').checked = false;
+            
+            // Здесь поля ТП и Выезда уже чистые (мы очистили их в начале функции)
+
+            document.getElementById('shiftClassSelect').value = (settings.classP === false) ? 0 : settings.classP;
+            document.getElementById('shiftPrem').value = String(settings.premP).replace('.', ',');
+            
+            title.innerText = 'Новая смена';
+            saveBtn.innerText = 'Добавить';
+            delBtn.style.display = 'none';
+        }
+        checkShiftText(); 
+        document.getElementById('addModal').classList.add('open');
+        document.getElementById('inpText').focus();
+    }
+
+    // 2. ФУНКЦИЯ ПРОВЕРКИ ТЕКСТА И БЛОКИРОВКИ (ИСПРАВЛЕННАЯ)
+    function checkShiftText() {
+        const txt = document.getElementById('inpText').value.toLowerCase();
+        const dateVal = document.getElementById('inpDate').value;
+        const isSick = txt.includes('бл') || txt.includes('больничный');
+        
+        // Получаем элементы
+        const details = document.getElementById('shiftDetailsBox');
+        const sickBox = document.getElementById('sickDetailsBox'); 
+        const lineBlock = document.getElementById('lineWorkContainer');
+        const rateHint = document.getElementById('rateHint');
+
+        // Чекбоксы
+        // ВНИМАНИЕ: Тут теперь shiftFullMedical вместо shiftMedical
+        const chkFullMed = document.getElementById('shiftFullMedical');
+        const chkMentor = document.getElementById('shiftMentor');
+        const chkSenior = document.getElementById('shiftSenior');
+        const chkPost = document.getElementById('shiftPostTrip'); 
+
+        // 1. ЛОГИКА БЛОКИРОВКИ ПРИ НЕДОПУСКЕ
+        if (chkFullMed && chkFullMed.checked) {
+            // Если Полное Снятие: отключаем надбавки
+            chkMentor.checked = false;
+            chkSenior.checked = false;
+            chkPost.checked = false;
+            
+            chkMentor.disabled = true;
+            chkSenior.disabled = true;
+            chkPost.disabled = true;
+        } else {
+            // Если допускается: разблокируем
+            chkMentor.disabled = false;
+            chkSenior.disabled = false;
+            chkPost.disabled = false;
+        }
+
+        // 2. ОСТАЛЬНАЯ ЛОГИКА ВИДИМОСТИ
+        if (isSick) {
+            if(details) details.style.display = 'none';
+            if(sickBox) sickBox.style.display = 'block';
+            
+            const years = getSickYears(dateVal);
+            const lbl1 = document.getElementById('lbl_year_1');
+            const lbl2 = document.getElementById('lbl_year_2');
+            if (lbl1) lbl1.innerText = `Доход за ${years[0]} год`;
+            if (lbl2) lbl2.innerText = `Доход за ${years[1]} год`;
+
+            let field1 = document.getElementById('sickInc1');
+            if (settings.sickData && settings.sickData[years[0]] && field1.value === '') {
+                field1.value = settings.sickData[years[0]];
+            }
+            let field2 = document.getElementById('sickInc2');
+            if (settings.sickData && settings.sickData[years[1]] && field2.value === '') {
+                field2.value = settings.sickData[years[1]];
+            }
+        } else {
+            if(sickBox) sickBox.style.display = 'none';
+            
+            if (txt.includes('вых') || txt.includes('донор') || txt.includes('отпуск') || txt.includes('отп')) {
+                if(details) details.style.display = 'none';
+            } else {
+                if(details) details.style.display = 'block';
+            }
+            
+            if (txt.includes('рез')) {
+                if(lineBlock) lineBlock.style.display = 'block';
+                if(rateHint) rateHint.style.display = 'block';
+            } else {
+                if(lineBlock) lineBlock.style.display = 'none';
+                if(rateHint) rateHint.style.display = 'none';
+            }
+        }
+    }
+    
+    
+    let wipeTimeout;
+    
+    function wipeCurrentMonth() {
+        const btn = document.querySelector('.month-selector .month-btn[title="Очистить месяц"]');
+        
+        // Если это первое нажатие
+        if (!btn.classList.contains('confirm-state')) {
+            btn.classList.add('confirm-state');
+            btn.innerHTML = "Точно?"; // Меняем иконку на вопрос
+            btn.style.color = "#d32f2f"; // Делаем красной
+            
+            // Если за 3 секунды не нажал снова — возвращаем как было
+            wipeTimeout = setTimeout(() => {
+                btn.classList.remove('confirm-state');
+                btn.innerHTML = "🗑️";
+                btn.style.color = "#e53935";
+            }, 3000);
+            return;
+        }
+
+        // Если это ВТОРОЕ нажатие (подтверждение)
+        clearTimeout(wipeTimeout);
+        
+        // --- ЛОГИКА УДАЛЕНИЯ ---
+        const year = statsDate.getFullYear();
+        const month = statsDate.getMonth() + 1;
+        const mStr = String(month).padStart(2, '0');
+        
+        shifts = shifts.filter(s => !s.date.startsWith(`${year}-${mStr}`));
+        touchMeta(`s_${year}_${mStr}`);
+        saveData(); 
+        render(); 
+        // -----------------------
+
+        // Возвращаем кнопку в исходное состояние
+        btn.classList.remove('confirm-state');
+        btn.innerHTML = "🗑️";
+        btn.style.color = "#e53935";
+    }
+
+    function openImportModal() { 
+        document.body.classList.add('modal-open'); 
+        document.getElementById('importModal').classList.add('open'); 
+        
+        // Вот эти две строки решат проблему:
+        document.getElementById('importText').value = ''; // Очищаем поле от старого текста
+        document.getElementById('importText').focus();    // Сразу ставим курсор, чтобы удобно было вставить
+    }
+    
+    function closeModal(id) { 
+        document.body.classList.remove('modal-open'); 
+        document.getElementById(id).classList.remove('open');
+        if (id === 'calendarModal') render(); 
+    }
+
+    function processImport() { 
+        const text = document.getElementById('importText').value; 
+        if(!text) return; 
+        
+        const lines = text.split('\n'); 
+        let addedCount = 0; 
+        let errorCount = 0;
+        
+        // Настройки
+        // ВАЖНО: Если ставка в профиле 0, берем стандарт 546.18
+        const profileRate = safeFloat(settings.rate);
+        const defRate = profileRate > 0 ? profileRate : 546.18; 
+        
+        const defMent = settings.mentor; 
+        const defSen = settings.senior || false; 
+        const defClass = settings.classP; 
+        const defExp = getSeniorityPercent(settings.startDate); 
+        const defPrem = settings.premP;
+        
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth(); 
+
+        lines.forEach(line => { 
+            line = line.trim(); 
+            if(!line) return; 
+
+            // 1. ДИАПАЗОН
+            const rangeRegex = /^\s*(\d{1,2})[\.\/,\-](\d{1,2})[\.\/,\-](\d{2,4})\s*-\s*(\d{1,2})[\.\/,\-](\d{1,2})[\.\/,\-](\d{2,4})/;
+            const rangeMatch = line.match(rangeRegex);
+
+            if (rangeMatch) {
+                let d1 = parseInt(rangeMatch[1]), m1 = parseInt(rangeMatch[2]) - 1, y1 = parseInt(rangeMatch[3]);
+                let d2 = parseInt(rangeMatch[4]), m2 = parseInt(rangeMatch[5]) - 1, y2 = parseInt(rangeMatch[6]);
+                
+                if(y1 < 100) y1 += 2000; 
+                if(y2 < 100) y2 += 2000;
+
+                let current = new Date(y1, m1, d1);
+                const end = new Date(y2, m2, d2);
+                
+                let desc = line.replace(rangeMatch[0], '').trim();
+                if (desc.toLowerCase().includes('больничный')) desc = "БЛ";
+                if (desc.toLowerCase() === 'отп') desc = "отпуск";
+
+                // ИСПРАВЛЕНИЕ: Мы ВСЕГДА берем полную ставку.
+                // Неважно, резерв это или нет. Программа сама потом посчитает 8% вредности.
+                let impRate = defRate; 
+
+                while (current <= end) {
+                    const iso = getIsoDate(current);
+                    shifts = shifts.filter(s => s.date !== iso);
+                    
+                    shifts.push({ 
+                        date: iso, text: desc, customRate: impRate, 
+                        customMentor: defMent, customSenior: defSen, 
+                        customClass: defClass, customSen: defExp, customPrem: defPrem 
+                    });
+                    
+                    addedCount++;
+                    current.setDate(current.getDate() + 1);
+                }
+
+            } else {
+                // 2. ОДИНОЧНАЯ ДАТА
+                const dateRegex = /^\s*(\d{1,2})[\.\/,\-](\d{1,2})(?:[\.\/,\-](\d{2,4}))?/;
+                const dateMatch = line.match(dateRegex);
+
+                if(dateMatch) { 
+                    let day = parseInt(dateMatch[1]); 
+                    let month = parseInt(dateMatch[2]); 
+                    let year = currentYear;
+
+                    if (dateMatch[3]) {
+                        year = parseInt(dateMatch[3]);
+                    } else {
+                        if (currentMonth >= 9 && month <= 2) {
+                            year += 1;
+                        }
+                    }
+                    if(year < 100) year += 2000;
+
+                    const isoDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    
+                    let desc = line.replace(dateMatch[0], '').trim(); 
+                    if (desc.toLowerCase().includes('больничный')) desc = "БЛ";
+                    if (desc.toLowerCase() === 'отп') desc = "отпуск";
+        
+                    shifts = shifts.filter(s => s.date !== isoDate); 
+                    
+                    // ИСПРАВЛЕНИЕ: Тут тоже убираем условие про "рез". Всегда полная ставка.
+                    let impRate = defRate; 
+                    
+                    shifts.push({ 
+                        date: isoDate, text: desc, customRate: impRate, 
+                        customMentor: defMent, customSenior: defSen, 
+                        customClass: defClass, customSen: defExp, customPrem: defPrem 
+                    }); 
+                    addedCount++; 
+                } else {
+                    console.warn("Пропущена строка:", line);
+                    errorCount++;
+                }
+            }
+        }); 
+        
+        if(addedCount > 0) { 
+            saveData(); 
+            render(); 
+            
+            // 1. Находим кнопку и меняем её вид
+            const btn = document.querySelector('#importModal .btn-save');
+            const originalText = btn.innerText;
+            const originalColor = btn.style.background;
+            
+            btn.innerText = `Добавлено: ${addedCount} ✅`;
+            btn.style.background = "#4caf50"; // Зеленый цвет успеха
+            
+            // 2. Ждем 1.5 секунды, чтобы ты увидел результат
+            setTimeout(() => {
+                closeModal('importModal');
+                
+                // Возвращаем кнопке прежний вид (для следующего раза)
+                btn.innerText = originalText;
+                btn.style.background = originalColor;
+            }, 1500);
+            
+        } else { 
+            // Ошибка: Кнопка краснеет (как мы делали раньше)
+            const btn = document.querySelector('#importModal .btn-save');
+            const originalText = btn.innerText;
+            const originalColor = btn.style.background;
+            
+            btn.innerText = "Нет дат ⚠️"; 
+            btn.style.background = "#e53935"; 
+            
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.background = originalColor;
+            }, 1500);
+        }
+    }
+    
+    function renderCalendar() {
+        const grid = document.getElementById('calGrid');
+        grid.innerHTML = '';
+        ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'].forEach(d => grid.innerHTML += `<div class="cal-day-name">${d}</div>`);
+        const year = calDate.getFullYear();
+        const month = calDate.getMonth();
+        const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+        document.getElementById('calTitle').innerText = `${monthNames[month]} ${year}`;
+        let firstDay = new Date(year, month, 1).getDay();
+        firstDay = (firstDay === 0 ? 6 : firstDay - 1);
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const todayStr = getIsoDate(new Date());
+        for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div class="cal-cell empty"></div>`;
+        for (let d = 1; d <= daysInMonth; d++) {
+            const currentIso = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            const shift = shifts.find(s => s.date === currentIso);
+            const dateObj = new Date(currentIso);
+            
+            // 1. Проверяем, Сб/Вс ли это
+            const isWknd = (dateObj.getDay() === 0 || dateObj.getDay() === 6);
+            
+            // 2. Проверяем, ГОС. ПРАЗДНИК ли это (используем твою новую точную функцию!)
+            const isStateHol = isOnlyStateHoliday(dateObj); 
+            
+            let cellClass = '';
+
+            // Если Сб/Вс ИЛИ Праздник - делаем цифру красной (класс weekend)
+            if (isWknd || isStateHol) cellClass += ' weekend';
+
+            // Если это ИМЕННО Праздник (1 мая, 9 мая и т.д.) - добавляем спец. класс для фона
+            if (isStateHol) cellClass += ' state-holiday';
+
+            let content = `<div class="cal-num">${d}</div>`;
+            
+           if (shift) {
+                let text = shift.text.toLowerCase();
+                let typeClass = 'type-work';
+                
+                // Если ОТСТРАНЕНИЕ — красим как больничный (желтый фон)
+                if (shift.isFullMedical) typeClass = 'type-sick';
+                
+                else if (text.includes('бл')) typeClass = 'type-sick';
+                else if (text.includes('донор')) typeClass = 'type-donor';
+                else if (text.includes('отпуск') || text.includes('отп')) typeClass = 'type-vacation';
+                else if (text.includes('вых')) typeClass = 'type-off';
+                else if (text.includes('упц') || text.includes('учеба') || text.includes('обучение')) typeClass = 'type-train';
+                
+                cellClass += ` has-shift ${typeClass}`;
+                
+                if (shift.note && shift.note.trim() !== "") {
+                    cellClass += ' has-note';
+                }
+                
+                if (shift.isTech) {
+                    content += `<div style="position:absolute; top:3px; left:4px; font-size:10px; line-height:1;" title="Тех. учеба">🎓</div>`;
+                }
+
+                let fullText = shift.text.toLowerCase();
+                let title = "";
+
+                // Словарь замен (можешь добавить свои)
+                if (fullText.includes("охрана") || fullText.includes("охр")) title = "ОХР";
+                else if (fullText.includes("мед.") || fullText.includes("комисс")) title = "МЕД";
+                else if (fullText.includes("упц")) title = "УПЦ";
+                else if (fullText.includes("тех.") || fullText.includes("тех учеба")) title = "ТЕХ";
+                else if (fullText.includes("корпоратив") || fullText.includes("корп")) title = "КОРП";
+                else if (fullText.includes("повышение") || fullText.includes("квалиф")) title = "ПОВ";
+                else if (fullText.includes("псих") || fullText.includes("освид")) title = "ПСИХ";
+                else if (fullText.includes("выходной") || fullText.includes("вых")) title = "ВЫХ";
+                else if (fullText.includes("отпуск") || fullText.includes("отп")) title = "ОТП";
+                else if (fullText.includes("больничный") || fullText.includes("бл")) title = "БЛ";
+                else if (fullText.includes("донор")) title = "ДОН";
+                else {
+                    // Если не нашли в словаре - берем первое слово
+                    let firstWord = shift.text.split(' ')[0];
+                    // Если это маршрут (м70, п2) - оставляем как есть
+                    // Если длинное слово - режем аккуратнее (до 5 букв без точки)
+                    if (firstWord.length > 6) title = firstWord.substr(0, 5); 
+                    else title = firstWord;
+                }
+
+                content += `<div class="cal-shift">${title}</div>`;
+            }
+            
+            if (currentIso === todayStr) cellClass += ' today';
+            
+            // ВАЖНО: Добавил обработку свайпа внутрь onclick, чтобы не мешал
+            grid.innerHTML += `<div class="cal-cell ${cellClass}" onclick="openDayModal('${currentIso}')">${content}</div>`;
+        }
+    }
+    
+    function changeMonth(dir) { calDate.setMonth(calDate.getMonth() + dir); renderCalendar(); }
+    function openCalendarModal() { document.body.classList.add('modal-open'); document.getElementById('calendarModal').classList.add('open'); renderCalendar(); }
+    function setAutoDate() { if (shifts.length === 0) { document.getElementById('inpDate').valueAsDate = new Date(); return; } let maxTime = 0; shifts.forEach(s => { let time = new Date(s.date).getTime(); if (time > maxTime) maxTime = time; }); let nextDay = new Date(maxTime); nextDay.setDate(nextDay.getDate() + 1); document.getElementById('inpDate').valueAsDate = nextDay; }
+    const FSS_LIMITS = { 2023: 1917000, 2024: 2225000, 2025: 2753000 };
+
+    // Получить два расчетных года для даты больничного
+    function getSickYears(dateStr) {
+        let d = dateStr ? new Date(dateStr) : new Date();
+        let y = d.getFullYear();
+        return [y - 2, y - 1];
+    }
+    function openDonation() {
+    const donationUrl = "https://pay.cloudtips.ru/p/1b8ab64d"; 
+
+    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.openLink) {
+        // Правильный метод для Telegram: открывает во внешнем браузере
+        window.Telegram.WebApp.openLink(donationUrl);
+    } else {
+        // Запасной вариант для обычного браузера
+        window.open(donationUrl, '_blank');
+    }
+}    
+    init();
+    
+    function pasteFromClipboard() {
+        const input = document.getElementById('inpText');
+        
+        if (navigator.clipboard && navigator.clipboard.readText) {
+            navigator.clipboard.readText()
+                .then(text => {
+                    input.value = text;
+                    checkShiftText();
+                    // Успех - зеленая вспышка
+                    input.style.borderColor = '#4caf50';
+                    setTimeout(() => input.style.borderColor = '', 300);
+                })
+                .catch(err => {
+                    // Ошибка - красная вспышка (без текста)
+                    console.error(err);
+                    input.style.borderColor = '#d32f2f';
+                    input.placeholder = "Ошибка вставки. Жми Ctrl+V";
+                    setTimeout(() => {
+                        input.style.borderColor = '';
+                        input.placeholder = "Например: м75 14:00-22:00 или БЛ";
+                    }, 2000);
+                });
+        } else {
+            // Старый браузер - красная вспышка
+            input.style.borderColor = '#d32f2f';
+            setTimeout(() => input.style.borderColor = '', 300);
+        }
+    }
+</script>
+
 </body>
 </html>
