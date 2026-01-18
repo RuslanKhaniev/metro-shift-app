@@ -1,0 +1,2590 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ГрафикБро v1.0</title>
+
+    <script type="text/javascript" >
+       (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+       m[i].l=1*new Date();
+       for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+       k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+       (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+
+       ym(105574700, "init", {
+           clickmap:true,
+           trackLinks:true,
+           accurateTrackBounce:true,
+           webvisor:true
+       });
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/105574700" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <script>
+        if (!window.Telegram || !window.Telegram.WebApp || !window.Telegram.WebApp.initData) {
+            console.warn("⚠️ ЗАПУСК В БРАУЗЕРЕ: Включен режим эмуляции Telegram.");
+            window.Telegram = {
+                WebApp: {
+                    initData: "user_id=123&first_name=Tester",
+                    initDataUnsafe: { user: { id: 999999, first_name: "BrowserUser", username: "tester" } },
+                    colorScheme: 'light',
+                    themeParams: { bg_color: "#ffffff", text_color: "#000000" },
+                    isExpanded: true,
+                    viewportHeight: window.innerHeight,
+                    ready: function() { console.log('[MockTG] App Ready'); },
+                    expand: function() { console.log('[MockTG] App Expanded'); },
+                    close: function() { console.log('[MockTG] Close command'); },
+                    CloudStorage: {
+                        getItem: function(key, callback) { setTimeout(() => { const val = localStorage.getItem('mock_cloud_' + key); if (callback) callback(null, val); }, 100); },
+                        setItem: function(key, value, callback) { setTimeout(() => { localStorage.setItem('mock_cloud_' + key, value); if (callback) callback(null, true); }, 100); },
+                        getItems: function(keys, callback) { setTimeout(() => { const result = {}; keys.forEach(k => { const v = localStorage.getItem('mock_cloud_' + k); if (v) result[k] = v; }); if (callback) callback(null, result); }, 100); },
+                        getKeys: function(callback) { setTimeout(() => { const keys = []; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k.startsWith('mock_cloud_')) { keys.push(k.replace('mock_cloud_', '')); } } if (callback) callback(null, keys); }, 100); }
+                    }
+                }
+            };
+        }
+    </script>
+    <style>
+        :root {
+            --primary: #37474f; --accent: #ffab00; --bg: #f5f7fa; --card: #ffffff; --text: #263238;
+            --nav-inactive: #90a4ae;
+            --col-work-bg: #e8f5e9; --col-work-txt: #2e7d32;
+            --col-sick-bg: #fff9c4; --col-sick-txt: #fbc02d; --col-sick-border: #fff59d;
+            --col-donor-bg: #f3e5f5; --col-donor-txt: #ab47bc; --col-donor-border: #e1bee7;
+            --col-train-bg: #e0f7fa; --col-train-txt: #006064; --col-train-border: #b2ebf2;
+            --col-weekend-txt: #e53935; --col-holiday-bg: #ffebee; --col-holiday-border: #ef5350; 
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Roboto", sans-serif; background-color: var(--bg); margin: 0; padding: 0; color: var(--text); padding-bottom: 90px; padding-top: 60px; -webkit-tap-highlight-color: transparent; }
+        
+        /* ИСПРАВЛЕНО: Убрано position: fixed, которое сбрасывало скролл */
+        body.modal-open { overflow: hidden; touch-action: none; }
+
+        header { background-color: var(--card); color: var(--text); height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); position: fixed; top: 0; left: 0; right: 0; z-index: 100; }
+        h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; margin: 0; color: var(--primary); }
+        .header-btn { background: #f0f2f5; border: none; cursor: pointer; color: var(--primary); padding: 10px; border-radius: 12px; transition: 0.2s; } .header-btn:active { transform: scale(0.95); } .header-btn svg { width: 24px; height: 24px; fill: currentColor; }
+        #loader { position: fixed; top:0; left:0; right:0; bottom:0; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.3s; pointer-events: none; opacity: 0;}
+        .spinner { width: 40px; height: 40px; border: 4px solid #cfd8dc; border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loader-text { margin-top: 15px; font-weight: 600; color: var(--primary); font-size: 14px; }
+        .loader-active { opacity: 1 !important; pointer-events: all !important; }
+        .page { display: none; padding: 20px; animation: fadeIn 0.3s ease; } .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .hero-widget { border-radius: 24px; padding: 25px; color: white; box-shadow: 0 15px 30px rgba(0,0,0,0.15); margin-bottom: 20px; position: relative; overflow: hidden; }
+        .theme-work { background: linear-gradient(135deg, #263238 0%, #37474f 100%); }
+        .theme-rest { background: linear-gradient(135deg, #0288d1 0%, #26c6da 100%); }
+        .widget-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; opacity: 0.9; }
+        .widget-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .widget-main-value { font-size: 52px; font-weight: 800; letter-spacing: -1px; line-height: 1; margin-bottom: 5px; }
+        .widget-sub-value { font-size: 15px; opacity: 0.9; font-weight: 600; background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 8px; display: inline-block; margin-bottom: 15px;}
+        .progress-track { background: rgba(255,255,255,0.2); height: 6px; border-radius: 4px; margin-top: 20px; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 4px; transition: width 1s linear; background: white; }
+        .theme-work .progress-fill { background: var(--accent); }
+        .progress-labels { display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; font-weight: 600; opacity: 0.9; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .info-card { background: white; padding: 15px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; }
+        .info-label { font-size: 11px; color: #90a4ae; font-weight: 700; text-transform: uppercase; margin-bottom: 6px; }
+        .info-val { font-size: 17px; font-weight: 700; color: var(--primary); }
+        .month-header { font-size: 14px; font-weight: 800; color: var(--nav-inactive); margin: 10px 0 15px 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .shift-card { background: white; border-radius: 16px; padding: 15px; margin-bottom: 12px; display: flex; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04); cursor: pointer; transition: transform 0.1s; position: relative; overflow: hidden;}
+        .shift-card:active { transform: scale(0.98); }
+        .shift-card.today { border: 2px solid var(--accent); background-color: #fffde7; }
+        .today-badge { position: absolute; top: 0; right: 0; background: var(--accent); color: white; font-size: 10px; padding: 3px 8px; border-bottom-left-radius: 10px; font-weight: bold; z-index: 10; }
+        .date-box { background: #f0f2f5; min-width: 50px; height: 50px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-right: 16px; color: var(--primary); }
+        .date-day { font-size: 20px; font-weight: 800; line-height: 1; }
+        .date-dow { font-size: 11px; text-transform: uppercase; margin-top: 3px; font-weight: 600; color: #78909c;}
+        .shift-info { flex-grow: 1; min-width: 0; }
+        .shift-title { font-weight: 700; font-size: 16px; display: flex; align-items: center; gap: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .shift-sub { font-size: 13px; color: #78909c; margin-top: 4px; font-weight: 500; }
+        .money-val { color: #2e7d32; font-weight: 800; font-size: 16px; }
+        .money-val.future { color: #90a4ae; font-weight: 600; }
+        .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .cal-title { font-size: 18px; font-weight: 700; }
+        .cal-btn { background: none; border: none; font-size: 24px; color: var(--primary); cursor: pointer; padding: 5px 15px; }
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; width: 100%; }
+        .cal-day-name { text-align: center; font-size: 11px; color: #b0bec5; font-weight: 700; padding-bottom: 10px; }
+        .cal-cell { background: #f7f9fc; border-radius: 10px; height: 55px; display: flex; flex-direction: column; align-items: center; padding-top: 4px; font-size: 12px; position: relative; border: 2px solid transparent; cursor: pointer; min-width: 0; }
+        .cal-num { font-weight: 700; font-size: 12px; margin-bottom: 2px; color: #546e7a; }
+        .cal-shift { font-size: 9px; text-align: center; line-height: 1.1; width: 100%; overflow: hidden; text-overflow: ellipsis; padding: 0 2px; font-weight: 600;}
+        .cal-cell.today { border-color: var(--accent); background: #fff; }
+        .cal-cell.today .cal-num { color: var(--accent); }
+        .cal-cell.weekend .cal-num { 
+        color: var(--col-weekend-txt); 
+        }
+        .cal-cell.state-holiday { 
+        background: var(--col-holiday-bg); 
+        border-color: var(--col-holiday-border) !important; /* !important чтобы перебить рамку обычных дней */
+        }
+        .cal-cell.state-holiday.has-shift.type-work { 
+        background: var(--col-work-bg); 
+        border-color: var(--col-holiday-border); 
+        }
+        .cal-cell.state-holiday.has-shift.type-work .cal-num { 
+        color: var(--col-weekend-txt); 
+        font-weight: 900; 
+        }
+        .cal-cell.state-holiday.today {
+        border-color: var(--accent) !important;
+        box-shadow: 0 0 10px rgba(255, 171, 0, 0.4); /* Добавим свечение, раз уж праздник */
+        }
+        .cal-cell.type-work { background: var(--col-work-bg); color: var(--col-work-txt); }
+        .cal-cell.type-off { background: white; color: #cfd8dc; }
+        .cal-cell.type-sick { background: var(--col-sick-bg) !important; color: #f9a825 !important; border-color: var(--col-sick-border); }
+        .cal-cell.type-train { background: var(--col-train-bg) !important; color: var(--col-train-txt) !important; border-color: var(--col-train-border); }
+        .cal-cell.type-donor { background: var(--col-donor-bg) !important; color: var(--col-donor-txt) !important; border-color: var(--col-donor-border); }
+        .cal-cell.holiday { background: var(--col-holiday-bg); border-color: var(--col-holiday-border); }
+        .cal-cell.holiday .cal-num { color: var(--col-weekend-txt); } 
+        .cal-cell.holiday.has-shift.type-work { background: var(--col-work-bg); border-color: var(--col-holiday-border); }
+        .cal-cell.holiday.has-shift.type-work .cal-num { color: var(--col-weekend-txt); font-weight: 900; }
+        .cal-cell.empty { background: transparent; cursor: default; }
+        .tag { font-size: 9px; padding: 3px 8px; border-radius: 6px; color: white; font-weight: bold; letter-spacing: 0.5px; display:inline-block; margin-left:2px;}
+        .tag.gray { background: #90a4ae; } .tag.orange { background: var(--accent); } .tag.teal { background: #009688; } .tag.indigo { background: #5c6bc0; } .tag.red { background: #e53935; } .tag.purple { background: #7e57c2; }
+        .fab-container { position: fixed; bottom: 90px; right: 20px; display: flex; align-items: center; gap: 15px; z-index: 2000; pointer-events: auto; }
+        .fab-main { background: var(--accent); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 8px 20px rgba(255, 171, 0, 0.4); cursor: pointer; border: none; transition: transform 0.2s; -webkit-tap-highlight-color: transparent; } .fab-main:active { transform: scale(0.9); } .fab-main svg { width: 30px; height: 30px; fill: white; pointer-events: none; }
+        .fab-secondary { background: white; color: var(--primary); width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1); cursor: pointer; border: none; transition: transform 0.2s; -webkit-tap-highlight-color: transparent;} .fab-secondary:active { transform: scale(0.9); } .fab-secondary svg { width: 24px; height: 24px; fill: currentColor; pointer-events: none; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: white; border-top: 1px solid #f0f0f0; display: flex; justify-content: space-around; align-items: center; z-index: 1000; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -5px 20px rgba(0,0,0,0.03); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--nav-inactive); font-size: 10px; font-weight: 600; width: 100%; height: 100%; cursor: pointer; transition: all 0.2s; } .nav-item.active { color: var(--primary); transform: translateY(-2px); } .nav-item svg { width: 26px; height: 26px; fill: currentColor; margin-bottom: 4px; }
+        .chart-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 0; position: relative; }
+        .circular-chart { display: block; margin: 0 auto; max-width: 80%; max-height: 250px; }
+        .circle-bg { 
+            fill: none; 
+            stroke: #eee; 
+            stroke-width: 3.8; 
+        }
+        .circle { 
+            fill: none; 
+            stroke-width: 3.8;
+            stroke-linecap: butt;
+            transition: stroke-dasharray 0.6s ease; 
+        }
+        .chart-text-group { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -40%); text-align: center; }
+        .chart-val { font-size: 32px; font-weight: 800; color: var(--primary); display: block; line-height: 1;}
+        .chart-label { font-size: 12px; color: #90a4ae; font-weight: 600; text-transform: uppercase; margin-top: 5px; display: block;}
+        .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px;} .stat-row:last-child { border-bottom: none; }
+        .stat-val { font-weight: 700; color: var(--primary); }
+        .stat-sub-val { font-size: 12px; color:#90a4ae; font-weight: 600; margin-right: 8px;}
+        .card { background: var(--card); border-radius: 20px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        .month-selector { display: flex; align-items: center; justify-content: center; background: #f0f2f5; border-radius: 12px; padding: 4px 8px; min-width: 160px; gap: 15px; }
+        .month-btn { background: none; border: none; padding: 8px; cursor: pointer; color: var(--primary); font-size: 20px; font-weight: bold; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+        .month-display { font-size: 14px; font-weight: 700; text-align: center; white-space: nowrap; min-width: 110px; }
+        input[type="text"], input[type="number"], textarea, select { width: 100%; padding: 14px; border: 1px solid #e0e0e0; border-radius: 12px; box-sizing: border-box; font-size: 16px; margin-top: 8px; background: #f9f9f9; font-family: inherit; font-weight: 500;}
+        input:focus, textarea:focus, select:focus { outline: none; border-color: var(--primary); background: white; }
+        label { font-size: 11px; color: #78909c; font-weight: 800; text-transform: uppercase; margin-top: 18px; display: block; letter-spacing: 0.5px;}
+        .modal-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(38, 50, 56, 0.8); backdrop-filter: blur(4px); 
+            display: none; justify-content: center; align-items: center; 
+            z-index: 5000; touch-action: none;
+        }
+        #addModal { z-index: 6000; }
+        #confirmModal { z-index: 7000; }
+        .modal-overlay.open { display: flex; animation: fadeIn 0.2s; }
+        .modal-box { 
+            background: white; padding: 25px; border-radius: 24px; 
+            width: 90%; max-width: 360px; min-width: 300px; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4); 
+            max-height: 85vh; overflow-y: auto;
+            position: relative;
+            z-index: 6001; 
+            transform: translate3d(0,0,0);
+        }
+        .btn-row { display: flex; justify-content: flex-end; margin-top: 25px; gap: 10px; }
+        .btn { padding: 12px 24px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; font-size: 15px; transition: 0.2s;} .btn:active { transform: scale(0.96); }
+        .btn-cancel { background: transparent; color: #78909c; } .btn-save { background: var(--primary); color: white; } .btn-delete { background: #ffebee; color: #d32f2f; }
+        .btn-text { background: none; border: none; color: var(--accent); font-size: 11px; font-weight: bold; cursor: pointer; text-decoration: underline; margin-top: 5px; display: block; text-align: right;}
+        details { margin-top: 15px; border: 1px solid #eee; border-radius: 12px; padding: 15px; } summary { font-size: 13px; font-weight: 700; color: var(--primary); cursor: pointer; outline: none; }
+        .detail-row { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; } .detail-row label { margin: 0; font-size: 13px; color: #455a64; font-weight: 500;} .detail-row input[type="checkbox"] { width: 24px; height: 24px; margin: 0; accent-color: var(--accent);} .detail-row input[type="text"] { width: 90px; padding: 8px; font-size: 14px; margin: 0; } .line-input-row { display: flex; gap: 10px; margin-top: 5px; }
+        /* --- СТИЛИ ДЛЯ ЗАМЕТОК --- */
+        
+    
+/* Вариант: КРУГЛАЯ ТОЧКА */
+.cal-cell.has-note::after {
+    content: ''; 
+    position: absolute; 
+    top: 4px;      /* Отступ сверху */
+    right: 4px;    /* Отступ справа */
+    width: 8px;    /* Размер точки */
+    height: 8px;
+    background-color: #ff1744; /* Красный цвет */
+    border-radius: 50%;        /* Делает круг */
+    box-shadow: 0 0 0 1px #fff; /* Белая обводка, чтобы отделять от фона */
+    border: none;
+}
+    /* Иконка в списке смен */
+    .note-icon {
+    font-size: 14px;
+    margin-left: 6px;
+    cursor: help;
+    text-decoration: none;
+    }
+    /* Стиль для отпуска (Голубой) */
+    .cal-cell.type-vacation { 
+            background: #fff3e0 !important; /* Светло-оранжевый фон */
+            color: #e65100 !important;      /* Темно-оранжевый текст */
+            border-color: #ffe0b2 !important; /* Рамка чуть темнее фона */
+        }
+        /* Цвет цифры числа */
+        .cal-cell.type-vacation .cal-num { 
+            color: #ef6c00 !important; 
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loader">
+        <div class="spinner"></div>
+        <div class="loader-text">Синхронизация...</div>
+    </div>
+
+    <header>
+        <h1 id="headerTitle">Мои смены</h1>
+        <button class="header-btn" onclick="openImportModal()" title="Импорт"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg></button>
+    </header>
+
+    <div id="tab-today" class="page"><div id="todayContent"></div></div>
+
+    <div id="tab-home" class="page active">
+        <div id="shiftList"></div>
+        <div class="fab-container">
+            <button class="fab-secondary" onclick="openCalendarModal()"><svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2zm-8 4H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z"/></svg></button>
+            <button class="fab-main" onclick="openModal()"><svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6V13z"/></svg></button>
+        </div>
+    </div>
+    
+    <div id="tab-stats" class="page">
+        <div class="card">
+            <h3 style="margin-top:0; color:var(--primary); display:flex; justify-content:space-between; align-items:center;">
+                <span>📊 Сводка</span>
+                
+
+<div class="month-selector">
+    <button class="month-btn" onclick="changeStatsMonth(-1)">&#8249;</button>
+    <div class="month-display" id="statsMonthDisplay"></div>
+    <button class="month-btn" onclick="changeStatsMonth(1)">&#8250;</button>
+    <button class="month-btn" style="color: #e53935; margin-left: 5px;" onclick="wipeCurrentMonth()" title="Очистить месяц">🗑️</button>
+</div>
+            </h3>
+            <div class="chart-container">
+                <svg viewBox="0 0 36 36" class="circular-chart">
+                    <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="circle" stroke="#ffab00" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" id="circlePath" />
+                    <path class="circle" stroke="#00c853" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" id="circlePathOver" style="display:none;" />
+                </svg>
+                <div class="chart-text-group"><span class="chart-val" id="chartValue">0</span><span class="chart-label">Часов</span></div>
+            </div>
+            <div class="stat-row"><span>Норма (36ч):</span> <span class="stat-val" id="st_norm">0</span></div>
+            <div class="stat-row"><span>Отработано:</span> <span class="stat-val" id="st_hours">0</span></div>
+            <div class="stat-row" style="background:#fff3e0; margin:0 -10px; padding:10px; border-radius:8px; margin-bottom:5px;"><span>Переработка:</span> <span class="stat-val" id="st_over" style="font-size:16px;">0</span></div>
+        </div>
+        <div class="card">
+            <h3 style="margin-top:0; color:var(--primary)">💰 Расчет</h3>
+
+            <div class="stat-row" id="row_tariff"><span>Оплата по тарифу:</span> <span class="stat-val" id="st_tariff_money">0 ₽</span></div>
+            <div class="stat-row" id="row_res"><span>Резерв:</span> <span class="stat-val" id="st_res_money">0 ₽</span></div>
+           
+            <div class="stat-row" id="row_ev"><span>Вечерние (20%):</span> <div style="text-align:right"><span class="stat-sub-val" id="st_ev_hours">0ч</span><span class="stat-val" id="st_ev_money">0 ₽</span></div></div>
+            <div class="stat-row" id="row_night"><span>Ночные (40%):</span> <div style="text-align:right"><span class="stat-sub-val" id="st_night_hours">0ч</span><span class="stat-val" id="st_night_money">0 ₽</span></div></div>
+            <div class="stat-row" id="row_split"><span>Разрывные (30%):</span> <div style="text-align:right"><span class="stat-sub-val" id="st_split_hours">0ч</span><span class="stat-val" id="st_split_money">0 ₽</span></div></div>
+            <div class="stat-row" id="row_holiday" style="display:none;"><span>Праздничные (x2):</span> <div style="text-align:right"><span class="stat-sub-val" id="st_holiday_hours">0ч</span><span class="stat-val" id="st_holiday_money">0 ₽</span></div></div>
+            <div class="stat-row" id="row_ot15"><span>Переработка (1.5х):</span> <div style="text-align:right"><span class="stat-sub-val" id="st_ot15_hours">0ч</span><span class="stat-val" id="st_ot15_money">0 ₽</span></div></div>
+            <div class="stat-row" id="row_ot20"><span>Переработка (2.0х):</span> <div style="text-align:right"><span class="stat-sub-val" id="st_ot20_hours">0ч</span><span class="stat-val" id="st_ot20_money">0 ₽</span></div></div>
+
+            <div style="margin-top:5px;"></div> 
+
+            <div class="stat-row" id="row_sick" style="display:none;">
+                <span>🚑 Больничный:</span> 
+                <div style="text-align:right">
+                    <span class="stat-sub-val" id="st_sick_days">0 дн.</span>
+                    <span class="stat-val" id="st_sick_money">0 ₽</span>
+                </div>
+            </div>
+            <div class="stat-row" id="row_vacation" style="display:none;"><span>🏖️ Отпускные:</span> <span class="stat-val" id="st_vacation_money">0 ₽</span></div>
+            <div class="stat-row" id="row_donor" style="display:none;"><span>🩸 Донорские:</span> <span class="stat-val" id="st_donor_money">0 ₽</span></div>
+            <div class="stat-row" id="row_med" style="display:none;"><span>🩺 Мед. комиссия:</span> <span class="stat-val" id="st_med_money">0 ₽</span></div>
+            <div class="stat-row" id="row_study" style="display:none;"><span>🎓 Учеба (УПЦ):</span> <span class="stat-val" id="st_study_money">0 ₽</span></div>
+
+            <div style="border-top:1px solid #eee; margin:8px 0;"></div>
+
+            <div class="stat-row" id="row_class"><span id="lbl_class">Классность:</span> <span class="stat-val" id="st_class_money">0 ₽</span></div>
+            <div class="stat-row" id="row_sen"><span id="lbl_sen">Выслуга:</span> <span class="stat-val" id="st_sen_money">0 ₽</span></div>
+            <div class="stat-row" id="row_senior" style="display:none;"><span id="lbl_senior">Ст. машинист:</span> <span class="stat-val" id="st_senior_money">0 ₽</span></div>
+            <div class="stat-row" id="row_mentor" style="display:none;"><span id="lbl_mentor">Наставник:</span> <div style="text-align:right"><span class="stat-sub-val" id="st_mentor_hours">0ч</span><span class="stat-val" id="st_mentor_money">0 ₽</span></div></div>
+
+            <div class="stat-row" id="row_prem"><span id="lbl_prem">Премия:</span> <span class="stat-val" id="st_prem_money">0 ₽</span></div>
+            <div class="stat-row" id="row_tech" style="display:none;"><span>Тех. учеба:</span> <span class="stat-val" id="st_tech_money">0 ₽</span></div>
+            
+            <div style="border-top:2px solid #eee; margin:10px 0;"></div>
+
+            <div class="stat-row"><span>Начислено:</span> <span class="stat-val" id="st_dirty">0 ₽</span></div>
+            <div class="stat-row"><span>Профсоюз (1%):</span> <span class="stat-val" id="st_union" style="color:#e53935">0 ₽</span></div>
+            <div class="stat-row"><span id="lbl_tax">Налог (13%):</span> <span class="stat-val" id="st_tax" style="color:#e57373">0 ₽</span></div>
+            <div id="rich_alert" style="text-align:right; font-size:10px; color:#d32f2f; font-weight:800; display:none; margin-top:-8px; margin-bottom:8px; opacity:0.8;"></div>
+
+            <div class="stat-row" id="row_bonus_base">
+                <span style="color:#90a4ae;">🏦 Сумма для годовой премии:</span> 
+                <span class="stat-val" id="st_bonus_base">0 ₽</span>
+            </div>
+
+            <div class="stat-row" style="font-size:20px; border-top:2px solid #eee; margin-top:10px; padding-top:15px"><span>На руки:</span> <span class="stat-val" id="st_net" style="color:#2e7d32">0 ₽</span></div>
+        </div>
+    </div>
+
+    <div id="tab-settings" class="page">
+        <div class="card">
+            <h3 style="margin-top:0; color:var(--primary)">⚙️ Профиль</h3>
+            <label>Тариф (Основной)</label><input type="text" inputmode="decimal" id="set_rate" onchange="saveAll()">
+            <label>Класс квалификации</label><select id="set_class" onchange="saveAll()"><option value="0">Без класса</option><option value="30">1 класс (30%)</option><option value="20">2 класс (20%)</option><option value="10">3 класс (10%)</option></select>
+            <label>Дата трудоустройства</label><input type="date" id="set_start_date" onchange="saveAll()">
+            <div style="font-size:13px; color:var(--primary); margin-top:8px; text-align:right; font-weight:600;" id="set_exp_text"></div>
+            <label>Премия (%)</label><input type="text" inputmode="decimal" id="set_prem" onchange="saveAll()">
+            <div style="margin-top:25px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;"><input type="checkbox" id="set_mentor" style="width:24px; height:24px; margin:0;" onchange="saveAll()"><span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Наставник (+15%)</span></div>
+            <div style="margin-top:10px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;"><input type="checkbox" id="set_senior" style="width:24px; height:24px; margin:0;" onchange="saveAll()"><span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Ст. машинист (+10%)</span></div>
+            <div style="margin-top:10px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;"><input type="checkbox" id="set_union" style="width:24px; height:24px; margin:0;" onchange="saveAll()"><span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Член профсоюза (-1%)</span></div>
+            
+            <div style="margin-top:30px; padding:15px; background:#fff3e0; border-radius:12px; text-align:center;">
+                <div id="cloudStatus" style="font-size:12px; font-weight:bold; color:#f57c00; margin-bottom:10px;">Статус облака: Проверка...</div>
+                <button onclick="forcePushToCloud()" style="background:#ff9800; color:white; border:none; padding:10px 15px; border-radius:10px; font-weight:bold; width:100%;">📤 Отправить данные в Облако</button>
+                <div style="font-size:10px; color:#8d6e63; margin-top:5px;">Нажми, если данные на телефоне есть, а на ПК нет.</div>
+            </div>
+        </div>
+        <div class="card" style="background: linear-gradient(135deg, #263238 0%, #37474f 100%); color: white; text-align: center; margin-top: 15px;">
+    <h3 style="margin-top:0; margin-bottom: 8px; color:white; font-size: 16px;">🤝 Развитие проекта</h3>
+    <div style="font-size:12px; opacity:0.8; margin-bottom:15px; line-height: 1.4;">
+        Приложение бесплатное. Если оно помогает в работе — буду благодарен за поддержку (оплата сервера и обновлений).
+    </div>
+    <button onclick="openDonation()" style="background: var(--accent); color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 800; width: 100%; font-size: 14px; box-shadow: 0 4px 15px rgba(255, 171, 0, 0.3);">
+        Поддержать
+    </button>
+</div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">ГрафикБро v1.1 (Clean)</div>
+    </div>
+
+    
+</div>
+    
+    
+</div>
+    </div>
+
+    <div class="modal-overlay" id="addModal">
+	<div class="modal-box">
+            <h3 style="margin-top:0; color:var(--primary)" id="modalTitle">Новая смена</h3>
+            <label>Дата</label>
+            <input type="date" id="inpDate">
+            <label>Текст из графика</label>
+            <div style="position: relative; display: flex; align-items: center;">
+                <input type="text" id="inpText" placeholder="Например: м75 14:00-22:00 или БЛ" oninput="checkShiftText()" style="padding-right: 40px; margin-top: 8px;">
+                <button onclick="pasteFromClipboard()" title="Вставить" style="position: absolute; right: 5px; top: 50%; transform: translateY(-30%); background: none; border: none; cursor: pointer; font-size: 18px; padding: 5px; z-index: 10;">
+                    📋
+                </button>
+            </div>
+            <label>Заметка</label>
+            <textarea id="inpNote" rows="2" placeholder="Например: зайти в кадры, номера вагонов..."></textarea>
+
+            <div id="sickDetailsBox" style="display:none; background:#e8f5e9; padding:15px; border-radius:12px; margin-top:15px; border:1px solid #c8e6c9;">
+                <h4 style="margin:0 0 10px 0; color:#2e7d32;">🚑 Параметры больничного</h4>
+                <label id="lbl_year_1">Доход за прошлый год</label>
+                <input type="text" inputmode="decimal" id="sickInc1" placeholder="Сумма из 2-НДФЛ (код 2000)">
+                <label id="lbl_year_2">Доход за позапрошлый год</label>
+                <input type="text" inputmode="decimal" id="sickInc2" placeholder="Сумма из 2-НДФЛ (код 2000)">
+                <label>Стаж (процент оплаты)</label>
+                <select id="sickPercent">
+                    <option value="100">100% (8+ лет стажа)</option>
+                    <option value="80">80% (5-8 лет стажа)</option>
+                    <option value="60">60% (до 5 лет стажа)</option>
+                </select>
+                <div style="margin-top:10px; font-size:11px; color:#558b2f;">* Суммы сохранятся для всех БЛ в этом году</div>
+            </div>
+
+            <details id="shiftDetailsBox">
+                <summary>⚙️ Параметры этой смены</summary>
+                <div class="detail-row">
+    <label>Ставка (₽/час)</label>
+    <div style="text-align: right;">
+        <input type="text" inputmode="decimal" id="shiftRate">
+        <div id="rateHint" style="display:none; font-size:9px; color:#ef6c00; margin-top:4px; font-weight:700;">
+            📉 Резерв (вредность 8%)
+        </div>
+    </div>
+</div>
+
+<div class="detail-row">
+    <label>Премия (%)</label>
+    <input type="text" inputmode="decimal" id="shiftPrem">
+</div>
+                <div class="detail-row"><label>Класс</label><select id="shiftClassSelect"><option value="0">Без класса</option><option value="30">1 класс</option><option value="20">2 класс</option><option value="10">3 класс</option></select></div>
+                <div id="lineWorkContainer" style="display:none;"><div class="line-input-row" style="margin-top:15px;"><input type="time" id="lineStart"><span style="align-self:center">-</span><input type="time" id="lineEnd"></div><div style="font-size:10px; color:#90a4ae; margin-top:5px;">Время работы на линии</div></div>
+               <div style="margin-top:15px; background:#e3f2fd; padding:10px; border-radius:12px; border:1px solid #bbdefb;">
+    <label style="color:#1565c0; margin-top:0; font-size:12px; font-weight:800; display:block; margin-bottom:5px;">🏥 Терапевтический пункт / Отстранение</label>
+    
+    <div class="line-input-row">
+        <input type="time" id="tpStart" placeholder="Начало">
+        <span style="align-self:center; color:#1565c0; font-weight:bold;">-</span>
+        <input type="time" id="tpEnd" placeholder="Конец">
+    </div>
+    
+    <div class="detail-row" style="margin-top:8px;">
+        <label style="color:#c62828; font-weight:bold; font-size:12px;">⛔ Не допуск (Полное снятие)</label>
+        <input type="checkbox" id="shiftFullMedical" style="width:20px; height:20px; margin:0;">
+    </div>
+</div>
+               <div class="detail-row" style="margin-top:15px;"><label style="flex:1;">Тех. учеба (2ч)</label><input type="checkbox" id="shiftTech"></div><div class="detail-row"><label style="flex:1;">Послерейсовый (+10 мин)</label><input type="checkbox" id="shiftPostTrip"></div><div class="detail-row" style="margin-top:15px;"><label>Наставник (+15%)</label><input type="checkbox" id="shiftMentor"></div><div class="detail-row"><label>Ст. Машинист (+10%)</label><input type="checkbox" id="shiftSenior"></div>
+            </details>
+
+            <div class="btn-row">
+                <button class="btn btn-delete" id="btnDeleteShift" onclick="deleteCurrentShift()" style="display:none; margin-right:auto;">Удалить</button>
+                <button class="btn btn-cancel" onclick="closeModal('addModal')">Отмена</button>
+                <button class="btn btn-save" id="btnSaveShift" onclick="addShift()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-box">
+            <h3 style="margin-top:0; color:var(--primary)">Удаление</h3>
+            <div style="margin-bottom:20px; font-size:15px;">Вы точно хотите удалить эту смену навсегда?</div>
+            <div class="btn-row">
+                <button class="btn btn-cancel" onclick="closeModal('confirmModal')">Нет</button>
+                <button class="btn btn-delete" onclick="commitDelete()">Да, удалить</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="importModal"><div class="modal-box"><h3 style="margin-top:0; color:var(--primary)">Импорт смен</h3><label>Вставьте текст списка:</label><textarea id="importText" rows="8" placeholder="1.01.25 м61 20:22-2:46..."></textarea><div class="btn-row"><button class="btn btn-cancel" onclick="closeModal('importModal')">Отмена</button><button class="btn btn-save" onclick="processImport()">Распознать</button></div></div></div>
+    <div class="modal-overlay" id="calendarModal"><div class="modal-box" style="max-width: 400px;" id="calModalBox"><div class="cal-header"><button class="cal-btn" onclick="changeMonth(-1)">&#8249;</button><div class="cal-title" id="calTitle">Ноябрь 2025</div><button class="cal-btn" onclick="changeMonth(1)">&#8250;</button></div><div class="cal-grid" id="calGrid"></div><div class="btn-row"><button class="btn btn-cancel" onclick="closeModal('calendarModal')">Закрыть</button></div></div></div>
+
+    <nav class="bottom-nav">
+        <div class="nav-item" id="nav-today" onclick="switchTab('today')"><svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg><span>Сегодня</span></div>
+        <div class="nav-item active" id="nav-home" onclick="switchTab('home')"><svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2zm-8 4H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z"/></svg><span>Календарь</span></div>
+        <div class="nav-item" onclick="switchTab('stats')"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg><span>Сводка</span></div>
+        <div class="nav-item" onclick="switchTab('settings')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg><span>Профиль</span></div>
+    </nav>
+
+    <script src="calc_logic.js"></script>
+    <script src="calculator.js"></script>
+
+<script>
+    
+
+    let shifts = JSON.parse(localStorage.getItem('metro_shifts')) || [];
+    let settings = JSON.parse(localStorage.getItem('metro_settings')) || { 
+    rate: 546.18, classP: false, premP: 35, mentor: false, senior: false, 
+    startDate: "", union: true, sickData: {}, sickPercent: 100 
+    };
+    // --- 1. НОВАЯ ПЕРЕМЕННАЯ ДЛЯ МЕТАДАННЫХ ---
+let syncMeta = JSON.parse(localStorage.getItem('metro_sync_meta')) || {};
+
+// --- 2. ФУНКЦИЯ ОБНОВЛЕНИЯ ВРЕМЕНИ (Вызывать при любом изменении) ---
+function touchMeta(key) {
+    syncMeta[key] = new Date().getTime();
+    localStorage.setItem('metro_sync_meta', JSON.stringify(syncMeta));
+}
+
+// Вспомогательная: получить ключ месяца по дате (например "2025-11-01" -> "s_2025_11")
+function getMonthKey(dateStr) {
+    if (!dateStr) return null;
+    const y = dateStr.substring(0, 4);
+    const m = dateStr.substring(5, 7);
+    return `s_${y}_${m}`;
+}
+    let calDate = new Date();
+    let statsDate = new Date();
+    let preventRender = false;
+    let isFirstLoad = true;
+    const tg = window.Telegram.WebApp;
+    
+    function saveData() {
+        // --- АВТОЧИСТКА ДУБЛЕЙ (FIX) ---
+        const uniqueMap = new Map();
+        shifts.forEach(s => {
+            if (s.date && s.date.length >= 10) {
+                const cleanDate = s.date.trim().substring(0, 10);
+                s.date = cleanDate;
+                uniqueMap.set(cleanDate, s);
+            }
+        });
+        shifts = Array.from(uniqueMap.values());
+        // -------------------------------
+
+        localStorage.setItem('metro_shifts', JSON.stringify(shifts));
+        localStorage.setItem('metro_settings', JSON.stringify(settings));
+        saveAllToCloud();
+    }
+    
+    function saveSettings() {
+        settings.rate = safeFloat(document.getElementById('set_rate').value);
+        settings.classP = parseInt(document.getElementById('set_class').value);
+        settings.premP = safeFloat(document.getElementById('set_prem').value);
+        settings.mentor = document.getElementById('set_mentor').checked;
+        settings.senior = document.getElementById('set_senior').checked;
+        settings.startDate = document.getElementById('set_start_date').value;
+        settings.union = document.getElementById('set_union').checked;
+        touchMeta('metro_settings');
+        calcExpDisplay();
+    }
+
+    let touchStartX = 0;
+    let touchStartY = 0; // 1. Добавили координату Y
+    let touchEndX = 0;
+    let touchEndY = 0;   // 2. Добавили конечную Y
+
+    // Запоминаем начало касания (и X, и Y)
+    document.addEventListener('touchstart', e => { 
+        touchStartX = e.changedTouches[0].screenX; 
+        touchStartY = e.changedTouches[0].screenY; 
+    }, {passive: false});
+
+    // Запоминаем конец касания
+    document.addEventListener('touchend', e => { 
+        touchEndX = e.changedTouches[0].screenX; 
+        touchEndY = e.changedTouches[0].screenY; 
+        handleSwipe(); 
+    }, {passive: false});
+
+    function handleSwipe() {
+        if (document.body.classList.contains('modal-open')) return;
+        
+        const threshold = 70; // Чувствительность свайпа
+        const diffX = touchEndX - touchStartX;
+        const diffY = touchEndY - touchStartY; // Разница по вертикали
+
+        // === ГЛАВНОЕ ИСПРАВЛЕНИЕ ===
+        // Если движение по вертикали больше, чем по горизонтали — это скролл.
+        // Мы просто выходим и ничего не переключаем.
+        if (Math.abs(diffY) > Math.abs(diffX)) return;
+        // ===========================
+
+        if (Math.abs(diffX) > threshold) {
+            const tabs = ['today', 'home', 'stats', 'settings'];
+            const currentTab = document.querySelector('.page.active').id.replace('tab-', '');
+            let idx = tabs.indexOf(currentTab);
+            
+            if (diffX < 0) { // Свайп влево (следующая вкладка)
+                idx++; 
+                if (idx >= tabs.length) return; 
+            } else { // Свайп вправо (предыдущая вкладка)
+                idx--; 
+                if (idx < 0) return; 
+            }
+            switchTab(tabs[idx]);
+        }
+    }
+
+
+    function safeFloat(val) {
+        if (!val) return 0;
+        let str = String(val).replace(/\s/g, '').replace(',', '.');
+        const n = parseFloat(str);
+        if (isNaN(n) || !isFinite(n)) return 0;
+        return n;
+    }
+
+    function getIsoDate(dateObj) { 
+        if (!dateObj || !(dateObj instanceof Date) || isNaN(dateObj.getTime())) return "";
+        const y = dateObj.getFullYear(); 
+        const m = String(dateObj.getMonth() + 1).padStart(2, '0'); 
+        const d = String(dateObj.getDate()).padStart(2, '0'); 
+        return `${y}-${m}-${d}`; 
+    }
+
+    function fmtMoney(val) { if (isNaN(val)) return "0 ₽"; return Math.round(val).toLocaleString() + ' ₽'; }
+    
+    function updateCloudStatus(msg, isError = false) {
+        const el = document.getElementById('cloudStatus');
+        if(el) { el.innerText = "Облако: " + msg; el.style.color = isError ? "#e53935" : "#2e7d32"; }
+    }
+	
+    
+
+    function init() {
+        // --- ЖЕЛЕЗНАЯ ЧИСТКА ДУБЛЕЙ ПРИ ЗАПУСКЕ (FIX) ---
+        if (shifts && shifts.length > 0) {
+            const uniqueMap = new Map();
+            shifts.forEach(s => {
+                // ВАЖНО: Отрезаем мусор (пробелы) и берем только первые 10 символов даты
+                if (s.date && s.date.length >= 10) {
+                    const cleanDate = s.date.trim().substring(0, 10);
+                    s.date = cleanDate; // Исправляем саму смену
+                    uniqueMap.set(cleanDate, s); // Перезаписываем (останется только одна)
+                }
+            });
+            shifts = Array.from(uniqueMap.values());
+            // Сохраняем чистую базу сразу
+            localStorage.setItem('metro_shifts', JSON.stringify(shifts));
+        }
+
+        normalizeShifts(); 
+        render(); 
+        updateUI(); 
+        tg.ready(); 
+        tg.expand();
+        if (typeof ym !== 'undefined' && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            ym(105574700, 'userParams', { telegram_id: tg.initDataUnsafe.user.id });
+        }
+        if (tg.CloudStorage) { showLoader(); syncWithCloud(); } else { hideLoader(); }
+        document.addEventListener('keydown', function(event) { if (event.key === "Escape") { closeModal('addModal'); closeModal('importModal'); closeModal('calendarModal'); } });
+        const calBox = document.getElementById('calModalBox'); let tsX = 0;
+        calBox.addEventListener('touchstart', e => { tsX = e.changedTouches[0].screenX; e.stopPropagation(); });
+        calBox.addEventListener('touchend', e => { let teX = e.changedTouches[0].screenX; if(teX < tsX - 50) changeMonth(1); if(teX > tsX + 50) changeMonth(-1); e.stopPropagation(); });
+        setInterval(updateTodayTab, 1000);
+        scrollToToday();
+    }
+    
+	
+    function syncWithCloud() {
+    if (!tg.CloudStorage) { hideLoader(); return; }
+    
+    // 1. Получаем список всех ключей
+    tg.CloudStorage.getKeys((err, keys) => {
+        if (err) { hideLoader(); updateCloudStatus("Ошибка доступа", true); return; }
+        if (!keys) keys = [];
+        
+        // Фильтруем наши ключи + добавляем 'metro_sync_meta'
+        // Нам нужно скачать МЕТУ из облака, чтобы сравнить
+        const metaKey = 'metro_sync_meta';
+        const dataKeys = keys.filter(k => k.startsWith('s_') || k === 'metro_settings');
+        
+        if (dataKeys.length === 0 && !keys.includes(metaKey)) {
+            // Облако пустое -> Отправляем всё наше туда
+            saveAllToCloud(() => { hideLoader(); updateCloudStatus("Облако создано"); });
+            return;
+        }
+
+        // 2. Скачиваем Облачную МЕТУ и Данные
+        const allKeysToFetch = [...dataKeys, metaKey];
+        
+        tg.CloudStorage.getItems(allKeysToFetch, (err, values) => {
+            hideLoader();
+            if (err) { updateCloudStatus("Ошибка чтения", true); return; }
+
+            const cloudMeta = values[metaKey] ? JSON.parse(values[metaKey]) : {};
+            let hasChanges = false;
+            let keysToPush = [];
+            
+            // --- ЛОГИКА СЛИЯНИЯ ---
+            
+            // А. Обработка НАСТРОЕК
+            if (values['metro_settings']) {
+                const cloudTime = cloudMeta['metro_settings'] || 0;
+                const localTime = syncMeta['metro_settings'] || 0;
+                
+                if (cloudTime > localTime) {
+                    // Облако новее -> Берем из облака
+                    try { 
+                        settings = JSON.parse(values['metro_settings']); 
+                        syncMeta['metro_settings'] = cloudTime; // Синхронизируем время
+                        hasChanges = true;
+                    } catch(e){}
+                } else if (localTime > cloudTime) {
+                    // Телефон новее -> Будем отправлять в облако
+                    keysToPush.push('metro_settings');
+                }
+            }
+
+            // Б. Обработка МЕСЯЦЕВ (СМЕН)
+            // Собираем множество всех ключей месяцев (и локальных, и облачных)
+            const allMonthKeys = new Set([...Object.keys(syncMeta).filter(k=>k.startsWith('s_')), ...dataKeys.filter(k=>k.startsWith('s_'))]);
+            
+            let newShifts = [...shifts]; // Копия текущих смен
+
+            allMonthKeys.forEach(key => {
+                const cloudTime = cloudMeta[key] || 0;
+                const localTime = syncMeta[key] || 0;
+                
+                if (cloudTime > localTime) {
+                    // В ОБЛАКЕ СВЕЖЕЕ (или на телефоне вообще нет этого месяца) -> ЗАГРУЖАЕМ
+                    // 1. Удаляем все локальные смены этого месяца
+                    const [_, y, m] = key.split('_'); // s_2025_11
+                    const prefix = `${y}-${m}`;
+                    newShifts = newShifts.filter(s => !s.date.startsWith(prefix));
+                    
+                    // 2. Добавляем смены из облака
+                    if (values[key]) {
+                        try {
+                            const chunk = JSON.parse(values[key]);
+                            if (Array.isArray(chunk)) {
+                                chunk.forEach(mini => newShifts.push(normalizeOne(mini)));
+                            }
+                        } catch(e) {}
+                    }
+                    // 3. Обновляем локальную метку времени, чтобы знать, что мы актуальны
+                    syncMeta[key] = cloudTime;
+                    hasChanges = true;
+                    
+                } else if (localTime > cloudTime) {
+                    // НА ТЕЛЕФОНЕ СВЕЖЕЕ (я редактировал оффлайн) -> ОТПРАВЛЯЕМ
+                    keysToPush.push(key);
+                }
+            });
+
+            if (hasChanges) {
+                shifts = newShifts;
+                localStorage.setItem('metro_shifts', JSON.stringify(shifts));
+                localStorage.setItem('metro_settings', JSON.stringify(settings));
+                localStorage.setItem('metro_sync_meta', JSON.stringify(syncMeta));
+                render();
+            }
+
+            // 3. Если есть что отправить (то, что новее на телефоне) - отправляем
+            if (keysToPush.length > 0) {
+                pushSpecificKeys(keysToPush, cloudMeta);
+            } else {
+                updateCloudStatus("Синхронизировано");
+            }
+        });
+    });
+}
+
+// Отправка только нужных ключей + обновление меты в облаке
+function pushSpecificKeys(keysToPush, currentCloudMeta) {
+    updateCloudStatus("Отправка...");
+    
+    // Готовим данные
+    const grouped = groupShiftsByMonth(); // Функция ниже
+    
+    keysToPush.forEach(key => {
+        // Обновляем мету, которую отправим в облако
+        currentCloudMeta[key] = syncMeta[key];
+        
+        let valueStr = "";
+        if (key === 'metro_settings') {
+            valueStr = JSON.stringify(settings);
+        } else {
+            // Это месяц. Если смен нет (мы удалили все), отправляем пустой массив "[]"
+            valueStr = JSON.stringify(grouped[key] || []);
+        }
+        
+        // Отправляем значение
+        tg.CloudStorage.setItem(key, valueStr, (err)=>{});
+    });
+    
+    // В конце отправляем обновленный файл МЕТАДАННЫХ
+    tg.CloudStorage.setItem('metro_sync_meta', JSON.stringify(currentCloudMeta), (err) => {
+        if (!err) updateCloudStatus("Синхронизировано");
+    });
+}
+
+// Вспомогательная: Группировка смен для сохранения
+function groupShiftsByMonth() {
+    const grouped = {};
+    shifts.forEach(s => {
+        const key = getMonthKey(s.date);
+        if (!grouped[key]) grouped[key] = [];
+        
+        // Минификация
+        const mini = { d: s.date, t: s.text };
+        if(s.note) mini.n = s.note;
+        if(s.customRate !== undefined) mini.cr = s.customRate;
+        if(s.customMentor !== undefined) mini.cm = s.customMentor;
+        if(s.customSenior !== undefined) mini.cs = s.customSenior;
+        if(s.customClass !== undefined) mini.cc = s.customClass;
+        if(s.customSen !== undefined) mini.ce = s.customSen;
+        if(s.customPrem !== undefined) mini.cp = s.customPrem;
+        
+        if(s.lineStart) mini.ls = s.lineStart;
+        if(s.lineEnd) mini.le = s.lineEnd;
+        
+        // Новые поля
+        if(s.tpStart) mini.tps = s.tpStart;
+        if(s.tpEnd) mini.tpe = s.tpEnd;
+
+        // Флаги
+        if(s.isTech) mini.it = 1;
+        if(s.isPostTrip) mini.ip = 1;
+        
+        // ВОТ ЭТОЙ СТРОЧКИ НЕ ХВАТАЛО:
+        if(s.isFullMedical) mini.ifm = 1; 
+        
+        // Старое (на всякий случай, для совместимости)
+        if(s.isMedical) mini.im = 1; 
+        
+        grouped[key].push(mini);
+    });
+    return grouped;
+}
+
+// Функция "тихого" сохранения (отправляет только то, что изменилось недавно)
+function saveAllToCloud(cb) {
+    if (!tg.CloudStorage) { if(cb) cb(); return; }
+    
+    // Ищем ключи, которые менялись за последние 10 секунд
+    const changedKeys = Object.keys(syncMeta).filter(k => {
+        return (new Date().getTime() - (syncMeta[k] || 0)) < 10000;
+    });
+
+    // Если есть изменения, отправляем их через умную функцию pushSpecificKeys
+    if (changedKeys.length > 0) {
+        // Нам нужна "текущая" мета из облака, но у нас её нет под рукой в "тихом" режиме.
+        // Поэтому передаем пустой объект {} - pushSpecificKeys сама разберется и перезапишет мету.
+        // (Это упрощение допустимо, так как pushSpecificKeys в твоем коде обновляет currentCloudMeta)
+        // НО ЛУЧШЕ вызвать полную синхронизацию для надежности, если логика сложная.
+        // В твоем случае используем pushSpecificKeys с локальной метой:
+        pushSpecificKeys(changedKeys, { ...syncMeta }); 
+    }
+    
+    if(cb) cb();
+}
+
+
+// Функция для ручной кнопки "Отправить в облако" (Force Push)
+// === ЗАМЕНИТЬ ЭТИМ ФУНКЦИИ forcePushToCloud и saveAll ===
+
+function forcePushToCloud() {
+        const btn = document.querySelector('#tab-settings button'); // Находим кнопку
+        const originalText = btn.innerText;
+        const originalColor = btn.style.background;
+
+        if (shifts.length === 0) {
+            // Ошибка: Пусто
+            btn.innerText = "Ошибка: Смен нет! ⚠️";
+            btn.style.background = "#e53935";
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.background = originalColor;
+            }, 2000);
+            return;
+        }
+        
+        // Запускаем отправку молча (или можно сделать двойное подтверждение, но обычно тут оно лишнее)
+        showLoader();
+        
+        // Обновляем мету
+        const now = new Date().getTime();
+        Object.keys(syncMeta).forEach(k => syncMeta[k] = now);
+        touchMeta('metro_settings');
+        
+        syncWithCloud();
+        
+        // Пишем на кнопке "Готово"
+        setTimeout(() => {
+            hideLoader(); // На всякий случай, если синк быстрый
+            btn.innerText = "Отправлено ✅";
+            btn.style.background = "#4caf50";
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.background = originalColor;
+            }, 2000);
+        }, 500);
+    }
+
+function saveAll() { 
+    saveSettings(); 
+    saveData(); 
+    render(); 
+}
+
+    // 1. Просто открываем наше новое красивое окно
+    function deleteCurrentShift() {
+        document.body.classList.add('modal-open');
+        document.getElementById('confirmModal').classList.add('open');
+    }
+
+    // 2. А эта функция срабатывает, когда нажали "Да, удалить"
+    function commitDelete() {
+        const d = document.getElementById('inpDate').value; 
+        
+        // Удаляем из массива
+        shifts = shifts.filter(s => s.date !== d);
+        
+        // Помечаем для синхронизации
+        touchMeta(getMonthKey(d));
+
+        // Сохраняем
+        localStorage.setItem('metro_shifts', JSON.stringify(shifts));
+        saveAllToCloud();
+
+        // Обновляем интерфейс
+        render();
+        renderCalendar();
+        
+        // Закрываем ОБА окна (и подтверждение, и редактирование смены)
+        closeModal('confirmModal');
+        closeModal('addModal');
+        
+        // Скрываем кнопку удаления на всякий случай
+        document.getElementById('btnDeleteShift').style.display = 'none';
+    }
+
+    function showLoader() { document.getElementById('loader').classList.add('loader-active'); }
+    function hideLoader() { document.getElementById('loader').classList.remove('loader-active'); }
+
+    function normalizeOne(s) { 
+        if (s.d) { 
+            // Это сжатый формат (из облака или памяти)
+            let obj = { 
+                date: s.d, text: s.t, note: s.n, 
+                customRate: s.cr, customMentor: s.cm, customSenior: s.cs, 
+                customClass: s.cc, customSen: s.ce, customPrem: s.cp, 
+                lineStart: s.ls, lineEnd: s.le, isTech: !!s.it, isPostTrip: !!s.ip,
+                
+                // Новые поля
+                tpStart: s.tps, tpEnd: s.tpe, isFullMedical: !!s.ifm
+            }; 
+            
+            // 🔥 СПАСЕНИЕ СТАРЫХ ДАННЫХ
+            // Если есть старый флаг 'im' (старый мед.отвод), превращаем его в новый
+            if (s.im) obj.isFullMedical = true;
+            
+            return obj;
+        } 
+        
+        // Это обычный формат
+        // Если встретили старый isMedical — обновляем его на новый лад
+        if (s.isMedical) {
+            s.isFullMedical = true;
+            delete s.isMedical; // Удаляем старое, чтобы не мусорить
+        }
+
+        return s; 
+    }
+    function normalizeShifts() { shifts = shifts.map(s => normalizeOne(s)); }
+
+    function updateUI() {
+        document.getElementById('set_rate').value = String(settings.rate).replace('.',',');
+        document.getElementById('set_class').value = settings.classP;
+        document.getElementById('set_prem').value = String(settings.premP).replace('.',',');
+        document.getElementById('set_mentor').checked = settings.mentor;
+        document.getElementById('set_senior').checked = settings.senior || false;
+        document.getElementById('set_start_date').value = settings.startDate || "";
+        document.getElementById('set_union').checked = settings.union !== false;
+        calcExpDisplay();
+    }
+
+    function scrollToToday() { 
+        setTimeout(() => { 
+            const todayEl = document.querySelector('.shift-card.today'); 
+            // Было: behavior: 'smooth' (плавно/долго)
+            // Стало: behavior: 'auto' (мгновенно)
+            if (todayEl) todayEl.scrollIntoView({ block: 'center', behavior: 'auto' }); 
+        }, 100); // Можно даже уменьшить таймер с 200 до 100, чтобы срабатывало быстрее
+    }
+    
+    function switchTab(tabName) { 
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); 
+        document.getElementById('tab-' + tabName).classList.add('active'); 
+        const tabs = ['today', 'home', 'stats', 'settings'];
+        const targetIdx = tabs.indexOf(tabName);
+        document.querySelectorAll('.nav-item').forEach((el, idx) => {
+            if(idx === targetIdx) el.classList.add('active');
+            else el.classList.remove('active');
+        });
+        if(tabName==='home') { scrollToToday(); } 
+        const titles = { 'today':'Сегодня', 'home': 'Мои смены', 'stats': 'Статистика', 'settings': 'Профиль' }; 
+        document.getElementById('headerTitle').innerText = titles[tabName]; 
+        document.querySelector('header .header-btn').style.display = (tabName === 'home') ? 'flex' : 'none'; 
+        if(tabName==='today') updateTodayTab(); 
+        if(tabName==='stats') renderStats(); 
+    }
+
+    function updateTodayTab() {
+        if(!document.getElementById('tab-today').classList.contains('active')) return;
+        const now = new Date(); const nowTs = now.getTime();
+        let currentShift = null, nextShift = null, prevShiftEnd = 0;
+        const sorted = [...shifts].sort((a,b) => new Date(a.date) - new Date(b.date));
+        for (let i = 0; i < sorted.length; i++) {
+            const s = sorted[i]; let times = [...s.text.matchAll(/(\d{1,2}[:\.]\d{2})/g)]; if (times.length < 2) continue;
+            const baseDate = new Date(s.date); const [sh, sm] = times[0][0].replace('.',':').split(':').map(Number); const [eh, em] = times[1][0].replace('.',':').split(':').map(Number);
+            const startDate = new Date(baseDate); startDate.setHours(sh, sm, 0, 0); const endDate = new Date(baseDate); if (eh < sh) endDate.setDate(endDate.getDate() + 1); endDate.setHours(eh, em, 0, 0);
+            if (nowTs >= startDate.getTime() && nowTs < endDate.getTime()) { currentShift = { data: s, start: startDate, end: endDate }; }
+            if (!currentShift && !nextShift && startDate.getTime() > nowTs) { nextShift = { data: s, start: startDate }; }
+            if (endDate.getTime() < nowTs) { prevShiftEnd = endDate.getTime(); }
+        }
+        const container = document.getElementById('todayContent'); let html = '';
+        if (currentShift) {
+            const totalMs = currentShift.end - currentShift.start; const elapsedMs = now - currentShift.start; const percent = Math.min(100, (elapsedMs / totalMs) * 100);
+            const res = calcShift(currentShift.data); let unionFee = settings.union ? (res.dirty * 0.01) : 0; let tax = res.dirty * 0.13; let netTotal = res.dirty - tax - unionFee; const currentEarned = (elapsedMs / totalMs) * netTotal;
+            html = `<div class="hero-widget theme-work"><div class="widget-header"><div class="widget-title">СЕЙЧАС НА СМЕНЕ</div><div class="widget-icon">🚅</div></div><div class="widget-main-value">${Math.floor(currentEarned)} ₽</div><div class="widget-sub-value">из ${Math.round(netTotal)} ₽</div><div class="progress-track"><div class="progress-fill" style="width: ${percent}%"></div></div><div class="progress-labels"><span>${currentShift.start.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span><span>Конец: ${currentShift.end.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span></div></div><div class="info-grid"><div class="info-card"><div class="info-label">Маршрут</div><div class="info-val">${currentShift.data.text.split(' ')[0]}</div></div><div class="info-card"><div class="info-label">Осталось</div><div class="info-val">${msToTime(currentShift.end - now)}</div></div></div>`;
+        } else {
+            let restText = "Н/Д", percentRest = 0, label = "ОТДЫХ", fullRestDesc = "";
+            if (prevShiftEnd > 0) {
+                if (nextShift) { label = "МЕЖСМЕННЫЙ ОТДЫХ"; const totalRestMs = nextShift.start.getTime() - prevShiftEnd; const passedRestMs = nowTs - prevShiftEnd; percentRest = Math.min(100, (passedRestMs / totalRestMs) * 100); restText = msToTime(totalRestMs); const prevEndDate = new Date(prevShiftEnd); const prevEndStr = prevEndDate.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) + ` (${prevEndDate.getDate()}.${prevEndDate.getMonth()+1})`; const nextStartStr = nextShift.start.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) + ` (${nextShift.start.getDate()}.${nextShift.start.getMonth()+1})`; fullRestDesc = `<div class="widget-sub-value" style="font-size:13px; margin-top:10px;">С ${prevEndStr}</div><div class="widget-sub-value" style="font-size:13px;">До ${nextStartStr}</div><div style="margin-top:20px; font-size:12px; opacity:0.8">Уже прошло: ${msToTime(passedRestMs)}</div>`; } 
+                else { const passed = nowTs - prevShiftEnd; restText = msToTime(passed); fullRestDesc = `<div class="widget-sub-value">прошло с прошлой смены</div>`; }
+            }
+            html = `<div class="hero-widget theme-rest"><div class="widget-header"><div class="widget-title">${label}</div><div class="widget-icon">🛋️</div></div><div class="widget-main-value">${restText}</div>${fullRestDesc}${nextShift ? `<div class="progress-track"><div class="progress-fill" style="width: ${percentRest}%"></div></div>` : ''}</div>`;
+            if (nextShift) { const timeToStart = nextShift.start - now; html += `<div class="info-grid"><div class="info-card"><div class="info-label">Следующая</div><div class="info-val">${nextShift.start.getDate()}.${nextShift.start.getMonth()+1}</div></div><div class="info-card"><div class="info-label">До смены</div><div class="info-val" style="color:var(--accent)">${msToTime(timeToStart)}</div></div></div>`; }
+        }
+        container.innerHTML = html;
+    }
+    function msToTime(duration) { let minutes = Math.floor((duration / (1000 * 60)) % 60); let hours = Math.floor((duration / (1000 * 60 * 60))); return hours + "ч " + minutes + "м"; }
+    
+    function getSeniorityPercent(d) { 
+        if(!d) return 0; 
+        const s = new Date(d); 
+        if (isNaN(s.getTime())) return 0;
+        const n = new Date(); 
+        if (s > n) return 0; 
+        
+        const y = (n - s) / (1000 * 60 * 60 * 24 * 365.25); 
+
+        if (y >= 20) return 30; 
+        if (y >= 15) return 25; 
+        if (y >= 10) return 20; 
+        if (y >= 5) return 15; 
+        if (y >= 3) return 10; 
+        
+        // РАНЬШЕ: if (y >= 1) return 5; else return 0;
+        
+        // ТЕПЕРЬ: Всем новичкам (от 0 до 3 лет) сразу даем 5%
+        return 5; 
+    }
+
+    function calcExpDisplay() { 
+        const d = document.getElementById('set_start_date').value; 
+        const t = document.getElementById('set_exp_text'); 
+        
+        if(!d) { t.innerText = "Стаж не указан"; return; } 
+        
+        const s = new Date(d); 
+        if(isNaN(s.getTime())) { t.innerText = "Ошибка даты"; return; }
+        
+        const n = new Date(); 
+        // Считаем точное количество лет (с дробной частью для точности проверки)
+        const yearsFloat = (n - s) / (1000 * 60 * 60 * 24 * 365.25);
+        const yFull = Math.floor(yearsFloat); 
+        
+        const p = getSeniorityPercent(d); 
+        
+        // Если стаж меньше 1 года, но процент уже 5 — значит работает поддержка
+        if (yearsFloat < 1 && p === 5) {
+            t.innerHTML = `Стаж: < 1 года <span style="color:#2e7d32; font-weight:800;">(Поддержка 5% 🔥)</span>`;
+        } else {
+            t.innerText = `Стаж: ~${yFull} лет (Выслуга ${p}%)`; 
+        }
+    }
+
+    
+// === 1. РАСЧЕТ СРЕДНЕГО ДНЕВНОГО (ЧЕСТНЫЙ, ПО ФАКТУ ОТРАБОТАННОГО) ===
+    function calculateAverageDaily(targetDateStr) {
+    const targetDate = new Date(targetDateStr);
+    
+    // 1. Определяем границы (максимум 12 месяцев назад)
+    let minDateLimit = new Date(targetDate);
+    minDateLimit.setFullYear(minDateLimit.getFullYear() - 1);
+    minDateLimit.setDate(1); // Первое число месяца год назад
+
+    // 2. Ищем самую раннюю ВАЛИДНУЮ смену (не БЛ/Отпуск), чтобы понять старт отсчета
+    let validShifts = shifts.filter(s => {
+        const txt = s.text.toLowerCase();
+        return !txt.includes('бл') && !txt.includes('больничный') && 
+               !txt.includes('отпуск') && !txt.includes('отп') && !txt.includes('донор');
+    });
+
+    if (validShifts.length === 0) return 0; // Совсем нет данных
+
+    // Находим дату первой смены
+    let earliestDate = validShifts.reduce((min, s) => {
+        const d = new Date(s.date);
+        return d < min ? d : min;
+    }, new Date(targetDate));
+
+    // Если первая смена была раньше чем год назад, обрезаем годом.
+    let startDate = (earliestDate < minDateLimit) ? minDateLimit : new Date(earliestDate);
+    startDate.setDate(1); // Считаем всегда с 1 числа месяца начала работы
+
+    let totalMoney = 0;
+    let totalDaysCoef = 0; 
+    
+    // Курсор бежит по месяцам от старта до даты отпуска
+    let cursor = new Date(startDate);
+    
+    while (cursor < targetDate) {
+        // Проверка, чтобы не выйти за текущий месяц отпуска
+        if (cursor.getFullYear() === targetDate.getFullYear() && cursor.getMonth() === targetDate.getMonth()) break;
+        
+        const y = cursor.getFullYear();
+        const m = cursor.getMonth();
+        const daysInMonth = new Date(y, m + 1, 0).getDate(); // Сколько дней в этом месяце (30, 31, 28)
+
+        // Собираем смены за этот конкретный месяц
+        const monthShifts = shifts.filter(s => {
+            const d = new Date(s.date);
+            return d.getFullYear() === y && d.getMonth() === m;
+        });
+
+        let excludedDays = 0;
+        let monthMoney = 0;
+
+        // 1. Считаем деньги (только с рабочих смен) и исключаемые дни
+        monthShifts.forEach(s => {
+            const txt = s.text.toLowerCase();
+            // Если это рабочий день (не исключение)
+            if (!txt.includes('бл') && !txt.includes('больничный') && 
+                !txt.includes('отпуск') && !txt.includes('донор')) {
+                
+                let res = calcShift(s, true); // true = режим расчета среднего
+                if (res && res.dirty > 0) {
+                    monthMoney += res.dirty;
+                }
+            }
+            // Если это исключаемый день - запоминаем для коэффициента
+            if (txt.includes('бл') || txt.includes('больничный') || 
+                txt.includes('отпуск') || txt.includes('отп') || txt.includes('донор')) {
+                excludedDays++;
+            }
+        });
+
+        // 2. Считаем коэффициент дней (29.3)
+        if (excludedDays === 0 && monthMoney > 0) {
+            // Полный месяц
+            totalDaysCoef += 29.3;
+        } else {
+            // Неполный месяц
+            const workedDays = daysInMonth - excludedDays;
+            if (workedDays > 0) {
+                totalDaysCoef += (29.3 / daysInMonth) * workedDays;
+            }
+        }
+
+        totalMoney += monthMoney;
+        cursor.setMonth(cursor.getMonth() + 1); // Следующий месяц
+    }
+
+    if (totalDaysCoef === 0) return 0;
+    return totalMoney / totalDaysCoef;
+}
+
+    // === 2. НОВАЯ ФУНКЦИЯ: РАСЧЕТ СРЕДНЕГО ЧАСОВОГО (ДЛЯ ДОНОРА/КОМАНДИРОВКИ) ===
+    // Делим Деньги на Реально Отработанные Часы
+    function calculateAverageHourly(targetDateStr) {
+    const targetDate = new Date(targetDateStr);
+    // Берем период 12 месяцев назад
+    let minDate = new Date(targetDate);
+    minDate.setFullYear(minDate.getFullYear() - 1);
+    
+    let totalMoney = 0;
+    let totalHours = 0;
+
+    shifts.forEach(s => {
+        const sDate = new Date(s.date);
+        // Берем смены за прошлый год, но ДО текущей даты
+        if (sDate < minDate || sDate >= targetDate) return;
+
+        let txt = s.text.toLowerCase();
+        
+        // 1. ИСПРАВЛЕНИЕ: Добавил проверку на "отп"
+        if (txt.includes('бл') || txt.includes('больничный') || 
+            txt.includes('отпуск') || txt.includes('отп') || txt.includes('донор')) return;
+
+        // Считаем деньги и ЧАСЫ за эту смену
+        let res = calcShift(s, true); 
+        
+        // 2. ИСПРАВЛЕНИЕ: Используем res.duration вместо res.hours
+        // res.hours может быть 0, если это работа в праздник (1 мая),
+        // но фактически часы были отработаны, и на них нужно делить.
+        if (res && res.dirty > 0 && res.duration > 0) {
+            totalMoney += res.dirty;
+            totalHours += res.duration; 
+        }
+    });
+
+    if (totalHours === 0) return 0;
+    return totalMoney / totalHours;
+}
+    
+// === ФУНКЦИЯ-ДИСПЕТЧЕР ===
+    function calcShift(shiftRaw, isAvgCalc = false) {
+        if (!shiftRaw || !shiftRaw.text) return null;
+        
+        // 1. Парсим через Logic
+        let parsed = Logic.parseShift(shiftRaw.text, shiftRaw.date);
+        
+        // =========================================================
+        // БЛОК 1: СРЕДНИЙ ЗАРАБОТОК (Отпуск, Больничный, Донор)
+        // =========================================================
+        if (parsed.type === 'VACATION') {
+            if (isAvgCalc) return null;
+            let avgDaily = calculateAverageDaily(shiftRaw.date); 
+            if (avgDaily === 0) avgDaily = (settings.rate || 546.18) * 8; 
+            let unionFee = settings.union ? (avgDaily * 0.01) : 0;
+            return { dirty: avgDaily, net: Math.round(avgDaily * 0.87 - unionFee), hours: 0, duration: 0, isRes: false, isNonWork: true, vacationMoney: avgDaily };
+        }
+
+        if (parsed.type === 'SICK') {
+            if (isAvgCalc) return null;
+            const d = new Date(shiftRaw.date);
+            const y = d.getFullYear();
+            const years = [y - 2, y - 1];
+            const FSS_LIMITS = { 2023: 1917000, 2024: 2225000, 2025: 2753000 };
+            const limit1 = FSS_LIMITS[years[0]] || 2225000;
+            const limit2 = FSS_LIMITS[years[1]] || 2753000;
+            let inc1 = (settings.sickData && settings.sickData[years[0]]) || 0;
+            let inc2 = (settings.sickData && settings.sickData[years[1]]) || 0;
+            inc1 = Math.min(inc1, limit1); inc2 = Math.min(inc2, limit2);
+            const avgByIncome = (inc1 + inc2) / 730;
+            const MROT = (y === 2024) ? 19242 : 22440;
+            const avgByMrot = (MROT * 24) / 730;
+            let averageDaily = Math.max(avgByIncome, avgByMrot);
+            let percent = (settings.sickPercent || 100) / 100;
+            let dailyDirty = averageDaily * percent;
+            const daysInMonth = new Date(y, d.getMonth() + 1, 0).getDate();
+            const minDayPayment = MROT / daysInMonth;
+            if (dailyDirty < minDayPayment) dailyDirty = minDayPayment;
+            return { dirty: dailyDirty, net: Math.round(dailyDirty * 0.87), hours: 0, duration: 0, isRes: false, isNonWork: true, sickMoney: dailyDirty };
+        }
+
+        if (parsed.type === 'DONOR') {
+            if (isAvgCalc) return null;
+            let payHours = 7.2; 
+            let avgHourly = calculateAverageHourly(shiftRaw.date);
+            let totalDirty = (avgHourly > 0) ? (avgHourly * payHours) : ((settings.rate || 0) * payHours * 1.35);
+            let unionFee = settings.union ? (totalDirty * 0.01) : 0;
+            return { dirty: totalDirty, net: Math.round(totalDirty * 0.87 - unionFee), hours: 0, duration: 0, isRes: false, isNonWork: true, donorMoney: totalDirty };
+        }
+
+        // =========================================================
+        // БЛОК 2: СПЕЦ. РАБОТА
+        // =========================================================
+        if (parsed.type === 'TRAINING' || parsed.type === 'MED_CHECK') {
+            if (parsed.paidDuration === 0) {
+                parsed.paidDuration = (parsed.type === 'MED_CHECK') ? (6.0 * 60) : (7.2 * 60);
+            }
+        }
+
+        // =========================================================
+        // БЛОК 3: ОБЫЧНАЯ РАБОТА И РЕЗЕРВ
+        // =========================================================
+        if (isAvgCalc && parsed.type !== 'WORK' && parsed.type !== 'RESERVE' && parsed.type !== 'TRAINING' && parsed.type !== 'MED_CHECK') return null;
+
+        const allSorted = [...shifts].sort((a,b) => new Date(a.date) - new Date(b.date));
+        const idx = allSorted.findIndex(s => s.date === shiftRaw.date);
+        
+        if (idx !== -1) {
+            let miniBatchRaw = [];
+            if (idx > 0) miniBatchRaw.push(allSorted[idx - 1]);
+            miniBatchRaw.push(allSorted[idx]);
+            if (idx < allSorted.length - 1) miniBatchRaw.push(allSorted[idx + 1]);
+            
+            let miniBatchParsed = miniBatchRaw.map(s => Logic.parseShift(s.text, s.date));
+            Logic.processShiftSequence(miniBatchParsed);
+            
+            const updatedCurr = miniBatchParsed.find(s => s.date === shiftRaw.date);
+            if (updatedCurr) parsed = updatedCurr;
+        }
+
+        let effectiveSettings = JSON.parse(JSON.stringify(settings));
+        if (shiftRaw.customRate !== undefined) effectiveSettings.rate = shiftRaw.customRate;
+        if (shiftRaw.customClass !== undefined) effectiveSettings.classP = shiftRaw.customClass;
+        if (shiftRaw.customPrem !== undefined) effectiveSettings.premP = shiftRaw.customPrem;
+        
+        parsed.isTech = (shiftRaw.isTech === true);
+        parsed.isPostTrip = (shiftRaw.isPostTrip === true);
+        parsed.isFullMedical = (shiftRaw.isFullMedical === true);
+        
+        // === ВАЖНОЕ ДОБАВЛЕНИЕ: Передаем время выезда ===
+        parsed.lineStart = shiftRaw.lineStart;
+        parsed.lineEnd = shiftRaw.lineEnd;
+        // ===============================================
+        
+        if (shiftRaw.customMentor !== undefined) effectiveSettings.mentor = shiftRaw.customMentor;
+        if (shiftRaw.customSenior !== undefined) effectiveSettings.senior = shiftRaw.customSenior;
+
+        return Calculator.calculateShift(parsed, effectiveSettings);
+    }
+
+    // Таймер анимации
+    let animTimer = null;
+
+    function drawProgress(percent, labelValue) { 
+        const circle = document.getElementById('circlePath'); 
+        const circleOver = document.getElementById('circlePathOver'); 
+        const textVal = document.getElementById('chartValue'); 
+        
+        // 1. Сбрасываем предыдущий таймер (если быстро щелкали)
+        if (animTimer) clearTimeout(animTimer);
+
+        let mainPercent = percent;
+        let overPercent = 0;
+
+        // Расчет процентов
+        if (mainPercent > 100) {
+            overPercent = mainPercent - 100; 
+            mainPercent = 100; 
+            if (overPercent > 100) overPercent = 100; 
+        } else {
+            if (mainPercent < 0) mainPercent = 0;
+        }
+
+        // 2. Рисуем ОРАНЖЕВЫЙ круг (сразу)
+        circle.style.transition = 'stroke-dasharray 0.6s ease';
+        circle.style.strokeDasharray = `${mainPercent}, 100`; 
+
+        // 3. Рисуем ЗЕЛЕНЫЙ круг (с задержкой)
+        if (circleOver) {
+            
+            // СНАЧАЛА: Мгновенно прячем и сбрасываем зеленый
+            circleOver.style.transition = 'none'; // Отключаем плавность для мгновенного сброса
+            circleOver.style.strokeDasharray = `0, 100`;
+            circleOver.style.opacity = '0';
+            
+            if (overPercent > 0) {
+                circleOver.style.display = 'block'; 
+                
+                // Запускаем таймер ровно на время анимации оранжевого (600мс)
+                animTimer = setTimeout(() => {
+                    // 1. Включаем плавность обратно
+                    circleOver.style.transition = 'stroke-dasharray 0.6s ease, opacity 0.1s ease';
+                    
+                    // 2. Важный хак: заставляем браузер "осознать" изменения перед запуском
+                    circleOver.getBoundingClientRect(); 
+
+                    // 3. Задаем конечные значения (появляется и растет)
+                    circleOver.style.opacity = '1'; 
+                    circleOver.style.strokeDasharray = `${overPercent}, 100`;
+                }, 600); 
+            } else {
+                // Если переработки нет - скрываем насовсем
+                circleOver.style.display = 'none';
+            }
+        }
+        
+        // Обновляем цифру в центре
+        if (textVal) textVal.innerText = labelValue.toFixed(1); 
+    }
+
+    function changeStatsMonth(dir) { statsDate.setMonth(statsDate.getMonth() + dir); renderStats(); }
+
+    function renderStats() {
+        console.log("--- СТАТИСТИКА: ФИНАЛ (БЕЗ ПРАЗДНИКОВ В ГРАФИКЕ) ---");
+
+        const year = statsDate.getFullYear();
+        const month = statsDate.getMonth();
+        const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+        document.getElementById('statsMonthDisplay').innerText = `${monthNames[month]} ${year}`;
+
+        const monthlyShifts = shifts.filter(s => {
+            const d = new Date(s.date);
+            return d.getFullYear() === year && d.getMonth() === month;
+        });
+
+        // 1. СБРОС СЧЕТЧИКОВ
+        let st = {
+            totalHours: 0, sumNakedTariff: 0, tariffHours: 0,
+            sumRes: 0, reserveHours: 0,
+            holidayMoney: 0, holidayHours: 0,
+            
+            // Надбавки
+            sumClass: 0, sumSen: 0, sumPrem: 0, sumSenior: 0, sumMentor: 0,
+            sumTech: 0, sumSplit: 0, sumNight: 0, sumEv: 0,
+            
+            // Прочее
+            sickMoney: 0, vacationMoney: 0, donorMoney: 0, medMoney: 0, studyMoney: 0,
+            
+            // Часы допов
+            night: 0, ev: 0, splitHours: 0, mentorHours: 0,
+            sick: 0, donor: 0, count: 0
+        };
+
+        let sickDeduction = 0; 
+        let usedClasses = new Set();
+        let usedPrems = new Set();
+        let hasSeniorShift = false;
+
+        // 2. ЦИКЛ ПО СМЕНАМ
+        monthlyShifts.forEach(s => {
+            let text = s.text.toLowerCase();
+            const d = new Date(s.date);
+
+            // Вычеты из нормы
+            if (text.includes('бл') || text.includes('больничный') || 
+                text.includes('отпуск') || text.includes('отп') || 
+                text.includes('донор') || text.includes('кровь')) {
+                
+                let isWknd = (typeof Logic !== 'undefined') ? Logic.isWeekendOrHoliday(d) : (d.getDay()===0 || d.getDay()===6);
+                if (!isWknd) sickDeduction += 7.2;
+                
+                if (text.includes('бл') || text.includes('больничный')) st.sick++;
+                if (text.includes('донор') || text.includes('кровь')) st.donor++;
+            }
+
+            let res = calcShift(s);
+            if (!res) return;
+
+            // Изоляция спец. типов
+            if (text.includes('донор') || text.includes('кровь')) { st.donorMoney += res.dirty; return; }
+            if (text.includes('бл') || text.includes('больничный')) { st.sickMoney += res.dirty; return; }
+            if (text.includes('отпуск') || text.includes('отп')) { st.vacationMoney += res.dirty; return; }
+
+            // Учеба / Медицина
+            if (res.isTrain) {
+                if (text.includes('мед') || text.includes('комисс') || text.includes('псих')) {
+                    st.medMoney += res.dirty;
+                } else {
+                    st.studyMoney += res.dirty;
+                }
+                st.totalHours += res.duration;
+                st.count++;
+                
+                if (res.dirty > 0) {
+                    if (s.customClass !== undefined) usedClasses.add(s.customClass);
+                    if (s.customPrem !== undefined) usedPrems.add(parseFloat(s.customPrem));
+                }
+                return; 
+            }
+
+            // РАБОЧИЕ СМЕНЫ
+            st.count++;
+            st.totalHours += res.duration;
+            st.night += res.night;
+            st.ev += (res.ev || 0);
+            if (res.isSplit) st.splitHours += res.hours;
+            if (res.details && res.details.mentor > 0) st.mentorHours += res.duration;
+
+            // Собираем деньги (ИЗ DETAILS!)
+            if (res.details) {
+                st.sumClass += (res.details.class || 0);
+                st.sumSen += (res.details.sen || 0);
+                st.sumSenior += (res.details.senior || 0);
+                st.sumMentor += (res.details.mentor || 0);
+                st.sumPrem += (res.details.premium || 0);
+                st.sumTech += (res.details.tech || 0);
+                st.sumSplit += (res.details.split || 0);
+                st.sumNight += (res.details.night || 0);
+                st.sumEv += (res.details.evening || 0);
+                
+                if (res.details.senior > 0) hasSeniorShift = true;
+            }
+
+            if (s.customClass !== undefined) usedClasses.add(s.customClass);
+            if (s.customPrem !== undefined) usedPrems.add(parseFloat(s.customPrem));
+
+            // Праздники / Резерв
+            const isHol = (typeof Logic !== 'undefined') ? Logic.isStateHoliday(d) : false;
+
+            if (isHol) {
+                st.holidayHours += res.duration;
+                // Берем полную сумму (Тариф + Доплата)
+                let fullHolPay = (res.details && res.details.tariff) ? res.details.tariff : 0;
+                if (res.details && res.details.holiday) fullHolPay += res.details.holiday;
+                st.holidayMoney += fullHolPay;
+            }
+            else if (res.isRes) {
+                st.reserveHours += res.duration;
+                if (res.details) st.sumRes += res.details.tariff;
+            }
+            
+            // Хвост 31 декабря
+            if (res.holidayTailMoney > 0) {
+                st.holidayHours += res.holidayTailHours;
+                st.holidayMoney += res.holidayTailMoney; 
+            }
+        });
+
+        // 3. РАСЧЕТЫ ПЕРЕРАБОТКИ
+        let norm = (typeof Logic !== 'undefined') ? Logic.getMonthNorm(year, month) : 160; 
+        let displayNorm = norm + ' ч';
+        if (sickDeduction > 0) { 
+            norm -= sickDeduction; norm = parseFloat(norm.toFixed(1)); 
+            displayNorm = `${norm} ч (снижена на ${sickDeduction.toFixed(1)})`; 
+        }
+
+        let hoursForOvertime = st.totalHours - st.holidayHours;
+        let overtime = hoursForOvertime - norm;
+        
+        let ot15h = 0, ot20h = 0;
+        let ot15m = 0, ot20m = 0;
+
+        if (overtime > 0) {
+            if (overtime <= 2) { ot15h = overtime; } else { ot15h = 2; ot20h = overtime - 2; }
+            ot15m = ot15h * settings.rate * 1.5;
+            ot20m = ot20h * settings.rate * 2.0;
+        }
+
+        // ТАРИФ (Метод остатка)
+        // Тариф = Всего - Праздники - Резерв - Учеба - Переработка
+        st.tariffHours = st.totalHours - st.holidayHours - st.reserveHours - (ot15h + ot20h);
+        
+        // Доп. коррекция на учебу (так как она вошла в totalHours)
+        monthlyShifts.forEach(s => {
+            let r = calcShift(s);
+            if (r && r.isTrain) st.tariffHours -= r.duration;
+        });
+
+        if (st.tariffHours < 0) st.tariffHours = 0;
+        st.sumNakedTariff = st.tariffHours * settings.rate;
+
+        // === 4. ПЕРЕСЧЕТ ПРЕМИИ ===
+        
+        let premBase = st.sumNakedTariff + st.sumRes + 
+                       st.sumSplit + st.sumTech + 
+                       st.sumClass + st.sumSen + st.sumSenior + st.sumMentor;
+        
+        let premP = (usedPrems.size > 0) ? Math.max(...usedPrems) : settings.premP;
+        st.sumPrem = premBase * (premP / 100);
+
+        // ИТОГО
+        let dirty = st.sumNakedTariff + st.sumRes + st.holidayMoney + 
+                    ot15m + ot20m + 
+                    st.sumClass + st.sumSen + st.sumSenior + st.sumMentor + st.sumPrem + 
+                    st.sumEv + st.sumNight + st.sumSplit + st.sumTech + 
+                    st.sickMoney + st.vacationMoney + st.donorMoney + st.medMoney + st.studyMoney;
+
+        let union = settings.union ? (dirty * 0.01) : 0;
+        let tax = dirty * 0.13;
+        let net = dirty - tax - union;
+
+        // 5. ВЫВОД В HTML
+        document.getElementById('st_norm').innerText = displayNorm;
+        
+        // === ВАЖНО: УБИРАЕМ ПРАЗДНИКИ ИЗ ОТОБРАЖЕНИЯ ===
+        let hoursForDisplay = st.totalHours - st.holidayHours;
+        document.getElementById('st_hours').innerText = hoursForDisplay.toFixed(2) + ' ч'; 
+        
+        const overEl = document.getElementById('st_over');
+        if (overtime > 0) { overEl.innerText = "+" + overtime.toFixed(1) + " ч"; overEl.style.color = "#2e7d32"; } 
+        else if (overtime < 0) { overEl.innerText = overtime.toFixed(1) + " ч"; overEl.style.color = "#c62828"; } 
+        else { overEl.innerText = "0 ч"; overEl.style.color = "var(--primary)"; }
+        
+        // График рисуем тоже без праздников
+        let percent = (norm > 0) ? (hoursForDisplay / norm) * 100 : 0; 
+        drawProgress(percent, hoursForDisplay);
+
+        const toggleRow = (id, val) => { const el = document.getElementById(id); if (el) el.style.display = (Math.abs(val) > 1) ? 'flex' : 'none'; };
+
+        document.getElementById('st_tariff_money').innerHTML = `<span style="color:#90a4ae; font-size:13px; font-weight:600; margin-right:8px;">${st.tariffHours.toFixed(2)}ч</span>` + '+' + fmtMoney(st.sumNakedTariff);
+        document.getElementById('st_res_money').innerHTML = `<span style="color:#90a4ae; font-size:13px; font-weight:600; margin-right:8px;">${st.reserveHours.toFixed(2)}ч</span>` + '+' + fmtMoney(st.sumRes);
+        document.getElementById('st_holiday_hours').innerText = st.holidayHours.toFixed(1) + 'ч';
+        document.getElementById('st_holiday_money').innerText = '+' + fmtMoney(st.holidayMoney);
+        
+        document.getElementById('st_ot15_hours').innerText = ot15h.toFixed(1) + 'ч'; 
+        document.getElementById('st_ot15_money').innerText = '+' + fmtMoney(ot15m);
+        document.getElementById('st_ot20_hours').innerText = ot20h.toFixed(1) + 'ч'; 
+        document.getElementById('st_ot20_money').innerText = '+' + fmtMoney(ot20m);
+
+        document.getElementById('st_class_money').innerText = '+' + fmtMoney(st.sumClass); 
+        document.getElementById('st_sen_money').innerText = '+' + fmtMoney(st.sumSen); 
+        document.getElementById('st_prem_money').innerText = '+' + fmtMoney(st.sumPrem);
+        document.getElementById('st_tech_money').innerText = '+' + fmtMoney(st.sumTech);
+        document.getElementById('st_senior_money').innerText = '+' + fmtMoney(st.sumSenior);
+        document.getElementById('st_mentor_hours').innerText = st.mentorHours.toFixed(1) + 'ч'; 
+        document.getElementById('st_mentor_money').innerText = '+' + fmtMoney(st.sumMentor);
+
+        document.getElementById('st_ev_hours').innerText = st.ev.toFixed(1) + 'ч'; 
+        document.getElementById('st_ev_money').innerText = '+' + fmtMoney(st.sumEv);
+        document.getElementById('st_night_hours').innerText = st.night.toFixed(1) + 'ч'; 
+        document.getElementById('st_night_money').innerText = '+' + fmtMoney(st.sumNight);
+        document.getElementById('st_split_hours').innerText = st.splitHours.toFixed(1) + 'ч'; 
+        document.getElementById('st_split_money').innerText = '+' + fmtMoney(st.sumSplit);
+
+        document.getElementById('st_dirty').innerText = fmtMoney(dirty);
+        document.getElementById('st_union').innerText = '-' + fmtMoney(union); 
+        document.getElementById('st_net').innerText = fmtMoney(net);
+        document.getElementById('st_tax').innerText = '-' + fmtMoney(tax);
+
+        toggleRow('row_tariff', st.sumNakedTariff);
+        toggleRow('row_res', st.sumRes);
+        toggleRow('row_holiday', st.holidayMoney);
+        toggleRow('row_ot15', ot15m);
+        toggleRow('row_ot20', ot20m);
+        toggleRow('row_class', st.sumClass);
+        toggleRow('row_sen', st.sumSen);
+        toggleRow('row_prem', st.sumPrem);
+        toggleRow('row_tech', st.sumTech);
+        toggleRow('row_senior', st.sumSenior);
+        toggleRow('row_mentor', st.sumMentor);
+        toggleRow('row_ev', st.sumEv);
+        toggleRow('row_night', st.sumNight);
+        toggleRow('row_split', st.sumSplit);
+        
+        document.getElementById('st_sick_money').innerText = '+' + fmtMoney(st.sickMoney);
+        document.getElementById('st_vacation_money').innerText = '+' + fmtMoney(st.vacationMoney);
+        document.getElementById('st_donor_money').innerText = '+' + fmtMoney(st.donorMoney);
+        document.getElementById('st_med_money').innerText = '+' + fmtMoney(st.medMoney);
+        document.getElementById('st_study_money').innerText = '+' + fmtMoney(st.studyMoney);
+        toggleRow('row_sick', st.sickMoney);
+        toggleRow('row_vacation', st.vacationMoney);
+        toggleRow('row_donor', st.donorMoney);
+        toggleRow('row_med', st.medMoney);
+        toggleRow('row_study', st.studyMoney);
+        
+        // === 6. ГОДОВАЯ БАЗА (13-я ЗАРПЛАТА) ===
+        // Формат: "+ЗаМесяц (ВсегоЗаГод)"
+        // Логика: Грязными - Выслуга - Тех.Учеба
+        
+        let yearlyBase = 0;       
+        let currentMonthBase = 0; 
+        
+        shifts.forEach(s => {
+            const d = new Date(s.date);
+            
+            if (d.getFullYear() === year) {
+                let r = calcShift(s);
+                
+                if (r) {
+                    let isExcluded = r.isNonWork || r.isTrain || 
+                                     s.text.toLowerCase().includes('донор') || 
+                                     s.text.toLowerCase().includes('кровь');
+
+                    let shiftContribution = 0;
+
+                    if (!isExcluded) {
+                        let shiftDirty = r.dirty;
+                        
+                        // === ВАЖНОЕ ИСПРАВЛЕНИЕ ===
+                        // Ищем цифры и в details (новый калькулятор), и снаружи (старый)
+                        // Чтобы точно найти сумму для вычета
+                        
+                        let senVal = 0;
+                        if (r.details && r.details.sen) senVal = r.details.sen;
+                        else if (r.valSen) senVal = r.valSen;
+
+                        let techVal = 0;
+                        if (r.details && r.details.tech) techVal = r.details.tech;
+                        else if (r.techBonus) techVal = r.techBonus;
+                        
+                        // Вычитаем из грязной зарплаты то, что не идет в 13-ю
+                        shiftContribution = shiftDirty - senVal - techVal;
+                    }
+
+                    yearlyBase += shiftContribution;
+
+                    if (d.getMonth() === month) {
+                        currentMonthBase += shiftContribution;
+                    }
+                }
+            }
+        });
+
+        const elBonus = document.getElementById('st_bonus_base');
+        if (elBonus) {
+            // Зеленый цвет для текущего месяца, серый для итога
+            elBonus.innerHTML = `+${fmtMoney(currentMonthBase)} <span style="color:#90a4ae; font-size:11px; font-weight:600; margin-left:4px;">(Итог: ${fmtMoney(yearlyBase)})</span>`;
+        }
+        
+        let lblClassTxt = (usedClasses.size > 0) ? Array.from(usedClasses).sort((a,b)=>b-a).join('/') : settings.classP;
+        document.getElementById('lbl_class').innerText = `Классность (${lblClassTxt}%):`; 
+        let lblPremTxt = (usedPrems.size > 0) ? Array.from(usedPrems).sort((a,b)=>b-a).join('/') : settings.premP;
+        document.getElementById('lbl_prem').innerText = `Премия (${lblPremTxt}%):`;
+    }
+function calculateRestIntervals() {
+        // Сортируем смены
+        shifts.sort((a,b) => { 
+            let tA = getShiftTimes(a), tB = getShiftTimes(b); 
+            if(!tA) return 1; if(!tB) return -1; 
+            return tA.start - tB.start; 
+        }); 
+        
+        // Сбрасываем флаги
+        shifts.forEach(s => { 
+            s.autoSplit = false; 
+            s.isShortBreak = false; 
+            s.gapMinutes = 0;
+            s.forceFullNight = false; // Флаг полной ночи
+        });
+
+        let processedIndices = new Set();
+
+        for (let i = 0; i < shifts.length; i++) { 
+            if (processedIndices.has(i)) continue;
+
+            let curr = shifts[i]; 
+            let next = (i + 1 < shifts.length) ? shifts[i+1] : null; 
+            
+            let tCurr = getShiftTimes(curr); 
+            let tNext = next ? getShiftTimes(next) : null; 
+            
+            let isSplitPair = false;
+
+            if (tCurr && tNext) { 
+                let diffMs = tNext.start - tCurr.end; 
+                let diffMinutes = Math.floor(diffMs / (1000 * 60)); 
+
+                if (diffMinutes >= 0 && diffMinutes < 480) { 
+                    isSplitPair = true;
+                    if (diffMinutes < 150) {
+                        // Неразрывная
+                        curr.isShortBreak = true;
+                        curr.gapMinutes = diffMinutes;
+                        next.isShortBreak = true; 
+                    } else {
+                        // Разрывная
+                        curr.autoSplit = true; 
+                        next.autoSplit = true; 
+                    }
+                    processedIndices.add(i + 1); 
+                } 
+            }
+
+            // === ВОЗВРАЩАЕМ ПРАВИЛО 50% (ПРАВИЛЬНОЕ) ===
+            // Считаем % ночи только от РАБОЧЕГО времени (без разрыва)
+            
+            if (isSplitPair) {
+                // Если связка: берем сумму часов двух смен
+                let stat1 = getRawNightStats(curr.text, curr.isPostTrip);
+                let stat2 = getRawNightStats(next.text, next.isPostTrip);
+
+                let totalWork = stat1.dur + stat2.dur;   // Чистая работа
+                let totalNight = stat1.night + stat2.night; // Чистая ночь
+
+                // Если ночных часов >= 50% от РАБОТЫ -> Включаем режим
+                if (totalWork > 0 && (totalNight / totalWork) >= 0.50) {
+                    curr.forceFullNight = true;
+                    next.forceFullNight = true;
+                }
+            } else {
+                // Одиночная смена
+                let stat = getRawNightStats(curr.text, curr.isPostTrip);
+                if (stat.dur > 0 && (stat.night / stat.dur) >= 0.50) {
+                    curr.forceFullNight = true;
+                }
+            }
+        } 
+    }
+
+function render(targetDate = null) {
+        if (preventRender && !targetDate) return;
+
+        const list = document.getElementById('shiftList');
+        if(list.offsetHeight > 0) list.style.minHeight = list.offsetHeight + 'px';
+        
+        const scrollPos = window.scrollY; 
+        
+        // В твоем коде это закомментировано или не используется, оставляем как есть
+        // calculateRestIntervals(); 
+        
+        const fragment = document.createDocumentFragment();
+        shifts.sort((a,b) => new Date(a.date) - new Date(b.date));
+        
+        const todayStr = getIsoDate(new Date());
+        let currentMonthStr = "";
+
+        shifts.forEach((s) => {
+            if (!s.text) s.text = ""; 
+
+            const shiftDate = new Date(s.date); 
+            const monthYear = shiftDate.toLocaleString('ru', { month: 'long', year: 'numeric' }); 
+            const monthYearCap = monthYear.charAt(0).toUpperCase() + monthYear.slice(1);
+            
+            if(monthYearCap !== currentMonthStr) { 
+                currentMonthStr = monthYearCap; 
+                const divider = document.createElement('div'); 
+                divider.className = 'month-header'; 
+                divider.innerText = currentMonthStr; 
+                fragment.appendChild(divider); 
+            }
+
+            let res = calcShift(s); 
+            
+            let title = s.text.split(' ')[0]; 
+            let details = s.text.substring(title.length).trim();
+            let lowerText = s.text.toLowerCase(); 
+
+            const isSpecialType = lowerText.includes('бл') || lowerText.includes('больничный') || 
+                                  lowerText.includes('отпуск') || lowerText.includes('отп') || 
+                                  lowerText.includes('донор') || lowerText.includes('кровь');
+
+            if (isSpecialType) {
+                // Используем Logic, как у тебя в рабочем коде
+                let val = !Logic.isWeekendOrHoliday(new Date(s.date)) ? 7.2 : 0;
+                let hoursInfo = `(${val}ч)`;
+                if(details) details += ` ${hoursInfo}`;
+                else details = hoursInfo;
+            }
+
+            if (res) {
+                let extraInfo = "";
+                if (res.isFullMed) {
+                    extraInfo = `(${res.duration.toFixed(1)}ч)`;
+                }
+                else if (res.tpHours > 0) {
+                     let pureWork = res.duration - res.tpHours;
+                     extraInfo = `(${pureWork.toFixed(1)} + ${res.tpHours.toFixed(1)}ч ТП)`;
+                }
+                else if (res.gapHours > 0) {
+                    let pureWork = res.hours - res.gapHours;
+                    extraInfo = `(${pureWork.toFixed(1)} + ${res.gapHours.toFixed(1)}ч)`;
+                } 
+                else if (res.duration > 0 && !isSpecialType) {
+                    extraInfo = `(${res.duration.toFixed(1)}ч)`;
+                }
+                if(details) details += " " + extraInfo;
+                else details = extraInfo;
+            }
+            
+            let tags = '';
+            
+            if (s.isFullMedical) tags += '<span class="tag" style="background:#d32f2f;">⛔ ОТСТРАНЕНИЕ</span> ';
+            if (lowerText.includes('бл') || lowerText.includes('больничный')) tags += '<span class="tag red">БОЛЬНИЧНЫЙ</span> ';
+            if (lowerText.includes('отпуск') || lowerText.includes('отп')) tags += '<span class="tag" style="background: linear-gradient(135deg, #4fc3f7, #2196f3);">ОТПУСК</span> ';
+            if (lowerText.includes('донор')) tags += '<span class="tag donor" style="background:#ab47bc;">ДОНОР</span> ';
+
+            const isNonWork = isSpecialType || lowerText.includes('выходной') || lowerText.includes('вых');
+
+            // Используем Logic.isStateHoliday, как у тебя
+            if (Logic.isStateHoliday(new Date(s.date)) && !isNonWork) {
+                tags += '<span class="tag" style="background:#e91e63;">🎉 ПРАЗДНИК x2</span> ';
+            }
+
+            if (s.isShortBreak) tags += '<span class="tag purple">🔗 НЕРАЗРЫВНАЯ</span> ';
+
+            if (res) { 
+                if (res.isTrain) {
+                     if (lowerText.includes('мед.ком') || lowerText.includes('комиссия') || 
+                        lowerText.includes('мед ком') || lowerText.includes('медком') || 
+                        lowerText.includes('псих') || lowerText.includes('освид')) {
+                        tags += '<span class="tag teal" style="background:#00897b">МЕД. КОМИССИЯ</span> ';
+                    } else {
+                        tags += '<span class="tag teal">ОБУЧЕНИЕ</span> ';
+                    }
+                }
+                if (res.isRes) tags += '<span class="tag gray">РЕЗЕРВ</span> '; 
+                if (s.lineStart) tags += '<span class="tag orange">ВЫЕЗД</span> '; 
+                if (res.isTech) tags += '<span class="tag teal">+УЧЕБА</span> '; 
+            }
+            if (s.note && s.note.trim() !== "") tags += '<span class="note-icon">📌</span>'; 
+
+            let div = document.createElement('div'); 
+            div.className = 'shift-card'; 
+            
+            if(s.date === todayStr) { 
+                div.classList.add('today'); 
+                div.innerHTML = `<div class="today-badge">СЕГОДНЯ</div>`; 
+            }
+            div.onclick = () => openDayModal(s.date);
+            div.id = 'card-' + s.date; 
+            
+            let isDone = false;
+            let now = new Date();
+            let todayZero = new Date(now); todayZero.setHours(0,0,0,0);
+            let sDateZero = new Date(s.date); sDateZero.setHours(0,0,0,0);
+
+            if (sDateZero < todayZero) {
+                isDone = true; 
+            } else if (sDateZero.getTime() === todayZero.getTime()) {
+                // Используем Logic.parseShift для проверки времени
+                let parsedForTime = Logic.parseShift(s.text, s.date);
+                if (parsedForTime && parsedForTime.endTimestamp && now > parsedForTime.endTimestamp) {
+                    isDone = true;
+                }
+            }
+
+            let moneyHTML = ''; 
+            
+            // === ВОТ ЗДЕСЬ МЫ СКРЫВАЕМ +0 ===
+            // Было: if (res) ...
+            // Стало: if (res && res.net > 0) ...
+            
+            if (res && res.net > 0) { 
+                const moneyClass = isDone ? 'money-val' : 'money-val future'; 
+                moneyHTML = `<div class="${moneyClass}">+${res.net}</div>`; 
+            }
+            // ==================================
+            
+            let d = new Date(s.date);
+            div.innerHTML += `<div class="date-box"><span class="date-day">${d.getDate()}</span><span class="date-dow">${d.toLocaleString('ru',{weekday:'short'})}</span></div><div class="shift-info"><div class="shift-title">${title} ${tags}</div><div class="shift-sub">${details}</div></div><div style="text-align:right">${moneyHTML}</div>`;
+            fragment.appendChild(div);
+        });
+        
+        list.innerHTML = '';
+        list.appendChild(fragment);
+        renderStats();
+
+        setTimeout(() => {
+            list.style.minHeight = ''; 
+            if (targetDate) {
+                const el = document.getElementById('card-' + targetDate);
+                if(el) el.scrollIntoView({block: "center", behavior: "auto"});
+            } 
+            else if (isFirstLoad) {
+                const todayEl = document.querySelector('.shift-card.today');
+                if (todayEl) todayEl.scrollIntoView({ block: "center", behavior: "auto" });
+                isFirstLoad = false; 
+            } else {
+                window.scrollTo(0, scrollPos);
+            }
+        }, 50);
+    }
+    
+    function addShift() { 
+        let d = document.getElementById('inpDate').value; 
+        let t = document.getElementById('inpText').value;
+        let n = document.getElementById('inpNote').value; 
+        let low = t.trim().toLowerCase();
+
+        // Автозамены
+        if (low === 'отп') t = 'отпуск';
+        if (low.includes('охр')) t = 'Охрана труда';
+        else if (low.includes('корп')) t = 'Корпоративный университет';
+        else if (low.includes('обучение')) t = 'Обучение';
+        else if (low.includes('повыш')) t = 'Повышение квалификации';
+        else if (low.includes('культур')) t = 'Культура обслуживания';
+        else if (low === 'упц') t = 'УПЦ';
+        else if (low.includes('мед.ком') || low.includes('мед ком') || low.includes('медком')) t = 'Мед. комиссия';
+        
+        // БОЛЬНИЧНЫЙ
+        if (t.toLowerCase().includes('бл') || t.toLowerCase().includes('больничный')) {
+            const years = getSickYears(d);
+            const inc1 = safeFloat(document.getElementById('sickInc1').value);
+            const inc2 = safeFloat(document.getElementById('sickInc2').value);
+            const perc = parseInt(document.getElementById('sickPercent').value);
+            if (!settings.sickData) settings.sickData = {};
+            settings.sickData[years[0]] = inc1;
+            settings.sickData[years[1]] = inc2;
+            settings.sickPercent = perc;
+            localStorage.setItem('metro_settings', JSON.stringify(settings));
+            touchMeta('metro_settings');
+        }
+
+        let sRate = safeFloat(document.getElementById('shiftRate').value); 
+        let sPrem = safeFloat(document.getElementById('shiftPrem').value); 
+        let sMentor = document.getElementById('shiftMentor').checked; 
+        let sSenior = document.getElementById('shiftSenior').checked; 
+        let sClass = parseInt(document.getElementById('shiftClassSelect').value); 
+        let sSen = getSeniorityPercent(settings.startDate); 
+        let sTech = document.getElementById('shiftTech').checked; 
+        let sPost = document.getElementById('shiftPostTrip').checked; 
+        let sFullMed = document.getElementById('shiftFullMedical').checked;
+
+        let sTpStart = document.getElementById('tpStart').value;
+        let sTpEnd = document.getElementById('tpEnd').value;
+
+        // === ИСПРАВЛЕНИЕ: ЗАЩИТА ТЕРАПЕВТИЧЕСКОГО ПУНКТА ===
+        // Если время не указано ИЛИ Начало == Конец (например 00:00 - 00:00)
+        // То мы принудительно стираем эти данные.
+        if (!sTpStart || !sTpEnd || sTpStart === sTpEnd) {
+            sTpStart = null;
+            sTpEnd = null;
+        }
+        // ====================================================
+
+        let lStart = document.getElementById('lineStart').value; 
+        let lEnd = document.getElementById('lineEnd').value; 
+
+        // ЗАЩИТА ВЫЕЗДА (которую мы делали раньше)
+        if (!t.toLowerCase().includes('рез')) {
+            lStart = null;
+            lEnd = null;
+        } else {
+            if (!lStart || !lEnd || lStart === lEnd) {
+                lStart = null;
+                lEnd = null;
+            }
+        }
+
+        let checkText = t.toLowerCase();
+        if (checkText.includes('отпуск') || checkText.includes('отп') || 
+            checkText.includes('бл') || checkText.includes('больничный') || 
+            checkText.includes('донор')) {
+            sFullMed = false; 
+        }
+        
+        if(d && t) { 
+            preventRender = true; 
+            shifts = shifts.filter(s => s.date !== d); 
+            shifts.push({ 
+                date:d, text:t, note: n, 
+                customRate: sRate, customMentor: sMentor, 
+                customSenior: sSenior, customClass: sClass, customSen: sSen, 
+                customPrem: sPrem, 
+                
+                lineStart: lStart, 
+                lineEnd: lEnd,     
+                
+                isTech: sTech, isPostTrip: sPost,
+                
+                // Теперь sTpStart будет null, если он пустой или кривой
+                tpStart: sTpStart, 
+                tpEnd: sTpEnd, 
+                isFullMedical: sFullMed
+            });
+
+            const targetDate = new Date(d);
+            const targetMonth = targetDate.getMonth();
+            const targetYear = targetDate.getFullYear();
+            const lowerText = t.toLowerCase();
+            const isSpecialType = lowerText.includes('бл') || lowerText.includes('отпуск') || lowerText.includes('донор');
+            if (!isSpecialType && sRate > 0) {
+                settings.rate = sRate;
+                settings.premP = sPrem;
+                shifts.forEach(s => {
+                    const sd = new Date(s.date);
+                    if (sd.getMonth() === targetMonth && sd.getFullYear() === targetYear) {
+                        const sTxt = s.text.toLowerCase();
+                        if (!sTxt.includes('бл') && !sTxt.includes('больничный') && 
+                            !sTxt.includes('отпуск') && !sTxt.includes('донор')) {
+                            s.customRate = sRate;
+                            s.customPrem = sPrem;
+                        }
+                    }
+                });
+            }
+            touchMeta(getMonthKey(d));
+            saveData(); 
+            if(document.getElementById('calendarModal').classList.contains('open')) {
+                renderCalendar();
+                renderStats();
+            } else {
+                render(d); 
+            }
+            closeModal('addModal'); 
+            setTimeout(() => { 
+                preventRender = false; 
+                const el = document.getElementById('card-' + d);
+                if(el) el.scrollIntoView({block: "center", behavior: "auto"});
+            }, 100);
+        } 
+    }
+    
+    function openModal() {
+        // Закрываем детали, если были открыты
+        const detailsBox = document.getElementById('shiftDetailsBox');
+        if (detailsBox) detailsBox.open = false;
+
+        document.body.classList.add('modal-open');
+        document.getElementById('addModal').classList.add('open');
+        setAutoDate();
+        
+        // Очищаем поля
+        document.getElementById('inpText').value = '';
+        document.getElementById('inpNote').value = '';
+        document.getElementById('modalTitle').innerText = 'Новая смена';
+        document.getElementById('btnSaveShift').innerText = 'Добавить';
+        document.getElementById('btnDeleteShift').style.display = 'none';
+        
+        // Ставка
+        let showRate = (settings.rate > 0) ? settings.rate : 546.18;
+        document.getElementById('shiftRate').value = String(showRate).replace('.', ',');
+
+        // Чекбоксы
+        document.getElementById('shiftMentor').checked = settings.mentor;
+        document.getElementById('shiftSenior').checked = settings.senior || false;
+        document.getElementById('shiftTech').checked = false;
+        document.getElementById('shiftPostTrip').checked = false;
+        document.getElementById('tpStart').value = '';
+        document.getElementById('tpEnd').value = '';
+        document.getElementById('shiftFullMedical').checked = false;
+        
+        // Разблокировка
+        document.getElementById('shiftMentor').disabled = false;
+        document.getElementById('shiftSenior').disabled = false;
+        document.getElementById('shiftPostTrip').disabled = false;
+
+        // Класс
+        document.getElementById('shiftClassSelect').value = (settings.classP === false) ? 0 : settings.classP;
+
+        // === ГЛАВНОЕ ИСПРАВЛЕНИЕ: УМНАЯ ПРЕМИЯ ===
+        let showPrem = settings.premP;
+
+        // Если в настройках 0 или пусто — ищем в истории смен последнюю непустую премию
+        if (!showPrem || parseFloat(showPrem) === 0) {
+            // Ищем с конца списка (последнюю добавленную)
+            const lastShift = [...shifts].reverse().find(s => s.customPrem && parseFloat(s.customPrem) > 0);
+            
+            if (lastShift) {
+                showPrem = lastShift.customPrem; // Нашли! Берем её.
+            } else {
+                // Если истории нет вообще (совсем новый пользователь), можно оставить пусто
+                // или поставить 35 (как стандарт). Давай оставим пусто, если совсем ничего нет.
+                showPrem = ''; 
+            }
+        }
+        
+        // Вставляем значение в поле
+        document.getElementById('shiftPrem').value = showPrem ? String(showPrem).replace('.', ',') : '';
+        // ===========================================
+
+        checkShiftText();
+        document.getElementById('inpText').focus();
+    }
+    // 1. ФУНКЦИЯ ОТКРЫТИЯ ОКНА (ИСПРАВЛЕННАЯ)
+    function openDayModal(dateStr) {
+        const details = document.getElementById('shiftDetailsBox');
+        if(details) details.open = false;
+
+        document.body.classList.add('modal-open');
+        document.getElementById('sickInc1').value = ''; 
+        document.getElementById('sickInc2').value = '';
+        document.getElementById('inpDate').value = dateStr;
+        const shift = shifts.find(s => s.date === dateStr);
+        const delBtn = document.getElementById('btnDeleteShift');
+        const saveBtn = document.getElementById('btnSaveShift');
+        const title = document.getElementById('modalTitle');
+        
+        // --- СБРОС ПОЛЕЙ (ЧТОБЫ НЕ ЗАЛИПАЛИ) ---
+        // 1. Сбрасываем Выезд
+        document.getElementById('lineStart').value = '';
+        document.getElementById('lineEnd').value = '';
+        
+        // 2. Сбрасываем Терапевтический пункт и Отстранение
+        document.getElementById('tpStart').value = '';
+        document.getElementById('tpEnd').value = '';
+        document.getElementById('shiftFullMedical').checked = false;
+        // ---------------------------------------
+
+        const currentProfileRate = (settings.rate > 0) ? settings.rate : 546.18;
+
+        if (shift) {
+            // === РЕДАКТИРОВАНИЕ ===
+            document.getElementById('inpText').value = shift.text;
+            document.getElementById('inpNote').value = shift.note || '';
+            
+            let showRate = (shift.customRate !== undefined) ? shift.customRate : currentProfileRate;
+            document.getElementById('shiftRate').value = String(showRate).replace('.', ',');
+
+            document.getElementById('shiftMentor').checked = shift.customMentor !== undefined ? shift.customMentor : settings.mentor;
+            document.getElementById('shiftSenior').checked = shift.customSenior !== undefined ? shift.customSenior : (settings.senior || false);
+            document.getElementById('shiftTech').checked = shift.isTech !== undefined ? shift.isTech : false;
+            document.getElementById('shiftPostTrip').checked = shift.isPostTrip !== undefined ? shift.isPostTrip : false;
+            
+            // Заполняем ТП, только если он есть в сохраненной смене
+            if (shift.tpStart) document.getElementById('tpStart').value = shift.tpStart;
+            if (shift.tpEnd) document.getElementById('tpEnd').value = shift.tpEnd;
+            document.getElementById('shiftFullMedical').checked = (shift.isFullMedical === true);
+
+            let defaultClass = (settings.classP === false) ? 0 : settings.classP;
+            document.getElementById('shiftClassSelect').value = (shift.customClass !== undefined) ? shift.customClass : defaultClass;
+            
+            let premVal = (shift.customPrem !== undefined) ? shift.customPrem : settings.premP;
+            document.getElementById('shiftPrem').value = String(premVal).replace('.', ',');
+            
+            if (shift.lineStart) document.getElementById('lineStart').value = shift.lineStart;
+            if (shift.lineEnd) document.getElementById('lineEnd').value = shift.lineEnd;
+            
+            title.innerText = 'Редактирование';
+            saveBtn.innerText = 'Сохранить';
+            delBtn.style.display = 'block';
+        } else {
+            // === НОВАЯ СМЕНА ===
+            document.getElementById('inpText').value = '';
+            document.getElementById('inpNote').value = '';
+            document.getElementById('shiftRate').value = String(currentProfileRate).replace('.', ',');
+            
+            document.getElementById('shiftMentor').checked = settings.mentor;
+            document.getElementById('shiftSenior').checked = settings.senior || false;
+            document.getElementById('shiftTech').checked = false;
+            document.getElementById('shiftPostTrip').checked = false;
+            
+            // Здесь поля ТП и Выезда уже чистые (мы очистили их в начале функции)
+
+            document.getElementById('shiftClassSelect').value = (settings.classP === false) ? 0 : settings.classP;
+            document.getElementById('shiftPrem').value = String(settings.premP).replace('.', ',');
+            
+            title.innerText = 'Новая смена';
+            saveBtn.innerText = 'Добавить';
+            delBtn.style.display = 'none';
+        }
+        checkShiftText(); 
+        document.getElementById('addModal').classList.add('open');
+        document.getElementById('inpText').focus();
+    }
+
+    // 2. ФУНКЦИЯ ПРОВЕРКИ ТЕКСТА И БЛОКИРОВКИ (ИСПРАВЛЕННАЯ)
+    function checkShiftText() {
+        const txt = document.getElementById('inpText').value.toLowerCase();
+        const dateVal = document.getElementById('inpDate').value;
+        const isSick = txt.includes('бл') || txt.includes('больничный');
+        
+        // Получаем элементы
+        const details = document.getElementById('shiftDetailsBox');
+        const sickBox = document.getElementById('sickDetailsBox'); 
+        const lineBlock = document.getElementById('lineWorkContainer');
+        const rateHint = document.getElementById('rateHint');
+
+        // Чекбоксы
+        // ВНИМАНИЕ: Тут теперь shiftFullMedical вместо shiftMedical
+        const chkFullMed = document.getElementById('shiftFullMedical');
+        const chkMentor = document.getElementById('shiftMentor');
+        const chkSenior = document.getElementById('shiftSenior');
+        const chkPost = document.getElementById('shiftPostTrip'); 
+
+        // 1. ЛОГИКА БЛОКИРОВКИ ПРИ НЕДОПУСКЕ
+        if (chkFullMed && chkFullMed.checked) {
+            // Если Полное Снятие: отключаем надбавки
+            chkMentor.checked = false;
+            chkSenior.checked = false;
+            chkPost.checked = false;
+            
+            chkMentor.disabled = true;
+            chkSenior.disabled = true;
+            chkPost.disabled = true;
+        } else {
+            // Если допускается: разблокируем
+            chkMentor.disabled = false;
+            chkSenior.disabled = false;
+            chkPost.disabled = false;
+        }
+
+        // 2. ОСТАЛЬНАЯ ЛОГИКА ВИДИМОСТИ
+        if (isSick) {
+            if(details) details.style.display = 'none';
+            if(sickBox) sickBox.style.display = 'block';
+            
+            const years = getSickYears(dateVal);
+            const lbl1 = document.getElementById('lbl_year_1');
+            const lbl2 = document.getElementById('lbl_year_2');
+            if (lbl1) lbl1.innerText = `Доход за ${years[0]} год`;
+            if (lbl2) lbl2.innerText = `Доход за ${years[1]} год`;
+
+            let field1 = document.getElementById('sickInc1');
+            if (settings.sickData && settings.sickData[years[0]] && field1.value === '') {
+                field1.value = settings.sickData[years[0]];
+            }
+            let field2 = document.getElementById('sickInc2');
+            if (settings.sickData && settings.sickData[years[1]] && field2.value === '') {
+                field2.value = settings.sickData[years[1]];
+            }
+        } else {
+            if(sickBox) sickBox.style.display = 'none';
+            
+            if (txt.includes('вых') || txt.includes('донор') || txt.includes('отпуск') || txt.includes('отп')) {
+                if(details) details.style.display = 'none';
+            } else {
+                if(details) details.style.display = 'block';
+            }
+            
+            if (txt.includes('рез')) {
+                if(lineBlock) lineBlock.style.display = 'block';
+                if(rateHint) rateHint.style.display = 'block';
+            } else {
+                if(lineBlock) lineBlock.style.display = 'none';
+                if(rateHint) rateHint.style.display = 'none';
+            }
+        }
+    }
+    
+    
+    let wipeTimeout;
+    
+    function wipeCurrentMonth() {
+        const btn = document.querySelector('.month-selector .month-btn[title="Очистить месяц"]');
+        
+        // Если это первое нажатие
+        if (!btn.classList.contains('confirm-state')) {
+            btn.classList.add('confirm-state');
+            btn.innerHTML = "Точно?"; // Меняем иконку на вопрос
+            btn.style.color = "#d32f2f"; // Делаем красной
+            
+            // Если за 3 секунды не нажал снова — возвращаем как было
+            wipeTimeout = setTimeout(() => {
+                btn.classList.remove('confirm-state');
+                btn.innerHTML = "🗑️";
+                btn.style.color = "#e53935";
+            }, 3000);
+            return;
+        }
+
+        // Если это ВТОРОЕ нажатие (подтверждение)
+        clearTimeout(wipeTimeout);
+        
+        // --- ЛОГИКА УДАЛЕНИЯ ---
+        const year = statsDate.getFullYear();
+        const month = statsDate.getMonth() + 1;
+        const mStr = String(month).padStart(2, '0');
+        
+        shifts = shifts.filter(s => !s.date.startsWith(`${year}-${mStr}`));
+        touchMeta(`s_${year}_${mStr}`);
+        saveData(); 
+        render(); 
+        // -----------------------
+
+        // Возвращаем кнопку в исходное состояние
+        btn.classList.remove('confirm-state');
+        btn.innerHTML = "🗑️";
+        btn.style.color = "#e53935";
+    }
+
+    function openImportModal() { 
+        document.body.classList.add('modal-open'); 
+        document.getElementById('importModal').classList.add('open'); 
+        
+        // Вот эти две строки решат проблему:
+        document.getElementById('importText').value = ''; // Очищаем поле от старого текста
+        document.getElementById('importText').focus();    // Сразу ставим курсор, чтобы удобно было вставить
+    }
+    
+    function closeModal(id) { 
+        document.body.classList.remove('modal-open'); 
+        document.getElementById(id).classList.remove('open');
+        if (id === 'calendarModal') render(); 
+    }
+
+    function processImport() { 
+        const text = document.getElementById('importText').value; 
+        if(!text) return; 
+        
+        const lines = text.split('\n'); 
+        let addedCount = 0; 
+        let errorCount = 0;
+        
+        // Настройки
+        // ВАЖНО: Если ставка в профиле 0, берем стандарт 546.18
+        const profileRate = safeFloat(settings.rate);
+        const defRate = profileRate > 0 ? profileRate : 546.18; 
+        
+        const defMent = settings.mentor; 
+        const defSen = settings.senior || false; 
+        const defClass = settings.classP; 
+        const defExp = getSeniorityPercent(settings.startDate); 
+        const defPrem = settings.premP;
+        
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth(); 
+
+        lines.forEach(line => { 
+            line = line.trim(); 
+            if(!line) return; 
+
+            // 1. ДИАПАЗОН
+            const rangeRegex = /^\s*(\d{1,2})[\.\/,\-](\d{1,2})[\.\/,\-](\d{2,4})\s*-\s*(\d{1,2})[\.\/,\-](\d{1,2})[\.\/,\-](\d{2,4})/;
+            const rangeMatch = line.match(rangeRegex);
+
+            if (rangeMatch) {
+                let d1 = parseInt(rangeMatch[1]), m1 = parseInt(rangeMatch[2]) - 1, y1 = parseInt(rangeMatch[3]);
+                let d2 = parseInt(rangeMatch[4]), m2 = parseInt(rangeMatch[5]) - 1, y2 = parseInt(rangeMatch[6]);
+                
+                if(y1 < 100) y1 += 2000; 
+                if(y2 < 100) y2 += 2000;
+
+                let current = new Date(y1, m1, d1);
+                const end = new Date(y2, m2, d2);
+                
+                let desc = line.replace(rangeMatch[0], '').trim();
+                if (desc.toLowerCase().includes('больничный')) desc = "БЛ";
+                if (desc.toLowerCase() === 'отп') desc = "отпуск";
+
+                // ИСПРАВЛЕНИЕ: Мы ВСЕГДА берем полную ставку.
+                // Неважно, резерв это или нет. Программа сама потом посчитает 8% вредности.
+                let impRate = defRate; 
+
+                while (current <= end) {
+                    const iso = getIsoDate(current);
+                    shifts = shifts.filter(s => s.date !== iso);
+                    
+                    shifts.push({ 
+                        date: iso, text: desc, customRate: impRate, 
+                        customMentor: defMent, customSenior: defSen, 
+                        customClass: defClass, customSen: defExp, customPrem: defPrem 
+                    });
+                    
+                    addedCount++;
+                    current.setDate(current.getDate() + 1);
+                }
+
+            } else {
+                // 2. ОДИНОЧНАЯ ДАТА
+                const dateRegex = /^\s*(\d{1,2})[\.\/,\-](\d{1,2})(?:[\.\/,\-](\d{2,4}))?/;
+                const dateMatch = line.match(dateRegex);
+
+                if(dateMatch) { 
+                    let day = parseInt(dateMatch[1]); 
+                    let month = parseInt(dateMatch[2]); 
+                    let year = currentYear;
+
+                    if (dateMatch[3]) {
+                        year = parseInt(dateMatch[3]);
+                    } else {
+                        if (currentMonth >= 9 && month <= 2) {
+                            year += 1;
+                        }
+                    }
+                    if(year < 100) year += 2000;
+
+                    const isoDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    
+                    let desc = line.replace(dateMatch[0], '').trim(); 
+                    if (desc.toLowerCase().includes('больничный')) desc = "БЛ";
+                    if (desc.toLowerCase() === 'отп') desc = "отпуск";
+        
+                    shifts = shifts.filter(s => s.date !== isoDate); 
+                    
+                    // ИСПРАВЛЕНИЕ: Тут тоже убираем условие про "рез". Всегда полная ставка.
+                    let impRate = defRate; 
+                    
+                    shifts.push({ 
+                        date: isoDate, text: desc, customRate: impRate, 
+                        customMentor: defMent, customSenior: defSen, 
+                        customClass: defClass, customSen: defExp, customPrem: defPrem 
+                    }); 
+                    addedCount++; 
+                } else {
+                    console.warn("Пропущена строка:", line);
+                    errorCount++;
+                }
+            }
+        }); 
+        
+        if(addedCount > 0) { 
+            saveData(); 
+            render(); 
+            
+            // 1. Находим кнопку и меняем её вид
+            const btn = document.querySelector('#importModal .btn-save');
+            const originalText = btn.innerText;
+            const originalColor = btn.style.background;
+            
+            btn.innerText = `Добавлено: ${addedCount} ✅`;
+            btn.style.background = "#4caf50"; // Зеленый цвет успеха
+            
+            // 2. Ждем 1.5 секунды, чтобы ты увидел результат
+            setTimeout(() => {
+                closeModal('importModal');
+                
+                // Возвращаем кнопке прежний вид (для следующего раза)
+                btn.innerText = originalText;
+                btn.style.background = originalColor;
+            }, 1500);
+            
+        } else { 
+            // Ошибка: Кнопка краснеет (как мы делали раньше)
+            const btn = document.querySelector('#importModal .btn-save');
+            const originalText = btn.innerText;
+            const originalColor = btn.style.background;
+            
+            btn.innerText = "Нет дат ⚠️"; 
+            btn.style.background = "#e53935"; 
+            
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.background = originalColor;
+            }, 1500);
+        }
+    }
+    
+    function renderCalendar() {
+        const grid = document.getElementById('calGrid');
+        grid.innerHTML = '';
+        ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'].forEach(d => grid.innerHTML += `<div class="cal-day-name">${d}</div>`);
+        const year = calDate.getFullYear();
+        const month = calDate.getMonth();
+        const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+        document.getElementById('calTitle').innerText = `${monthNames[month]} ${year}`;
+        let firstDay = new Date(year, month, 1).getDay();
+        firstDay = (firstDay === 0 ? 6 : firstDay - 1);
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const todayStr = getIsoDate(new Date());
+        for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div class="cal-cell empty"></div>`;
+        for (let d = 1; d <= daysInMonth; d++) {
+            const currentIso = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            const shift = shifts.find(s => s.date === currentIso);
+            const dateObj = new Date(currentIso);
+            
+            // 1. Проверяем, "Красный" ли это день календаря? (Выходной, Праздник или Перенос)
+            // Logic.isWeekendOrHoliday сама знает про рабочие субботы и переносы.
+            const isRedDay = Logic.isWeekendOrHoliday(dateObj);
+            
+            // 2. Проверяем, ГОС. ПРАЗДНИК ли это (для фона x2)
+            const isStateHol = Logic.isStateHoliday(dateObj);
+            
+            let cellClass = '';
+
+            // Если это выходной день (любой) - делаем цифру красной
+            if (isRedDay) cellClass += ' weekend';
+
+            // Если это ИМЕННО Праздник (1 мая, 9 мая и т.д.) - добавляем спец. класс для фона
+            if (isStateHol) cellClass += ' state-holiday';
+
+            let content = `<div class="cal-num">${d}</div>`;
+            
+           if (shift) {
+                let text = shift.text.toLowerCase();
+                let typeClass = 'type-work';
+                
+                // Если ОТСТРАНЕНИЕ — красим как больничный (желтый фон)
+                if (shift.isFullMedical) typeClass = 'type-sick';
+                
+                else if (text.includes('бл')) typeClass = 'type-sick';
+                else if (text.includes('донор')) typeClass = 'type-donor';
+                else if (text.includes('отпуск') || text.includes('отп')) typeClass = 'type-vacation';
+                else if (text.includes('вых')) typeClass = 'type-off';
+                else if (text.includes('упц') || text.includes('учеба') || text.includes('обучение')) typeClass = 'type-train';
+                
+                cellClass += ` has-shift ${typeClass}`;
+                
+                if (shift.note && shift.note.trim() !== "") {
+                    cellClass += ' has-note';
+                }
+                
+                if (shift.isTech) {
+                    content += `<div style="position:absolute; top:3px; left:4px; font-size:10px; line-height:1;" title="Тех. учеба">🎓</div>`;
+                }
+
+                let fullText = shift.text.toLowerCase();
+                let title = "";
+
+                // Словарь замен (можешь добавить свои)
+                if (fullText.includes("охрана") || fullText.includes("охр")) title = "ОХР";
+                else if (fullText.includes("мед.") || fullText.includes("комисс")) title = "МЕД";
+                else if (fullText.includes("упц")) title = "УПЦ";
+                else if (fullText.includes("тех.") || fullText.includes("тех учеба")) title = "ТЕХ";
+                else if (fullText.includes("корпоратив") || fullText.includes("корп")) title = "КОРП";
+                else if (fullText.includes("повышение") || fullText.includes("квалиф")) title = "ПОВ";
+                else if (fullText.includes("псих") || fullText.includes("освид")) title = "ПСИХ";
+                else if (fullText.includes("выходной") || fullText.includes("вых")) title = "ВЫХ";
+                else if (fullText.includes("отпуск") || fullText.includes("отп")) title = "ОТП";
+                else if (fullText.includes("больничный") || fullText.includes("бл")) title = "БЛ";
+                else if (fullText.includes("донор")) title = "ДОН";
+                else {
+                    // Если не нашли в словаре - берем первое слово
+                    let firstWord = shift.text.split(' ')[0];
+                    // Если это маршрут (м70, п2) - оставляем как есть
+                    // Если длинное слово - режем аккуратнее (до 5 букв без точки)
+                    if (firstWord.length > 6) title = firstWord.substr(0, 5); 
+                    else title = firstWord;
+                }
+
+                content += `<div class="cal-shift">${title}</div>`;
+            }
+            
+            if (currentIso === todayStr) cellClass += ' today';
+            
+            // ВАЖНО: Добавил обработку свайпа внутрь onclick, чтобы не мешал
+            grid.innerHTML += `<div class="cal-cell ${cellClass}" onclick="openDayModal('${currentIso}')">${content}</div>`;
+        }
+    }
+    
+    function changeMonth(dir) { calDate.setMonth(calDate.getMonth() + dir); renderCalendar(); }
+    function openCalendarModal() { document.body.classList.add('modal-open'); document.getElementById('calendarModal').classList.add('open'); renderCalendar(); }
+    function setAutoDate() { if (shifts.length === 0) { document.getElementById('inpDate').valueAsDate = new Date(); return; } let maxTime = 0; shifts.forEach(s => { let time = new Date(s.date).getTime(); if (time > maxTime) maxTime = time; }); let nextDay = new Date(maxTime); nextDay.setDate(nextDay.getDate() + 1); document.getElementById('inpDate').valueAsDate = nextDay; }
+    const FSS_LIMITS = { 2023: 1917000, 2024: 2225000, 2025: 2753000 };
+
+    // Получить два расчетных года для даты больничного
+    function getSickYears(dateStr) {
+        let d = dateStr ? new Date(dateStr) : new Date();
+        let y = d.getFullYear();
+        return [y - 2, y - 1];
+    }
+    function openDonation() {
+    const donationUrl = "https://pay.cloudtips.ru/p/1b8ab64d"; 
+
+    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.openLink) {
+        // Правильный метод для Telegram: открывает во внешнем браузере
+        window.Telegram.WebApp.openLink(donationUrl);
+    } else {
+        // Запасной вариант для обычного браузера
+        window.open(donationUrl, '_blank');
+    }
+}    
+    init();
+    
+    function pasteFromClipboard() {
+        const input = document.getElementById('inpText');
+        
+        if (navigator.clipboard && navigator.clipboard.readText) {
+            navigator.clipboard.readText()
+                .then(text => {
+                    input.value = text;
+                    checkShiftText();
+                    // Успех - зеленая вспышка
+                    input.style.borderColor = '#4caf50';
+                    setTimeout(() => input.style.borderColor = '', 300);
+                })
+                .catch(err => {
+                    // Ошибка - красная вспышка (без текста)
+                    console.error(err);
+                    input.style.borderColor = '#d32f2f';
+                    input.placeholder = "Ошибка вставки. Жми Ctrl+V";
+                    setTimeout(() => {
+                        input.style.borderColor = '';
+                        input.placeholder = "Например: м75 14:00-22:00 или БЛ";
+                    }, 2000);
+                });
+        } else {
+            // Старый браузер - красная вспышка
+            input.style.borderColor = '#d32f2f';
+            setTimeout(() => input.style.borderColor = '', 300);
+        }
+    }
+</script>
+
+</body>
+</html>
