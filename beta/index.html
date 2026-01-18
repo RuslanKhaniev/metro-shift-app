@@ -651,75 +651,187 @@
             render();
         }
         
-        function render() {
-            const list = document.getElementById('shiftList');
-            list.innerHTML = '';
-            shifts.sort((a,b) => new Date(a.date) - new Date(b.date));
-            let curMonth = '';
+        function render(targetDate = null) {
+        if (preventRender && !targetDate) return;
+
+        const list = document.getElementById('shiftList');
+        if(list.offsetHeight > 0) list.style.minHeight = list.offsetHeight + 'px';
+        
+        const scrollPos = window.scrollY; 
+        
+        const fragment = document.createDocumentFragment();
+        shifts.sort((a,b) => new Date(a.date) - new Date(b.date));
+        
+        const todayStr = getIsoDate(new Date());
+        let currentMonthStr = "";
+
+        shifts.forEach((s) => {
+            if (!s.text) s.text = ""; 
+
+            const shiftDate = new Date(s.date); 
+            const monthYear = shiftDate.toLocaleString('ru', { month: 'long', year: 'numeric' }); 
+            const monthYearCap = monthYear.charAt(0).toUpperCase() + monthYear.slice(1);
             
-            shifts.forEach(s => {
-                const d = new Date(s.date);
-                const mStr = d.toLocaleString('ru', { month: 'long', year: 'numeric' });
-                if(mStr !== curMonth) {
-                    curMonth = mStr;
-                    list.innerHTML += `<div class="month-header">${curMonth.charAt(0).toUpperCase() + curMonth.slice(1)}</div>`;
-                }
-                
-                const res = calcShift(s);
-                let moneyHTML = '';
-                if(res && res.net > 0) moneyHTML = `<div class="money-val">+${res.net}</div>`;
-                
-                // Теги
-                let tags = '';
-                const lower = s.text.toLowerCase();
-                
+            if(monthYearCap !== currentMonthStr) { 
+                currentMonthStr = monthYearCap; 
+                const divider = document.createElement('div'); 
+                divider.className = 'month-header'; 
+                divider.innerText = currentMonthStr; 
+                fragment.appendChild(divider); 
+            }
 
-                // 1. ПРАЗДНИКИ (по тексту даты, чтобы не зависеть от поясов)
-                const md = s.date.substring(5, 10); // "01-01"
-                if (Logic.holidaysData.fixed.includes(md)) {
-                    tags += '<span class="tag" style="background:#e91e63;">🎉 ПРАЗДНИК</span> ';
-                }
+            let res = calcShift(s); 
+            
+            // --- 1. ВОССТАНОВЛЕНИЕ ТЕКСТА И ВРЕМЕНИ ---
+            let title = s.text.split(' ')[0]; 
+            let details = s.text.substring(title.length).trim();
+            let lowerText = s.text.toLowerCase(); 
 
-                // 2. СТАТУСЫ СМЕНЫ
-                if (res && res.isSick) {
-                    tags += '<span class="tag" style="background:#fbc02d; color:#3e2723">БОЛЬНИЧНЫЙ</span> ';
+            // Спец. типы (БЛ, Отпуск...)
+            const isSpecialType = lowerText.includes('бл') || lowerText.includes('больничный') || 
+                                  lowerText.includes('отпуск') || lowerText.includes('отп') || 
+                                  lowerText.includes('донор') || lowerText.includes('кровь');
+
+            if (isSpecialType) {
+                // Если выходной/праздник — 0 часов вычета. Если будни — 7.2.
+                let val = !Logic.isWeekendOrHoliday(new Date(s.date)) ? 7.2 : 0;
+                let hoursInfo = `(${val}ч)`;
+                
+                if(details) details += ` ${hoursInfo}`;
+                else details = hoursInfo;
+            }
+
+            // Рабочие смены: добавляем (X.Xч) в конец строки
+            if (res) {
+                let extraInfo = "";
+
+                if (res.isFullMed) {
+                    extraInfo = `(${res.duration.toFixed(1)}ч)`;
+                }
+                else if (res.tpHours > 0) {
+                     let pureWork = res.duration - res.tpHours;
+                     extraInfo = `(${pureWork.toFixed(1)} + ${res.tpHours.toFixed(1)}ч ТП)`;
+                }
+                else if (res.gapHours > 0) {
+                    let pureWork = res.hours - res.gapHours;
+                    extraInfo = `(${pureWork.toFixed(1)} + ${res.gapHours.toFixed(1)}ч)`;
                 } 
-                else if (res && res.isVacation) {
-                    tags += '<span class="tag" style="background:#29b6f6">ОТПУСК</span> ';
-                }
-                else if (res && res.isDonor) {
-                    tags += '<span class="tag" style="background:#ab47bc">ДОНОР</span> ';
-                }
-                else {
-                    // Обычные рабочие статусы
-                    if (lower.includes('рез')) {
-                        tags += '<span class="tag" style="background:#5c6bc0">РЕЗЕРВ</span> ';
-                    }
-                    if (lower.includes('учеба') || lower.includes('упц') || lower.includes('обучение')) {
-                        tags += '<span class="tag" style="background:#009688">УЧЕБА</span> ';
-                    }
-                    if (lower.includes('мед') || lower.includes('комиссия')) {
-                        tags += '<span class="tag" style="background:#78909c">МЕД.КОМ</span> ';
-                    }
-                    if (lower.includes('тех')) {
-                        tags += '<span class="tag" style="background:#607d8b">ТЕХ.УЧЕБА</span> ';
-                    }
+                // Показываем обычную длительность ТОЛЬКО если это НЕ спец. тип (чтобы не дублировать)
+                else if (res.duration > 0 && !isSpecialType) {
+                    extraInfo = `(${res.duration.toFixed(1)}ч)`;
                 }
                 
-                list.innerHTML += `
-                <div class="shift-card" onclick="openDayModal('${s.date}')">
-                    <div class="date-box">
-                        <span class="date-day">${d.getDate()}</span>
-                        <span class="date-dow">${d.toLocaleString('ru',{weekday:'short'})}</span>
-                    </div>
-                    <div class="shift-info">
-                        <div class="shift-title">${s.text.split(' ')[0]} ${tags}</div>
-                        <div class="shift-sub">${res ? (res.duration ? res.duration.toFixed(1)+'ч' : '') : ''}</div>
-                    </div>
-                    <div style="text-align:right">${moneyHTML}</div>
-                </div>`;
-            });
-        }
+                if(details) details += " " + extraInfo;
+                else details = extraInfo;
+            }
+            
+            // --- 2. ВОССТАНОВЛЕНИЕ ТЕГОВ ---
+            let tags = '';
+            
+            if (s.isFullMedical) {
+                tags += '<span class="tag" style="background:#d32f2f;">⛔ ОТСТРАНЕНИЕ</span> ';
+            }
+            if (lowerText.includes('бл') || lowerText.includes('больничный')) {
+                tags += '<span class="tag red">БОЛЬНИЧНЫЙ</span> ';
+            }
+            if (lowerText.includes('отпуск') || lowerText.includes('отп')) {
+                tags += '<span class="tag" style="background: linear-gradient(135deg, #4fc3f7, #2196f3);">ОТПУСК</span> ';
+            }
+            if (lowerText.includes('донор') || lowerText.includes('кровь')) {
+                tags += '<span class="tag donor" style="background:#ab47bc;">ДОНОР</span> ';
+            }
+
+            // Праздники (Исправлено: проверка по строке даты, чтобы не зависеть от поясов)
+            const md = s.date.substring(5, 10); // "01-01"
+            const isNonWork = isSpecialType || lowerText.includes('выходной') || lowerText.includes('вых');
+            
+            if (Logic.holidaysData.fixed.includes(md) && !isNonWork) {
+                tags += '<span class="tag" style="background:#e91e63;">🎉 ПРАЗДНИК x2</span> ';
+            }
+
+            if (s.isShortBreak) tags += '<span class="tag purple">🔗 НЕРАЗРЫВНАЯ</span> ';
+
+            if (res) { 
+                if (res.isTrain) {
+                     if (lowerText.includes('мед') || lowerText.includes('комисс') || lowerText.includes('псих')) {
+                        tags += '<span class="tag teal" style="background:#00897b">МЕД. КОМИССИЯ</span> ';
+                    } else {
+                        tags += '<span class="tag teal">ОБУЧЕНИЕ</span> ';
+                    }
+                }
+                // Резерв (исключаем полное отстранение, чтобы не было двух тегов)
+                if (res.isRes && !res.isFullMed) tags += '<span class="tag gray">РЕЗЕРВ</span> '; 
+                if (s.lineStart) tags += '<span class="tag orange">ВЫЕЗД</span> '; 
+                if (res.isTech) tags += '<span class="tag teal">+УЧЕБА</span> '; 
+            }
+            if (s.note && s.note.trim() !== "") tags += '<span class="note-icon">📌</span>'; 
+
+            let div = document.createElement('div'); 
+            div.className = 'shift-card'; 
+            
+            if(s.date === todayStr) { 
+                div.classList.add('today'); 
+                div.innerHTML = `<div class="today-badge">СЕГОДНЯ</div>`; 
+            }
+            div.onclick = () => openDayModal(s.date);
+            div.id = 'card-' + s.date; 
+            
+            // Логика "Будущее/Прошлое" для цвета денег
+            let isDone = false;
+            let now = new Date();
+            let todayZero = new Date(now); todayZero.setHours(0,0,0,0);
+            let sDateZero = new Date(s.date); sDateZero.setHours(0,0,0,0);
+
+            if (sDateZero < todayZero) {
+                isDone = true; 
+            } else if (sDateZero.getTime() === todayZero.getTime()) {
+                // Если сегодня - проверяем время окончания
+                let parsedT = Logic.parseShift(s.text, s.date);
+                if (parsedT && parsedT.endTimestamp && now > parsedT.endTimestamp) isDone = true;
+            }
+
+            let moneyHTML = ''; 
+            if (res && res.net > 0) { 
+                const moneyClass = isDone ? 'money-val' : 'money-val future'; 
+                moneyHTML = `<div class="${moneyClass}">+${res.net}</div>`; 
+            }
+            
+            let d = new Date(s.date);
+            
+            // Вставляем всё на место
+            div.innerHTML += `
+                <div class="date-box">
+                    <span class="date-day">${d.getDate()}</span>
+                    <span class="date-dow">${d.toLocaleString('ru',{weekday:'short'})}</span>
+                </div>
+                <div class="shift-info">
+                    <div class="shift-title">${title} ${tags}</div>
+                    <div class="shift-sub">${details}</div>
+                </div>
+                <div style="text-align:right">${moneyHTML}</div>`;
+                
+            fragment.appendChild(div);
+        });
+        
+        list.innerHTML = '';
+        list.appendChild(fragment);
+        renderStats();
+
+        setTimeout(() => {
+            list.style.minHeight = ''; 
+            if (targetDate) {
+                const el = document.getElementById('card-' + targetDate);
+                if(el) el.scrollIntoView({block: "center", behavior: "auto"});
+            } 
+            else if (isFirstLoad) {
+                const todayEl = document.querySelector('.shift-card.today');
+                if (todayEl) todayEl.scrollIntoView({ block: "center", behavior: "auto" });
+                isFirstLoad = false; 
+            } else {
+                window.scrollTo(0, scrollPos);
+            }
+        }, 50);
+    }
 
         // Запуск
         init();
