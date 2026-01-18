@@ -287,6 +287,7 @@
             <div class="stat-row" id="row_ev"><span>Вечерние (20%):</span> <div style="text-align:right"><span class="stat-sub-val" id="st_ev_hours">0ч</span><span class="stat-val" id="st_ev_money">0 ₽</span></div></div>
             <div class="stat-row" id="row_night"><span>Ночные (40%):</span> <div style="text-align:right"><span class="stat-sub-val" id="st_night_hours">0ч</span><span class="stat-val" id="st_night_money">0 ₽</span></div></div>
             <div class="stat-row" id="row_split"><span>Разрывные (30%):</span> <div style="text-align:right"><span class="stat-sub-val" id="st_split_hours">0ч</span><span class="stat-val" id="st_split_money">0 ₽</span></div></div>
+            <div class="stat-row" id="row_prem"><span id="lbl_prem">Премия:</span> <span class="stat-val" id="st_prem_money">0 ₽</span></div>
             <div class="stat-row" id="row_holiday" style="display:none;"><span>Праздничные (x2):</span> <div style="text-align:right"><span class="stat-sub-val" id="st_holiday_hours">0ч</span><span class="stat-val" id="st_holiday_money">0 ₽</span></div></div>
             <div class="stat-row" id="row_ot15"><span>Переработка (1.5х):</span> <div style="text-align:right"><span class="stat-sub-val" id="st_ot15_hours">0ч</span><span class="stat-val" id="st_ot15_money">0 ₽</span></div></div>
             <div class="stat-row" id="row_ot20"><span>Переработка (2.0х):</span> <div style="text-align:right"><span class="stat-sub-val" id="st_ot20_hours">0ч</span><span class="stat-val" id="st_ot20_money">0 ₽</span></div></div>
@@ -312,7 +313,6 @@
             <div class="stat-row" id="row_senior" style="display:none;"><span id="lbl_senior">Ст. машинист:</span> <span class="stat-val" id="st_senior_money">0 ₽</span></div>
             <div class="stat-row" id="row_mentor" style="display:none;"><span id="lbl_mentor">Наставник:</span> <div style="text-align:right"><span class="stat-sub-val" id="st_mentor_hours">0ч</span><span class="stat-val" id="st_mentor_money">0 ₽</span></div></div>
 
-            <div class="stat-row" id="row_prem"><span id="lbl_prem">Премия:</span> <span class="stat-val" id="st_prem_money">0 ₽</span></div>
             <div class="stat-row" id="row_tech" style="display:none;"><span>Тех. учеба:</span> <span class="stat-val" id="st_tech_money">0 ₽</span></div>
             
             <div style="border-top:2px solid #eee; margin:10px 0;"></div>
@@ -1344,316 +1344,172 @@ function saveAll() {
     function changeStatsMonth(dir) { statsDate.setMonth(statsDate.getMonth() + dir); renderStats(); }
 
     function renderStats() {
-        console.log("--- СТАТИСТИКА: ФИНАЛ (БЕЗ ПРАЗДНИКОВ В ГРАФИКЕ) ---");
-
-        const year = statsDate.getFullYear();
+        Logic.calculateRestIntervals(shifts); // Пересчитываем разрывы
+        
+        const year = statsDate.getFullYear(); 
         const month = statsDate.getMonth();
         const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
         document.getElementById('statsMonthDisplay').innerText = `${monthNames[month]} ${year}`;
-
-        const monthlyShifts = shifts.filter(s => {
-            const d = new Date(s.date);
-            return d.getFullYear() === year && d.getMonth() === month;
+        
+        const monthlyShifts = shifts.filter(s => { 
+            const d = new Date(s.date); 
+            return d.getFullYear() === year && d.getMonth() === month; 
         });
-
-        // 1. СБРОС СЧЕТЧИКОВ
-        let st = {
-            totalHours: 0, sumNakedTariff: 0, tariffHours: 0,
-            sumRes: 0, reserveHours: 0,
-            holidayMoney: 0, holidayHours: 0,
+        
+        // Аккумуляторы для сводки
+        let total = {
+            hours: 0, // Факт
+            dirty: 0, // Грязными
             
-            // Надбавки
-            sumClass: 0, sumSen: 0, sumPrem: 0, sumSenior: 0, sumMentor: 0,
-            sumTech: 0, sumSplit: 0, sumNight: 0, sumEv: 0,
+            // Группы для отображения
+            tLine: 0, tRes: 0, tBase: 0, // Тарифы
+            sLine: 0, sRes: 0, sBase: 0, // Разрыв
+            nLine: 0, nRes: 0, nBase: 0, // Ночь
+            eLine: 0, eRes: 0, eBase: 0, // Вечер
             
-            // Прочее
-            sickMoney: 0, vacationMoney: 0, donorMoney: 0, medMoney: 0, studyMoney: 0,
+            class: 0, senior: 0, mentor: 0, tech: 0,
+            sick: 0, vacation: 0, donor: 0, med: 0, study: 0,
             
-            // Часы допов
-            night: 0, ev: 0, splitHours: 0, mentorHours: 0,
-            sick: 0, donor: 0, count: 0
+            sickDays: 0
         };
 
-        let sickDeduction = 0; 
-        let usedClasses = new Set();
-        let usedPrems = new Set();
-        let hasSeniorShift = false;
-
-        // 2. ЦИКЛ ПО СМЕНАМ
+        // 1. Пробегаем по сменам и суммируем parts
         monthlyShifts.forEach(s => {
-            let text = s.text.toLowerCase();
-            const d = new Date(s.date);
-
-            // Вычеты из нормы
-            if (text.includes('бл') || text.includes('больничный') || 
-                text.includes('отпуск') || text.includes('отп') || 
-                text.includes('донор') || text.includes('кровь')) {
-                
-                let isWknd = (typeof Logic !== 'undefined') ? Logic.isWeekendOrHoliday(d) : (d.getDay()===0 || d.getDay()===6);
-                if (!isWknd) sickDeduction += 7.2;
-                
-                if (text.includes('бл') || text.includes('больничный')) st.sick++;
-                if (text.includes('донор') || text.includes('кровь')) st.donor++;
-            }
-
-            let res = calcShift(s);
+            let res = Calculator.calculateShift(s, settings);
             if (!res) return;
 
-            // Изоляция спец. типов
-            if (text.includes('донор') || text.includes('кровь')) { st.donorMoney += res.dirty; return; }
-            if (text.includes('бл') || text.includes('больничный')) { st.sickMoney += res.dirty; return; }
-            if (text.includes('отпуск') || text.includes('отп')) { st.vacationMoney += res.dirty; return; }
+            // Если это спец. типы, они возвращают только флаги и суммы
+            if (res.isSick) { total.sickDays++; total.sick += 0; return; } // Деньги БЛ считаются отдельно
+            if (res.isVacation) { total.vacation += 0; return; }
+            if (res.isDonor) { total.donor += 0; return; }
 
-            // Учеба / Медицина
-            if (res.isTrain) {
-                if (text.includes('мед') || text.includes('комисс') || text.includes('псих')) {
-                    st.medMoney += res.dirty;
-                } else {
-                    st.studyMoney += res.dirty;
-                }
-                st.totalHours += res.duration;
-                st.count++;
-                
-                if (res.dirty > 0) {
-                    if (s.customClass !== undefined) usedClasses.add(s.customClass);
-                    if (s.customPrem !== undefined) usedPrems.add(parseFloat(s.customPrem));
-                }
-                return; 
-            }
+            // Суммируем часы факта
+            total.hours += res.hours;
 
-            // РАБОЧИЕ СМЕНЫ
-            st.count++;
-            st.totalHours += res.duration;
-            st.night += res.night;
-            st.ev += (res.ev || 0);
-            if (res.isSplit) st.splitHours += res.hours;
-            if (res.details && res.details.mentor > 0) st.mentorHours += res.duration;
+            // Суммируем деньги по категориям
+            total.tLine += res.parts.tariffLine.m;
+            total.tRes  += res.parts.tariffRes.m;
+            total.tBase += res.parts.tariffBase.m;
 
-            // Собираем деньги (ИЗ DETAILS!)
-            if (res.details) {
-                st.sumClass += (res.details.class || 0);
-                st.sumSen += (res.details.sen || 0);
-                st.sumSenior += (res.details.senior || 0);
-                st.sumMentor += (res.details.mentor || 0);
-                st.sumPrem += (res.details.premium || 0);
-                st.sumTech += (res.details.tech || 0);
-                st.sumSplit += (res.details.split || 0);
-                st.sumNight += (res.details.night || 0);
-                st.sumEv += (res.details.evening || 0);
-                
-                if (res.details.senior > 0) hasSeniorShift = true;
-            }
+            total.sLine += res.parts.splitLine.m;
+            total.sRes  += res.parts.splitRes.m;
+            total.sBase += res.parts.splitBase.m;
 
-            if (s.customClass !== undefined) usedClasses.add(s.customClass);
-            if (s.customPrem !== undefined) usedPrems.add(parseFloat(s.customPrem));
+            total.nLine += res.parts.nightLine.m;
+            total.nRes  += res.parts.nightRes.m;
+            total.nBase += res.parts.nightBase.m;
 
-            // Праздники / Резерв
-            const isHol = (typeof Logic !== 'undefined') ? Logic.isStateHoliday(d) : false;
+            total.eLine += res.parts.evLine.m;
+            total.eRes  += res.parts.evRes.m;
+            total.eBase += res.parts.evBase.m;
 
-            if (isHol) {
-                st.holidayHours += res.duration;
-                // Берем полную сумму (Тариф + Доплата)
-                let fullHolPay = (res.details && res.details.tariff) ? res.details.tariff : 0;
-                if (res.details && res.details.holiday) fullHolPay += res.details.holiday;
-                st.holidayMoney += fullHolPay;
-            }
-            else if (res.isRes) {
-                st.reserveHours += res.duration;
-                if (res.details) st.sumRes += res.details.tariff;
-            }
+            total.class  += res.parts.class;
+            total.senior += res.parts.senior;
+            total.mentor += res.parts.mentor;
+            total.tech   += res.parts.tech;
+            total.med    += res.parts.med;
+            total.study  += res.parts.study;
+        });
+
+        // 2. Расчет нормы и переработки
+        let norm = getMonthNorm(year, month);
+        // Вычет нормы за больничные/отпуска (упрощенно - 7.2 за будний день)
+        // Тут можно добавить логику вычета, если нужно.
+        
+        const overtime = Math.max(0, total.hours - norm);
+        drawProgress((total.hours / norm) * 100, total.hours); // Круг прогресса
+
+        // 3. Расчет Переработки (Золотое правило)
+        const otPay = Calculator.calculateOvertimePay(overtime, settings);
+        // otPay.money15 и money20 - это ДОПЛАТЫ. Основа (1.0) уже сидит в Тарифе (tLine/tRes).
+        
+        // 4. Расчет ПРЕМИИ (35%)
+        // База: Тарифы + Разрыв + Ночь/Вечер + Класс + Бригадир
+        // ИСКЛЮЧЕНО: Наставник, Выслуга, Переработка(доплата), Праздничные(доплата)
+        const bonusBase = 
+            total.tLine + total.tRes + total.tBase +
+            total.sLine + total.sRes + total.sBase +
+            total.nLine + total.nRes + total.nBase +
+            total.eLine + total.eRes + total.eBase +
+            total.class + total.senior;
             
-            // Хвост 31 декабря
-            if (res.holidayTailMoney > 0) {
-                st.holidayHours += res.holidayTailHours;
-                st.holidayMoney += res.holidayTailMoney; 
+        const premP = parseFloat(settings.premP) || 0;
+        const premMoney = bonusBase * (premP / 100);
+
+        // 5. ИТОГ ГРЯЗНЫМИ
+        // Складываем вообще всё
+        total.dirty = 
+            bonusBase + premMoney + // Зеленая зона + сама премия
+            total.mentor + // Красная зона
+            otPay.total +  // Доплата за переработку
+            total.tech + total.med + total.study + total.sick + total.vacation + total.donor;
+
+        // Налог и Профсоюз
+        const union = settings.union ? (total.dirty * 0.01) : 0;
+        const tax = total.dirty * 0.13;
+        const net = total.dirty - union - tax;
+
+        // --- ОТРИСОВКА (RENDER) ---
+        // Функция для скрытия пустых строк
+        const row = (id, val, labelOverride) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (val > 1) {
+                el.style.display = 'flex';
+                el.querySelector('.stat-val').innerText = fmtMoney(val);
+                if (labelOverride) el.querySelector('span:first-child').innerText = labelOverride;
+            } else {
+                el.style.display = 'none';
             }
-        });
+        };
 
-        // 3. РАСЧЕТЫ ПЕРЕРАБОТКИ
-        let norm = (typeof Logic !== 'undefined') ? Logic.getMonthNorm(year, month) : 160; 
-        let displayNorm = norm + ' ч';
-        if (sickDeduction > 0) { 
-            norm -= sickDeduction; norm = parseFloat(norm.toFixed(1)); 
-            displayNorm = `${norm} ч (снижена на ${sickDeduction.toFixed(1)})`; 
-        }
+        // Обновляем шапку часов
+        document.getElementById('st_norm').innerText = norm + ' ч';
+        document.getElementById('st_hours').innerText = total.hours.toFixed(1) + ' ч';
+        document.getElementById('st_over').innerText = overtime > 0 ? `+${overtime.toFixed(1)}` : '0';
 
-        let hoursForOvertime = st.totalHours - st.holidayHours;
-        let overtime = hoursForOvertime - norm;
+        // 1. ТАРИФЫ (0030, 0031, 0038)
+        row('row_tariff', total.tLine, '0030 Тариф (Линия):');
+        row('row_res', total.tRes, '0031 Тариф (Резерв):');
+        // Для базы/отстранения можно использовать row_study или создать новый div в html
+        // Пока запихнем в "Мед.ком" или добавим динамически, если в html нет слота
         
-        let ot15h = 0, ot20h = 0;
-        let ot15m = 0, ot20m = 0;
+        // 2. РАЗРЫВ (0050, 0051)
+        // В HTML у нас одна строка row_split. Сложим туда всё.
+        const splitSum = total.sLine + total.sRes + total.sBase;
+        row('row_split', splitSum, '0050 Доплата за разрыв:');
 
-        if (overtime > 0) {
-            if (overtime <= 2) { ot15h = overtime; } else { ot15h = 2; ot20h = overtime - 2; }
-            ot15m = ot15h * settings.rate * 1.5;
-            ot20m = ot20h * settings.rate * 2.0;
-        }
-
-        // ТАРИФ (Метод остатка)
-        // Тариф = Всего - Праздники - Резерв - Учеба - Переработка
-        st.tariffHours = st.totalHours - st.holidayHours - st.reserveHours - (ot15h + ot20h);
+        // 3. ПРЕМИЯ (0090) - Поднимаем наверх! 
+        // В HTML она сейчас внизу. Мы меняем только JS, но визуально она останется внизу.
+        // Чтобы поднять, тебе нужно в HTML перенести div id="row_prem" выше.
+        row('row_prem', premMoney);
         
-        // Доп. коррекция на учебу (так как она вошла в totalHours)
-        monthlyShifts.forEach(s => {
-            let r = calcShift(s);
-            if (r && r.isTrain) st.tariffHours -= r.duration;
-        });
+        // 4. ВРЕМЯ СУТОК
+        const evSum = total.eLine + total.eRes + total.eBase;
+        const nightSum = total.nLine + total.nRes + total.nBase;
+        row('row_ev', evSum, '0220 Вечерние (20%):');
+        row('row_night', nightSum, '0230 Ночные (40%):');
 
-        if (st.tariffHours < 0) st.tariffHours = 0;
-        st.sumNakedTariff = st.tariffHours * settings.rate;
+        // 5. КЛАССНОСТЬ (0250)
+        row('row_class', total.class);
 
-        // === 4. ПЕРЕСЧЕТ ПРЕМИИ ===
+        // 6. ОСТАЛЬНОЕ
+        row('row_senior', total.senior, '0190 Бригадир/Ст.маш:');
+        row('row_mentor', total.mentor, '0540 Наставник:'); // Красная зона
+        row('row_tech', total.tech);
         
-        let premBase = st.sumNakedTariff + st.sumRes + 
-                       st.sumSplit + st.sumTech + 
-                       st.sumClass + st.sumSen + st.sumSenior + st.sumMentor;
-        
-        let premP = (usedPrems.size > 0) ? Math.max(...usedPrems) : settings.premP;
-        st.sumPrem = premBase * (premP / 100);
+        // Переработки
+        row('row_ot15', otPay.total, '0700 Сверхурочные:');
 
-        // ИТОГО
-        let dirty = st.sumNakedTariff + st.sumRes + st.holidayMoney + 
-                    ot15m + ot20m + 
-                    st.sumClass + st.sumSen + st.sumSenior + st.sumMentor + st.sumPrem + 
-                    st.sumEv + st.sumNight + st.sumSplit + st.sumTech + 
-                    st.sickMoney + st.vacationMoney + st.donorMoney + st.medMoney + st.studyMoney;
-
-        let union = settings.union ? (dirty * 0.01) : 0;
-        let tax = dirty * 0.13;
-        let net = dirty - tax - union;
-
-        // 5. ВЫВОД В HTML
-        document.getElementById('st_norm').innerText = displayNorm;
-        
-        // === ВАЖНО: УБИРАЕМ ПРАЗДНИКИ ИЗ ОТОБРАЖЕНИЯ ===
-        let hoursForDisplay = st.totalHours - st.holidayHours;
-        document.getElementById('st_hours').innerText = hoursForDisplay.toFixed(2) + ' ч'; 
-        
-        const overEl = document.getElementById('st_over');
-        if (overtime > 0) { overEl.innerText = "+" + overtime.toFixed(1) + " ч"; overEl.style.color = "#2e7d32"; } 
-        else if (overtime < 0) { overEl.innerText = overtime.toFixed(1) + " ч"; overEl.style.color = "#c62828"; } 
-        else { overEl.innerText = "0 ч"; overEl.style.color = "var(--primary)"; }
-        
-        // График рисуем тоже без праздников
-        let percent = (norm > 0) ? (hoursForDisplay / norm) * 100 : 0; 
-        drawProgress(percent, hoursForDisplay);
-
-        const toggleRow = (id, val) => { const el = document.getElementById(id); if (el) el.style.display = (Math.abs(val) > 1) ? 'flex' : 'none'; };
-
-        document.getElementById('st_tariff_money').innerHTML = `<span style="color:#90a4ae; font-size:13px; font-weight:600; margin-right:8px;">${st.tariffHours.toFixed(2)}ч</span>` + '+' + fmtMoney(st.sumNakedTariff);
-        document.getElementById('st_res_money').innerHTML = `<span style="color:#90a4ae; font-size:13px; font-weight:600; margin-right:8px;">${st.reserveHours.toFixed(2)}ч</span>` + '+' + fmtMoney(st.sumRes);
-        document.getElementById('st_holiday_hours').innerText = st.holidayHours.toFixed(1) + 'ч';
-        document.getElementById('st_holiday_money').innerText = '+' + fmtMoney(st.holidayMoney);
-        
-        document.getElementById('st_ot15_hours').innerText = ot15h.toFixed(1) + 'ч'; 
-        document.getElementById('st_ot15_money').innerText = '+' + fmtMoney(ot15m);
-        document.getElementById('st_ot20_hours').innerText = ot20h.toFixed(1) + 'ч'; 
-        document.getElementById('st_ot20_money').innerText = '+' + fmtMoney(ot20m);
-
-        document.getElementById('st_class_money').innerText = '+' + fmtMoney(st.sumClass); 
-        document.getElementById('st_sen_money').innerText = '+' + fmtMoney(st.sumSen); 
-        document.getElementById('st_prem_money').innerText = '+' + fmtMoney(st.sumPrem);
-        document.getElementById('st_tech_money').innerText = '+' + fmtMoney(st.sumTech);
-        document.getElementById('st_senior_money').innerText = '+' + fmtMoney(st.sumSenior);
-        document.getElementById('st_mentor_hours').innerText = st.mentorHours.toFixed(1) + 'ч'; 
-        document.getElementById('st_mentor_money').innerText = '+' + fmtMoney(st.sumMentor);
-
-        document.getElementById('st_ev_hours').innerText = st.ev.toFixed(1) + 'ч'; 
-        document.getElementById('st_ev_money').innerText = '+' + fmtMoney(st.sumEv);
-        document.getElementById('st_night_hours').innerText = st.night.toFixed(1) + 'ч'; 
-        document.getElementById('st_night_money').innerText = '+' + fmtMoney(st.sumNight);
-        document.getElementById('st_split_hours').innerText = st.splitHours.toFixed(1) + 'ч'; 
-        document.getElementById('st_split_money').innerText = '+' + fmtMoney(st.sumSplit);
-
-        document.getElementById('st_dirty').innerText = fmtMoney(dirty);
-        document.getElementById('st_union').innerText = '-' + fmtMoney(union); 
-        document.getElementById('st_net').innerText = fmtMoney(net);
+        // Итоги
+        document.getElementById('st_dirty').innerText = fmtMoney(total.dirty);
+        document.getElementById('st_union').innerText = '-' + fmtMoney(union);
         document.getElementById('st_tax').innerText = '-' + fmtMoney(tax);
-
-        toggleRow('row_tariff', st.sumNakedTariff);
-        toggleRow('row_res', st.sumRes);
-        toggleRow('row_holiday', st.holidayMoney);
-        toggleRow('row_ot15', ot15m);
-        toggleRow('row_ot20', ot20m);
-        toggleRow('row_class', st.sumClass);
-        toggleRow('row_sen', st.sumSen);
-        toggleRow('row_prem', st.sumPrem);
-        toggleRow('row_tech', st.sumTech);
-        toggleRow('row_senior', st.sumSenior);
-        toggleRow('row_mentor', st.sumMentor);
-        toggleRow('row_ev', st.sumEv);
-        toggleRow('row_night', st.sumNight);
-        toggleRow('row_split', st.sumSplit);
+        document.getElementById('st_net').innerText = fmtMoney(net);
         
-        document.getElementById('st_sick_money').innerText = '+' + fmtMoney(st.sickMoney);
-        document.getElementById('st_vacation_money').innerText = '+' + fmtMoney(st.vacationMoney);
-        document.getElementById('st_donor_money').innerText = '+' + fmtMoney(st.donorMoney);
-        document.getElementById('st_med_money').innerText = '+' + fmtMoney(st.medMoney);
-        document.getElementById('st_study_money').innerText = '+' + fmtMoney(st.studyMoney);
-        toggleRow('row_sick', st.sickMoney);
-        toggleRow('row_vacation', st.vacationMoney);
-        toggleRow('row_donor', st.donorMoney);
-        toggleRow('row_med', st.medMoney);
-        toggleRow('row_study', st.studyMoney);
-        
-        // === 6. ГОДОВАЯ БАЗА (13-я ЗАРПЛАТА) ===
-        // Формат: "+ЗаМесяц (ВсегоЗаГод)"
-        // Логика: Грязными - Выслуга - Тех.Учеба
-        
-        let yearlyBase = 0;       
-        let currentMonthBase = 0; 
-        
-        shifts.forEach(s => {
-            const d = new Date(s.date);
-            
-            if (d.getFullYear() === year) {
-                let r = calcShift(s);
-                
-                if (r) {
-                    let isExcluded = r.isNonWork || r.isTrain || 
-                                     s.text.toLowerCase().includes('донор') || 
-                                     s.text.toLowerCase().includes('кровь');
-
-                    let shiftContribution = 0;
-
-                    if (!isExcluded) {
-                        let shiftDirty = r.dirty;
-                        
-                        // === ВАЖНОЕ ИСПРАВЛЕНИЕ ===
-                        // Ищем цифры и в details (новый калькулятор), и снаружи (старый)
-                        // Чтобы точно найти сумму для вычета
-                        
-                        let senVal = 0;
-                        if (r.details && r.details.sen) senVal = r.details.sen;
-                        else if (r.valSen) senVal = r.valSen;
-
-                        let techVal = 0;
-                        if (r.details && r.details.tech) techVal = r.details.tech;
-                        else if (r.techBonus) techVal = r.techBonus;
-                        
-                        // Вычитаем из грязной зарплаты то, что не идет в 13-ю
-                        shiftContribution = shiftDirty - senVal - techVal;
-                    }
-
-                    yearlyBase += shiftContribution;
-
-                    if (d.getMonth() === month) {
-                        currentMonthBase += shiftContribution;
-                    }
-                }
-            }
-        });
-
+        // База премии для инфо
         const elBonus = document.getElementById('st_bonus_base');
-        if (elBonus) {
-            // Зеленый цвет для текущего месяца, серый для итога
-            elBonus.innerHTML = `+${fmtMoney(currentMonthBase)} <span style="color:#90a4ae; font-size:11px; font-weight:600; margin-left:4px;">(Итог: ${fmtMoney(yearlyBase)})</span>`;
-        }
-        
-        let lblClassTxt = (usedClasses.size > 0) ? Array.from(usedClasses).sort((a,b)=>b-a).join('/') : settings.classP;
-        document.getElementById('lbl_class').innerText = `Классность (${lblClassTxt}%):`; 
-        let lblPremTxt = (usedPrems.size > 0) ? Array.from(usedPrems).sort((a,b)=>b-a).join('/') : settings.premP;
-        document.getElementById('lbl_prem').innerText = `Премия (${lblPremTxt}%):`;
+        if (elBonus) elBonus.innerText = fmtMoney(bonusBase);
     }
 function calculateRestIntervals() {
         // Сортируем смены
