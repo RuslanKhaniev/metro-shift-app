@@ -459,6 +459,23 @@
     rate: 546.18, classP: false, premP: 35, mentor: false, senior: false, 
     startDate: "", union: true, sickData: {}, sickPercent: 100 
     };
+    
+// --- НОВАЯ ФУНКЦИЯ: ЯДРО СТАВОК (STEP 1) ---
+function getRates(inputRate) {
+    // Защита от дурака
+    let lineRate = (inputRate > 0) ? inputRate : 546.18; // Стандарт, если 0
+
+    // Математика из Блока 2 [cite: 28, 29]
+    let surfaceRate = lineRate / 1.12;       // Базовая (Поверхность)
+    let reserveRate = surfaceRate * 1.08;    // Резерв
+
+    return {
+        line: lineRate,
+        surface: surfaceRate,
+        reserve: reserveRate
+    };
+}
+
     // --- 1. НОВАЯ ПЕРЕМЕННАЯ ДЛЯ МЕТАДАННЫХ ---
 let syncMeta = JSON.parse(localStorage.getItem('metro_sync_meta')) || {};
 
@@ -1646,20 +1663,31 @@ function isOnlyStateHoliday(dateObj) {
         const timeData = getShiftTimeData(text, isPostTrip);
         if (!timeData) return null; 
 
-        // 1. СТРАТЕГИЯ СТАВОК
-        let profileRate = (shift.customRate !== undefined) ? safeFloat(shift.customRate) : settings.rate;
-        if (profileRate === 0) profileRate = 546.18;
+        // === STEP 1: НОВАЯ ЛОГИКА СТАВОК ===
+        // Получаем введенную ставку (Линия)
+        let inputRate = (shift.customRate !== undefined) ? safeFloat(shift.customRate) : settings.rate;
         
-        let bareRate = profileRate / 1.12;       
-        let reserveRate = bareRate * 1.08;       
+        // Считаем все три тарифа через новую функцию [cite: 4]
+        const rates = getRates(inputRate);
+
+        // Определяем ставку для ТЕКУЩЕЙ смены (Принцип соответствия )
+        let mainRate = rates.line; // По умолчанию - Линия
+
+        if (isMedical) {
+            // Отстранение/Мед -> Поверхность (База) [cite: 6]
+            mainRate = rates.surface; 
+        } else if (text.includes('рез')) {
+            // Резерв -> Ставка Резерва [cite: 6]
+            mainRate = rates.reserve;
+        } else {
+            // Линия -> Ставка Линии [cite: 5]
+            mainRate = rates.line;
+        }
         
-        // ЛОГИКА СТАВКИ:
-        // Если это Отстранение - берем ГОЛУЮ ставку (bareRate).
-        // Если обычный резерв - берем ставку резерва (reserveRate).
-        let effectiveResRate = isMedical ? bareRate : reserveRate;
-        
-        // Применяем ставку
-        let mainRate = isRes ? effectiveResRate : profileRate; 
+        // Сохраняем "голую" ставку и профильную для совместимости с остальным кодом
+        let bareRate = rates.surface; 
+        let profileRate = rates.line;
+        // ==================================== 
 
         // 2. АНАЛИЗ ВРЕМЕНИ
         let segTP = getSegmentBonusHours(shift.tpStart, shift.tpEnd);
@@ -2085,99 +2113,83 @@ function isOnlyStateHoliday(dateObj) {
             }
         }
 
-        // --- 1. ФИНАЛЬНЫЙ РАСЧЕТ ЧАСОВ ПО ТАРИФУ (Код 0030) ---
-        // Логика: (Отработано без праздников) - (Часы резерва) - (Часы переработки) = Чистый Тариф
+        // === STEP 2 (ИСПРАВЛЕННЫЙ): ФИНАЛЬНЫЙ РАСЧЕТ (ЗЕЛЕНАЯ И КРАСНАЯ ЗОНЫ) ===
+        
+        // 1. ПЕРЕРАБОТКА (Золотое правило: всегда Ставка Линии)
+        let lineRate = settings.rate; // Ставка Линии (546.18)
+        let premPercent = (usedPrems.size > 0) ? Math.max(...usedPrems) : settings.premP;
+
+        // Считаем часы переработки (Код 0720 / 0730)
         let hoursForTariff = st.hours - st.resHours; 
+        if (overtime > 0) hoursForTariff -= overtime; // Вынимаем переработку из тарифа
+        st.tariffHours = hoursForTariff; 
+
+        // Расчет денег за переработку
         if (overtime > 0) {
-            hoursForTariff -= overtime;
-        }
-        st.tariffHours = hoursForTariff; // Записываем результат (должно получиться 133.90)
-
-        st.sumNakedTariff = st.tariffHours * settings.rate;
-        // --- ФИНАЛЬНАЯ ФИКСАЦИЯ НАДБАВОК (ПЕРЕОПРЕДЕЛЕНИЕ) ---
-
-        // 1. Объявляем часы для пересчета (OT Total = 16.6 ч)
-        const OT_TOTAL_HOURS = st.ot15Hours + st.ot20Hours; 
-        const OT_BASE_0720 = OT_TOTAL_HOURS; // Код 0720 = OT Total (16.6ч)
-
-        // 2. Считаем БАЗУ В ЧАСАХ (173.83 ч) по формуле, которую ты вычислил:
-        const BONUS_HOURS_BASE = st.tariffHours + st.resHours + OT_TOTAL_HOURS + OT_BASE_0720 + st.holidayHours - 1; 
-
-        // 3. Считаем БАЗУ В ДЕНЬГАХ (90,421.20 ₽)
-        const BONUS_BASE_MONEY = BONUS_HOURS_BASE * settings.rate; 
-
-        // 4. ПЕРЕОПРЕДЕЛЯЕМ ФИНАЛЬНЫЕ СУММЫ (OVERRIDE)
-        let pClass = settings.classP;
-        let pSen = getSeniorityPercent(settings.startDate);
-        let hasSenior = settings.senior || false; 
-
-        st.sumClass = BONUS_BASE_MONEY * (pClass / 100);    
-        st.sumSen = BONUS_BASE_MONEY * (pSen / 100);        
-        st.sumSenior = hasSenior ? (BONUS_BASE_MONEY * 0.10) : 0;
-
-        // ========================================================================
-        // ФИНАЛЬНЫЙ ПЕРЕСЧЕТ (Fix v2.0)
-        // Логика: Пересчитываем надбавки от Полной Базы, чтобы не штрафовать за Резерв
-        // ========================================================================
-        
-        // 1. Считаем Базу Часов по твоей формуле
-        let totalOvertime = st.ot15Hours + st.ot20Hours;
-        
-        // Формула переработки для базы: "Часы + Часы - 1"
-        let otPartForBase = 0;
-        if (totalOvertime > 0) {
-            otPartForBase = totalOvertime + totalOvertime - 1;
+            if (overtime <= 2) {
+                st.ot15Hours = overtime;
+                st.ot15Money = overtime * lineRate * 1.5; 
+            } else {
+                st.ot15Hours = 2;
+                st.ot15Money = 2 * lineRate * 1.5;
+                st.ot20Hours = overtime - 2;
+                st.ot20Money = st.ot20Hours * lineRate * 2.0; 
+            }
         }
 
-        // Собираем часы: Линия + Резерв + Праздники + Переработка(по хитрой формуле)
-        let bonusBaseHours = st.tariffHours + st.resHours + st.holidayHours + otPartForBase;
-
-        // 2. Считаем БАЗУ В ДЕНЬГАХ (Используем ставку 12% из профиля)
-        let fullBaseMoney = bonusBaseHours * settings.rate;
-
-        // 3. ПЕРЕЗАПИСЫВАЕМ БОНУСЫ (Используем знак =, чтобы не задвоилось)
+        // 2. СБОРКА ЗЕЛЕНОЙ ЗОНЫ (БАЗА ДЛЯ ПРЕМИИ 35%)
+        // Сюда входит только то, что перечислено в Зеленой зоне ТЗ
         
-        // Классность
-        if (usedClasses.size > 0) {
-             let maxClass = Math.max(...usedClasses); 
-             st.sumClass = fullBaseMoney * (maxClass / 100);
-        } else if (settings.classP > 0) {
-             st.sumClass = fullBaseMoney * (settings.classP / 100);
-        }
+        // А. Тарифная часть
+        let baseTariffSum = st.sumNakedTariff + st.sumRes;
+        
+        // Б. Условия труда
+        let conditionsSum = st.splitBonus + st.evBonus + st.nightBonus;
+        
+        // В. Квалификация (0250) и Руководство (0190)
+        // Важно: Считаем от полной базы часов по ставке линии
+        let fullBaseMoney = (st.tariffHours + st.resHours + st.ot15Hours + st.ot20Hours + st.holidayHours) * lineRate;
+        
+        let pClass = (usedClasses.size > 0) ? Math.max(...usedClasses) : settings.classP;
+        st.sumClass = fullBaseMoney * (pClass / 100);
 
-        // Выслуга
-        let userSen = getSeniorityPercent(settings.startDate);
-        st.sumSen = fullBaseMoney * (userSen / 100);
-
-        // Ст. Машинист
         let isSeniorTotal = settings.senior || hasSeniorShift;
-        if (isSeniorTotal) {
-             st.sumSenior = fullBaseMoney * 0.10;
+        st.sumSenior = isSeniorTotal ? (fullBaseMoney * 0.10) : 0;
+
+        // ВЫСЛУГУ ЗДЕСЬ НЕ СЧИТАЕМ В БАЗУ! ОНА В КРАСНОЙ ЗОНЕ.
+        let pSen = (usedSens.size > 0) ? Math.max(...usedSens) : getSeniorityPercent(settings.startDate);
+        st.sumSen = fullBaseMoney * (pSen / 100);
+
+        // Г. Переработка (Входит в базу премии ПОЛНОСТЬЮ! Коды 0700, 0720, 0730)
+        let overtimeSum = st.ot15Money + st.ot20Money;
+
+        // Д. Праздники (Только одинарная часть - код 0750)
+        let holidaySinglePart = st.holidayHours * lineRate;
+
+        // == ИТОГО БАЗА ПРЕМИИ (ЗЕЛЕНАЯ ЗОНА) ==
+        // Убрали st.sumSen отсюда!
+        let greenZoneBase = baseTariffSum + conditionsSum + st.sumClass + st.sumSenior + overtimeSum + holidaySinglePart;
+        
+        // 3. РАСЧЕТ ПРЕМИИ
+        st.sumPrem = greenZoneBase * (premPercent / 100);
+
+        // 4. КРАСНАЯ ЗОНА (ИСКЛЮЧЕНИЯ)
+        // Эти суммы просто прибавляются к зарплате, премия на них НЕ идет
+        let redZoneSum = 
+            st.sumSen +         // <--- ВЫСЛУГА ТЕПЕРЬ ТУТ (Код 0770)
+            st.sumMentor +      // Наставничество (Код 0540)
+            st.techBonus +      // Тех. учеба (Код 0270)
+            st.holidayMoney +   // Доплата за праздники (Вторая половина, код 0760)
+            st.sickMoney + st.vacationMoney + st.donorMoney + st.medMoney + st.studyMoney;
+
+        // 5. ФИНАЛЬНАЯ СУММА
+        st.dirty = greenZoneBase + st.sumPrem + redZoneSum;
+        
+        // Коррекция для праздников (вычитаем одинарную часть, так как она уже в greenZoneBase, 
+        // а в st.holidayMoney лежит полная двойная сумма)
+        if (st.holidayHours > 0) {
+             st.dirty -= holidaySinglePart; 
         }
-        
-        // Наставник (не трогаем, он считается только от факта езды)
-        // st.sumMentor остается как был
-
-        // 4. ПЕРЕСЧИТЫВАЕМ ПРЕМИЮ
-        // ИСПРАВЛЕНИЕ: Берем не st.holidayMoney (грязные), а чистую базу (Часы * Ставка)
-        let holidayBaseForPrem = st.holidayHours * settings.rate;
-
-
-        let realTariffSum = st.sumNakedTariff + st.sumRes + st.ot15Money + st.ot20Money + holidayBaseForPrem;
-        
-        let premBase = realTariffSum + st.sumClass + st.sumSen + st.sumSenior + st.sumMentor;
-        
-        let premP = (usedPrems.size > 0) ? Math.max(...usedPrems) : settings.premP;
-        st.sumPrem = premBase * (premP / 100);
-
-        // 5. ПЕРЕСЧИТЫВАЕМ ИТОГОВОЕ НАЧИСЛЕНИЕ (DIRTY)
-        // Собираем всё заново, чтобы старые расчеты стерлись
-        st.dirty = premBase + st.sumPrem + 
-                   st.evBonus + st.nightBonus + st.splitBonus + st.techBonus + 
-                   st.sickMoney + st.vacationMoney + st.donorMoney + st.medMoney + st.studyMoney;
-
-        // ========================================================================
-
         // --- КОНЕЦ ПЕРЕСЧЕТА ---
 
         let yearlyIncomeBefore = 0;
@@ -2242,7 +2254,7 @@ function isOnlyStateHoliday(dateObj) {
                         txt.includes('псих') || txt.includes('освид')) {
                         deduction = r.dirty;
                     } else {
-                        deduction = (r.valSen || 0) + (r.techBonus || 0);
+                        deduction = (r.valSen || 0);
                     }
                     cumulativeBase += (r.dirty - deduction);
                 }
