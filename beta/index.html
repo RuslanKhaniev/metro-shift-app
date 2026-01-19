@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ГрафикБро v1.0</title>
+    <title>ГрафикБро v1.2</title>
 
     <script type="text/javascript" >
        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
@@ -375,7 +375,7 @@
                 Поддержать
             </button>
         </div>
-        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">ГрафикБро v1.1 (Stable)</div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">ГрафикБро v1.2 (Test 1)</div>
     </div>
 
     
@@ -543,15 +543,37 @@ function getMonthKey(dateStr) {
     }
     
     function saveSettings() {
-        settings.rate = safeFloat(document.getElementById('set_rate').value);
+        // 1. Читаем СТАВКУ
+        let rawRate = document.getElementById('set_rate').value;
+        // safeFloat превратит "546,18" в 546.18
+        settings.rate = safeFloat(rawRate);
+
+        // 2. Читаем КЛАСС
         settings.classP = parseInt(document.getElementById('set_class').value);
-        settings.premP = safeFloat(document.getElementById('set_prem').value);
+
+        // 3. Читаем ПРЕМИЮ
+        let rawPrem = document.getElementById('set_prem').value;
+        settings.premP = safeFloat(rawPrem);
+
+        // 4. Читаем ЧЕКБОКСЫ
         settings.mentor = document.getElementById('set_mentor').checked;
         settings.senior = document.getElementById('set_senior').checked;
-        settings.startDate = document.getElementById('set_start_date').value;
         settings.union = document.getElementById('set_union').checked;
+
+        // 5. Читаем ДАТУ
+        settings.startDate = document.getElementById('set_start_date').value;
+
+        // 6. ОБНОВЛЯЕМ ВРЕМЯ ИЗМЕНЕНИЯ (Для облака)
         touchMeta('metro_settings');
+        
+        // 7. СОХРАНЯЕМ В ПАМЯТЬ ТЕЛЕФОНА НЕМЕДЛЕННО
+        localStorage.setItem('metro_settings', JSON.stringify(settings));
+        
+        // Обновляем отображение стажа
         calcExpDisplay();
+        
+        // Пробуем отправить в облако (в тихом режиме)
+        saveAllToCloud();
     }
 
     let touchStartX = 0;
@@ -728,9 +750,9 @@ function getMonthKey(dateStr) {
             localStorage.setItem('metro_shifts', JSON.stringify(shifts));
         }
 
-        normalizeShifts(); 
+        normalizeShifts();
+        updateUI();
         render(); 
-        updateUI(); 
         tg.ready(); 
         tg.expand();
         if (typeof ym !== 'undefined' && tg.initDataUnsafe && tg.initDataUnsafe.user) {
@@ -1055,13 +1077,31 @@ function saveAll() {
     function normalizeShifts() { shifts = shifts.map(s => normalizeOne(s)); }
 
     function updateUI() {
-        document.getElementById('set_rate').value = String(settings.rate).replace('.',',');
-        document.getElementById('set_class').value = settings.classP;
-        document.getElementById('set_prem').value = String(settings.premP).replace('.',',');
-        document.getElementById('set_mentor').checked = settings.mentor;
-        document.getElementById('set_senior').checked = settings.senior || false;
+        // 1. Восстанавливаем СТАВКУ
+        // Если ставки нет или она 0 — показываем пустоту или 546.18, если это дефолт
+        let showRate = settings.rate;
+        if (!showRate) showRate = ''; 
+        // Заменяем точку на запятую для красоты
+        document.getElementById('set_rate').value = String(showRate).replace('.', ',');
+
+        // 2. Восстанавливаем КЛАСС
+        // Если настройки нет, ставим 0
+        document.getElementById('set_class').value = settings.classP || 0;
+
+        // 3. Восстанавливаем ПРЕМИЮ
+        let showPrem = settings.premP;
+        if (!showPrem && showPrem !== 0) showPrem = ''; // Если undefined, делаем пустой строкой
+        document.getElementById('set_prem').value = String(showPrem).replace('.', ',');
+
+        // 4. Восстанавливаем ЧЕКБОКСЫ
+        document.getElementById('set_mentor').checked = (settings.mentor === true);
+        document.getElementById('set_senior').checked = (settings.senior === true);
+        document.getElementById('set_union').checked = (settings.union !== false); // По умолчанию true
+
+        // 5. Восстанавливаем ДАТУ ТРУДОУСТРОЙСТВА
         document.getElementById('set_start_date').value = settings.startDate || "";
-        document.getElementById('set_union').checked = settings.union !== false;
+        
+        // Обновляем текст стажа
         calcExpDisplay();
     }
 
