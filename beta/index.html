@@ -1795,19 +1795,21 @@ function isOnlyStateHoliday(dateObj) {
         }
 
         // 4. ИТОГО (ГРЯЗНЫМИ)
-        // Формула: (База премии) + (Премия) + (Доплата за праздник, которой нет в базе) + (Ночные/Вечерние/Прочее)
         
-        // Сначала берем Базу и Премию
+        // Сначала берем Базу (Зеленую зону) и Премию с неё
         let finalDirty = baseForPremShift + actualPremium;
         
-        // Если это праздник, то в baseForPremShift лежит только половина тарифа.
-        // Вторую половину (доплату) нужно вернуть в итоговую сумму руками:
+        // Если это праздник, возвращаем вторую половинку тарифа (доплату)
         if (isWorkHoliday) {
             finalDirty += (nakedTariff / 2);
         }
 
-        // Докидываем остальные надбавки
+        // Докидываем остальные надбавки (Ночные, Вечерние, Тех.учебу)
         finalDirty += evMoney + nightMoney + bonuses.tech + nyMoney;
+
+        // !!! ВАЖНО: ВОЗВРАЩАЕМ КРАСНУЮ ЗОНУ !!!
+        // Мы исключили их из базы премии, но в зарплату они должны войти!
+        finalDirty += bonuses.sen + bonuses.mentor;
 
         let finalForAvg = finalDirty;
         if (isAvgCalc && isWorkHoliday) {
