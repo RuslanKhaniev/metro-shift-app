@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ГрафикБро v1.2</title>
+    <title>ГрафикБро v1.3</title>
 
     <script type="text/javascript" >
        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
@@ -349,7 +349,7 @@
         Поддержать
     </button>
 </div>
-        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">ГрафикБро v1.2 (Clean)</div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">ГрафикБро v1.3 (Clean)</div>
     </div>
 
     
@@ -1753,8 +1753,16 @@ function isOnlyStateHoliday(dateObj) {
         // 1. Для расчета ПРЕМИИ берем только ОДИНАРНЫЙ тариф (даже если праздник)
         let tariffForPrem = isWorkHoliday ? (nakedTariff / 2) : nakedTariff;
 
-        // 2. Собираем базу, на которую накрутится 35%
-        let baseForPremShift = tariffForPrem + bonuses.class + bonuses.sen + bonuses.senior + bonuses.mentor + bonuses.split;
+        // 2. Сборка БАЗЫ для премии (Зеленая зона) [cite: 42]
+        let baseForPremShift = 0;
+        baseForPremShift += tariffForPrem;     // Тариф (G19 в Excel)
+        baseForPremShift += bonuses.class;     // Классность (G24 в Excel) [cite: 46]
+        baseForPremShift += bonuses.senior;    // Бригадир/Ст. маш (G23 в Excel) [cite: 46]
+        baseForPremShift += bonuses.split;     // Разрывная (G21 в Excel) 
+        baseForPremShift += evMoney;           // Вечерние (Код 0220) [cite: 45]
+        baseForPremShift += nightMoney;        // Ночные (G22 в Excel) [cite: 45]
+
+        // ⚠️ ВАЖНО: Выслуга (bonuses.sen) и Наставник (bonuses.mentor) СЮДА НЕ ВХОДЯТ
         
         // 3. Считаем саму премию
         bonuses.premPercent = (shift.customPrem !== undefined) ? safeFloat(shift.customPrem) : settings.premP;
@@ -1766,20 +1774,18 @@ function isOnlyStateHoliday(dateObj) {
             nyMoney = holidayTail * profileRate; 
         }
 
-        // 4. ИТОГО (ГРЯЗНЫМИ)
-        // Формула: (База премии) + (Премия) + (Доплата за праздник, которой нет в базе) + (Ночные/Вечерние/Прочее)
-        
-        // Сначала берем Базу и Премию
-        let finalDirty = baseForPremShift + actualPremium;
-        
-        // Если это праздник, то в baseForPremShift лежит только половина тарифа.
-        // Вторую половину (доплату) нужно вернуть в итоговую сумму руками:
-        if (isWorkHoliday) {
-            finalDirty += (nakedTariff / 2);
-        }
+        // 4. Сборка ИТОГОВОЙ СУММЫ (Грязными) [cite: 55]
+        let finalDirty = baseForPremShift + actualPremium; // База + Премия
 
-        // Докидываем остальные надбавки
-        finalDirty += evMoney + nightMoney + bonuses.tech + nyMoney;
+        // 5. Добавляем "КРАСНУЮ ЗОНУ" (То, что не вошло в базу премии)
+        finalDirty += bonuses.sen;      // Выслуга лет (Код 0770) 
+        finalDirty += bonuses.mentor;   // Наставничество (Код 0540) 
+        
+        if (isWorkHoliday) {
+            finalDirty += (nakedTariff / 2); // Вторая половинка праздничных (Код 0760) [cite: 51]
+        }
+        
+        finalDirty += bonuses.tech;     // Тех. учеба [cite: 51]
 
         let finalForAvg = finalDirty;
         if (isAvgCalc && isWorkHoliday) {
