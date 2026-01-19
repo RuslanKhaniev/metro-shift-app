@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ГрафикБро v1.7</title>
+    <title>ГрафикБро v1.8</title>
 
     <script type="text/javascript" >
        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
@@ -349,7 +349,7 @@
         Поддержать
     </button>
 </div>
-        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">ГрафикБро v1.7 (Clean)</div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">ГрафикБро v1.8 (Clean)</div>
     </div>
 
     
@@ -2003,7 +2003,9 @@ function isOnlyStateHoliday(dateObj) {
             
             if (isHol && res.duration > 0) {
                 st.holidayHours += res.duration;
-                st.holidayMoney += res.dirty;
+                // res.tariffMoney в праздники уже содержит (Часы * Ставка * 2)
+                // Причем Ставка правильная (для Резерва - сниженная, для Линии - полная)
+                st.holidayMoney += res.tariffMoney; 
             }
             if (res.holidayTailMoney > 0) {
                 st.holidayHours += res.holidayTailHours;
