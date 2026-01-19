@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ГрафикБро v1.14</title>
+    <title>ГрафикБро v1.15</title>
 
     <script type="text/javascript" >
        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
@@ -350,7 +350,7 @@
         Поддержать
     </button>
 </div>
-        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">ГрафикБро v1.14 (Clean)</div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">ГрафикБро v1.15 (Clean)</div>
     </div>
 
     
@@ -1798,30 +1798,6 @@ function isOnlyStateHoliday(dateObj) {
         let isMentor = (shift.customMentor !== undefined) ? shift.customMentor : settings.mentor;
         let uFee = settings.union ? (finalDirty * 0.01) : 0;
 
-        // === НОВАЯ ЛОГИКА НАСТАВНИКА (Внутри calcShift) ===
-        let validMentorHours = 0;
-        
-        // Считаем ТОЛЬКО если:
-        // 1. Стоит галочка (isMentor)
-        // 2. Нет мед.отвода/отстранения (!isMedical)
-        // 3. Это не Тех.учеба (!isTech) и не УПЦ/Комиссия (!isTrain)
-        if (isMentor && !isMedical && !isTech && !isTrain) {
-            
-            // А. Явное время на линии (если ты заполнил поля "Время на линии")
-            // Это время считается ВСЕГДА, даже если смена называется "Резерв"
-            validMentorHours += lineWorkHours;
-
-            // Б. Основное время смены
-            // Добавляем его, ТОЛЬКО если смена НЕ является Резервом
-            if (!isRes) {
-                validMentorHours += mainHours;
-            }
-            // Если isRes=true (Резерв), то mainHours — это время сидения, за него не платим.
-        }
-
-        // Пересчитываем деньги за наставника начисто (Часы * Ставка * 15%)
-        bonuses.mentor = validMentorHours * settings.rate * 0.15;
-
         return {
             net: Math.round(finalDirty * 0.87 - uFee), 
             dirty: finalForAvg,
@@ -1837,7 +1813,7 @@ function isOnlyStateHoliday(dateObj) {
             splitBonus: bonuses.split, evBonus: evMoney, nightBonus: nightMoney, techBonus: bonuses.tech,
             valClass: bonuses.class, valSen: bonuses.sen, valSenior: bonuses.senior, 
             valMentor: bonuses.mentor, valPrem: actualPremium, 
-            mentorHours: validMentorHours,
+            mentorHours: (isMentor && !isMedical && !isTech) ? (lineWorkHours + (!isRes ? mainHours : 0)) : 0,
             // Передаем эти данные специально для Сводки:
             holidayTailMoney: nyMoney,
             holidayTailHours: holidayTail
@@ -2113,13 +2089,15 @@ function isOnlyStateHoliday(dateObj) {
             st.sumSenior = totalHoursForClass * settings.rate * 0.10; 
         }
 
+        
         // ВЫВОД НАСТАВНИКА НА ЭКРАН
         // (Сами суммы st.sumMentor и часы st.mentorHours уже накопились в цикле выше)
         const elMenHours = document.getElementById('st_mentor_hours');
         const elMenMoney = document.getElementById('st_mentor_money');
         
         if (elMenHours) elMenHours.innerText = st.mentorHours.toFixed(1) + 'ч'; 
-        if (elMenMoney) elMenMoney.innerText = '+' + fmtMoney(st.sumMentor);               
+        if (elMenMoney) elMenMoney.innerText = '+' + fmtMoney(st.sumMentor);
+        
 
         let premBase = fullBaseMoney + st.sumClass + st.sumSen + st.sumSenior + st.sumMentor;
         let premP = (usedPrems.size > 0) ? Math.max(...usedPrems) : settings.premP;
