@@ -1876,7 +1876,6 @@ function isOnlyStateHoliday(dateObj) {
         const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
         document.getElementById('statsMonthDisplay').innerText = `${monthNames[month]} ${year}`;
         
-        // ВАЖНО: Сортируем смены по дате, чтобы "последняя смена" была в конце списка
         const monthlyShifts = shifts
             .filter(s => { const d = new Date(s.date); return d.getFullYear() === year && d.getMonth() === month; })
             .sort((a,b) => new Date(a.date) - new Date(b.date));
@@ -1890,18 +1889,14 @@ function isOnlyStateHoliday(dateObj) {
         let usedPrems = new Set();
         let usedSens = new Set();
         let hasSeniorShift = false;
-
-        // ЖУРНАЛ для запоминания последовательности начислений (чтобы вычитать переработку с конца)
         let hoursLog = [];
 
         monthlyShifts.forEach(s => {
             let text = s.text.toLowerCase();
             const d = new Date(s.date);
-            
-            // Проверка на праздник (чтобы исключить из Резерва)
             const isHol = isOnlyStateHoliday(d);
 
-            // 1. ВЫЧЕТЫ ИЗ НОРМЫ
+            // 1. ВЫЧЕТЫ
             if (text.includes('бл') || text.includes('больничный') || 
                 text.includes('отпуск') || text.includes('отп') || 
                 text.includes('донор') || text.includes('кровь')) {
@@ -1910,7 +1905,7 @@ function isOnlyStateHoliday(dateObj) {
                 if (text.includes('донор') || text.includes('кровь')) st.donor++;
             }
 
-            // 2. БАЗОВЫЙ РАСЧЕТ
+            // 2. РАСЧЕТ
             let res = calcShift(s);
             if (!res) return; 
 
@@ -1927,7 +1922,7 @@ function isOnlyStateHoliday(dateObj) {
                 st.studyMoney += res.dirty;
             }
 
-            // 5. РАСЧЕТ ЧАСОВ И НАДБАВОК
+            // 5. НАКОПЛЕНИЕ
             if (res.dirty > 0) {
                 let factClass = (s.customClass !== undefined) ? s.customClass : settings.classP;
                 usedClasses.add(factClass);
@@ -1941,11 +1936,9 @@ function isOnlyStateHoliday(dateObj) {
             st.count++;
             st.totalFactHours += res.duration; 
             st.hours += res.hours; 
-            
             st.night += res.night;
             st.ev += (res.ev || 0);
             if (res.isRes) st.res++;
-            
             st.dirty += res.dirty; 
             st.splitBonus += (res.splitBonus || 0);
             st.evBonus += (res.evBonus || 0);
@@ -1960,11 +1953,10 @@ function isOnlyStateHoliday(dateObj) {
             st.sumPrem += (res.valPrem || 0);
             st.mentorHours += (res.mentorHours || 0);
 
-            // === ИСПРАВЛЕНИЕ №1: Если Праздник, то НЕ добавляем в Резерв/Тариф ===
+            // === ИСПРАВЛЕННЫЙ БЛОК (Праздники + Часы) ===
             if (!isHol) {
                 if (res.isRes) { 
                     if (res.lineWorkHours > 0) {
-                        // Смешанный (был выезд)
                         st.tariffHours += res.lineWorkHours;
                         let valTariff = res.lineWorkHours * settings.rate;
                         st.sumNakedTariff += valTariff;
@@ -1977,14 +1969,12 @@ function isOnlyStateHoliday(dateObj) {
                         st.sumRes += valRes; 
                         hoursLog.push({ type: 'res', hours: pureResHours, money: valRes });
                     } else {
-                        // Чистый резерв
                         st.sumRes += (res.tariffMoney || 0);
                         st.resHours += res.duration; 
                         hoursLog.push({ type: 'res', hours: res.duration, money: (res.tariffMoney || 0) });
                     }
                 } 
                 else if (!res.isTrain && !res.isTech) { 
-                    // Линия
                     st.sumTariff += (res.tariffMoney || 0); 
                     if (res.tpHours > 0) {
                         st.resHours += res.tpHours;
@@ -1995,12 +1985,14 @@ function isOnlyStateHoliday(dateObj) {
 
                         let pureLineHours = res.hours - res.tpHours;
                         if (pureLineHours > 0) {
+                            st.tariffHours += pureLineHours; // <--- Я ДОБАВИЛ ЭТУ ЗАБЫТУЮ СТРОЧКУ!
                             let val = pureLineHours * settings.rate;
                             st.sumNakedTariff += val; 
                             hoursLog.push({ type: 'tariff', hours: pureLineHours, money: val });
                         }
                     } else {
                         if (res.hours > 0) {
+                            st.tariffHours += res.hours; // <--- И ЭТУ ТОЖЕ!
                             let val = res.hours * settings.rate;
                             st.sumNakedTariff += val; 
                             hoursLog.push({ type: 'tariff', hours: res.hours, money: val });
@@ -2009,7 +2001,6 @@ function isOnlyStateHoliday(dateObj) {
                 }
             }
             
-            // Праздники (как было)
             if (isHol && res.duration > 0) {
                 st.holidayHours += res.duration;
                 st.holidayMoney += res.dirty;
@@ -2029,7 +2020,6 @@ function isOnlyStateHoliday(dateObj) {
             let premRate = settings.premP;
             if(usedPrems.size > 0) premRate = Math.max(...usedPrems);
 
-            // Начисляем деньги за переработку
             if (overtime <= 2) { 
                 st.ot15Hours = overtime; 
                 let base15 = st.ot15Hours * rate * 1.5; 
@@ -2047,23 +2037,15 @@ function isOnlyStateHoliday(dateObj) {
                 st.sumPrem += base20 * (premRate / 100);
             }
             
-            // === ИСПРАВЛЕНИЕ №2: Вычитаем часы переработки С КОНЦА (из последних смен) ===
+            // ВЫЧЕТ ПЕРЕРАБОТКИ С КОНЦА
             let hoursToDeduct = overtime;
-            
-            // Идем с конца журнала назад
             for (let i = hoursLog.length - 1; i >= 0; i--) {
-                if (hoursToDeduct <= 0.001) break; // Всё вычли
-
-                let entry = hoursLog[i]; // запись: {type: 'res'|'tariff', hours: ..., money: ...}
-                
-                // Сколько можно вычесть из этой конкретной записи
+                if (hoursToDeduct <= 0.001) break;
+                let entry = hoursLog[i]; 
                 let ded = Math.min(entry.hours, hoursToDeduct);
-                
-                // Вычисляем цену часа в этой записи (чтобы вычесть правильную сумму денег)
                 let price = (entry.hours > 0) ? (entry.money / entry.hours) : 0;
                 let moneyDed = ded * price;
 
-                // Вычитаем из общих счетчиков
                 if (entry.type === 'tariff') {
                     st.tariffHours -= ded;
                     st.sumNakedTariff -= moneyDed;
@@ -2071,23 +2053,16 @@ function isOnlyStateHoliday(dateObj) {
                     st.resHours -= ded;
                     st.sumRes -= moneyDed;
                 }
-                
                 hoursToDeduct -= ded;
             }
         }
 
-        // ========================================================================
-        // ФИНАЛЬНЫЙ ПЕРЕСЧЕТ ДЕНЕГ
-        // ========================================================================
-        
         let totalOvertime = st.ot15Hours + st.ot20Hours;
         let otBaseMoney = totalOvertime * settings.rate;
         let holidayBaseForPrem = st.holidayHours * settings.rate;
         
-        // Полная база для надбавок
         let fullBaseMoney = st.sumNakedTariff + st.sumRes + otBaseMoney + holidayBaseForPrem;
 
-        // Пересчет надбавок
         if (usedClasses.size > 0) {
              let maxClass = Math.max(...usedClasses); 
              st.sumClass = fullBaseMoney * (maxClass / 100);
@@ -2111,8 +2086,6 @@ function isOnlyStateHoliday(dateObj) {
                    (st.ot15Money - (st.ot15Hours * settings.rate)) + 
                    (st.ot20Money - (st.ot20Hours * settings.rate)) + 
                    (st.holidayMoney - holidayBaseForPrem); 
-
-        // ========================================================================
 
         let yearlyIncomeBefore = 0;
         shifts.forEach(s => {
