@@ -1782,7 +1782,7 @@ function isOnlyStateHoliday(dateObj) {
         let tariffForPrem = isWorkHoliday ? (nakedTariff / 2) : nakedTariff;
 
         // 2. Собираем базу, на которую накрутится 35%
-        let baseForPremShift = tariffForPrem + bonuses.class + bonuses.sen + bonuses.senior + bonuses.mentor + bonuses.split;
+        let baseForPremShift = tariffForPrem + bonuses.class + bonuses.senior + bonuses.split;
         
         // 3. Считаем саму премию
         bonuses.premPercent = (shift.customPrem !== undefined) ? safeFloat(shift.customPrem) : settings.premP;
