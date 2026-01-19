@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ГрафикБро v1.15</title>
+    <title>ГрафикБро v1.16</title>
 
     <script type="text/javascript" >
        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
@@ -350,7 +350,7 @@
         Поддержать
     </button>
 </div>
-        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">ГрафикБро v1.15 (Clean)</div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">ГрафикБро v1.16 (Clean)</div>
     </div>
 
     
@@ -2099,7 +2099,23 @@ function isOnlyStateHoliday(dateObj) {
         if (elMenMoney) elMenMoney.innerText = '+' + fmtMoney(st.sumMentor);
         
 
-        let premBase = fullBaseMoney + st.sumClass + st.sumSen + st.sumSenior + st.sumMentor;
+        // ПРЕМИЯ (Формула из квитка Июнь 2025)
+        // 1. База: Тариф + Резерв + Класс + Ст.маш + Ночь + Вечер + Разрыв
+        let premBase = st.sumNakedTariff + st.sumRes + st.sumClass + st.sumSenior + 
+                       st.nightBonus + st.evBonus + st.splitBonus;
+
+        // 2. Плюс Переработка (ПОЛНОСТЬЮ: и часы, и доплата)
+        premBase += st.ot15Money; // Это 1.5х целиком
+        premBase += st.ot20Money; // Это 2.0х целиком
+
+        // 3. Плюс Праздничные (Только одинарная часть, т.е. тариф)
+        // У нас st.holidayMoney - это двойная сумма. Берем половину.
+        if (st.holidayMoney > 0) {
+            premBase += (st.holidayMoney / 2);
+        }
+
+        // ВЫСЛУГУ (st.sumSen) и НАСТАВНИКА (st.sumMentor) НЕ ВКЛЮЧАЕМ!
+
         let premP = (usedPrems.size > 0) ? Math.max(...usedPrems) : settings.premP;
         st.sumPrem = premBase * (premP / 100);
 
