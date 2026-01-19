@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ГрафикБро v1.11</title>
+    <title>ГрафикБро v1.12</title>
 
     <script type="text/javascript" >
        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
@@ -350,7 +350,7 @@
         Поддержать
     </button>
 </div>
-        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">ГрафикБро v1.11 (Clean)</div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">ГрафикБро v1.12 (Clean)</div>
     </div>
 
     
@@ -2084,7 +2084,9 @@ function isOnlyStateHoliday(dateObj) {
         st.sumSen = totalHoursForClass * settings.rate * (userSen / 100);
 
         let isSeniorTotal = settings.senior || hasSeniorShift;
-        if (isSeniorTotal) { st.sumSenior = fullBaseMoney * 0.10; }
+        if (isSeniorTotal) { 
+            st.sumSenior = totalHoursForClass * settings.rate * 0.10; 
+        }
 
         let premBase = fullBaseMoney + st.sumClass + st.sumSen + st.sumSenior + st.sumMentor;
         let premP = (usedPrems.size > 0) ? Math.max(...usedPrems) : settings.premP;
