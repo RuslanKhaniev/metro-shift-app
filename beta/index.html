@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ГрафикБро v1.4</title>
+    <title>ГрафикБро v1.5</title>
 
     <script type="text/javascript" >
        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
@@ -349,7 +349,7 @@
         Поддержать
     </button>
 </div>
-        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">ГрафикБро v1.4 (Clean)</div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">ГрафикБро v1.5 (Clean)</div>
     </div>
 
     
@@ -1732,10 +1732,7 @@ function isOnlyStateHoliday(dateObj) {
 
         let safeSplit = (isShortBreak || isMedical) ? false : isSplit;
         let safeShift = (isRes || isMedical) ? { ...shift, customMentor: false } : shift;
-        if (isMedical) {
-             safeShift = { ...safeShift, customSenior: false };
-        }
-        
+                
         const bonuses = calculateBonuses(baseForSplit, settings, safeShift, safeSplit, isTech, profileRate);
         
         let fullBaseForBonuses = totalWithGap * profileRate; 
