@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ГрафикБро v1.9</title>
+    <title>ГрафикБро v1.10</title>
 
     <script type="text/javascript" >
        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
@@ -350,7 +350,7 @@
         Поддержать
     </button>
 </div>
-        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">ГрафикБро v1.9 (Clean)</div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">ГрафикБро v1.10 (Clean)</div>
     </div>
 
     
@@ -2066,12 +2066,19 @@ function isOnlyStateHoliday(dateObj) {
         
         let fullBaseMoney = st.sumNakedTariff + st.sumRes + otBaseMoney + holidayBaseForPrem;
 
-        if (usedClasses.size > 0) {
-             let maxClass = Math.max(...usedClasses); 
-             st.sumClass = fullBaseMoney * (maxClass / 100);
-        } else if (settings.classP > 0) {
-             st.sumClass = fullBaseMoney * (settings.classP / 100);
-        }
+        // НОВЫЙ РАСЧЕТ КЛАССНОСТИ (С учетом множителей переработки 1.5 и 2.0)
+        // 1. Обычные часы и праздники берем как 1 к 1
+        let simpleHours = st.tariffHours + st.resHours + st.holidayHours;
+        
+        // 2. Переработку берем с коэффициентами (как в оплате)
+        let otHoursAdjusted = (st.ot15Hours * 1.5) + (st.ot20Hours * 2.0);
+        
+        let totalHoursForClass = simpleHours + otHoursAdjusted;
+        
+        let classPercent = (usedClasses.size > 0) ? Math.max(...usedClasses) : settings.classP;
+        
+        // Считаем: (66.4 ч * Ставка * Процент)
+        st.sumClass = totalHoursForClass * settings.rate * (classPercent / 100);
 
         let userSen = getSeniorityPercent(settings.startDate);
         st.sumSen = fullBaseMoney * (userSen / 100);
