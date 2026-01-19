@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ГрафикБро v1.12</title>
+    <title>ГрафикБро v1.13</title>
 
     <script type="text/javascript" >
        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
@@ -350,7 +350,7 @@
         Поддержать
     </button>
 </div>
-        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">ГрафикБро v1.12 (Clean)</div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">ГрафикБро v1.13 (Clean)</div>
     </div>
 
     
@@ -1881,6 +1881,8 @@ function isOnlyStateHoliday(dateObj) {
             .filter(s => { const d = new Date(s.date); return d.getFullYear() === year && d.getMonth() === month; })
             .sort((a,b) => new Date(a.date) - new Date(b.date));
         
+        let holidayResHours = 0;
+
         let st = { count: 0, hours: 0, night: 0, ev: 0, res: 0, dirty: 0, sick: 0, donor: 0, net: 0, union: 0, tax: 0, splitBonus: 0, evBonus: 0, nightBonus: 0, techBonus: 0, splitHours: 0, sumClass: 0, sumSen: 0, sumPrem: 0, sumSenior: 0, sumMentor: 0, ot15Hours: 0, ot15Money: 0, ot20Hours: 0, ot20Money: 0, mentorHours: 0, 
            holidayHours: 0, holidayMoney: 0, 
            sickMoney: 0, vacationMoney: 0, donorMoney: 0, medMoney: 0, studyMoney: 0, sumTariff: 0, sumRes: 0, tariffHours: 0, resHours: 0, totalFactHours: 0, sumNakedTariff: 0 }; 
@@ -2004,9 +2006,8 @@ function isOnlyStateHoliday(dateObj) {
             
             if (isHol && res.duration > 0) {
                 st.holidayHours += res.duration;
-                // res.tariffMoney в праздники уже содержит (Часы * Ставка * 2)
-                // Причем Ставка правильная (для Резерва - сниженная, для Линии - полная)
-                st.holidayMoney += res.tariffMoney; 
+                st.holidayMoney += res.tariffMoney;
+                if (res.isRes) holidayResHours += res.duration;
             }
             if (res.holidayTailMoney > 0) {
                 st.holidayHours += res.holidayTailHours;
@@ -2087,6 +2088,28 @@ function isOnlyStateHoliday(dateObj) {
         if (isSeniorTotal) { 
             st.sumSenior = totalHoursForClass * settings.rate * 0.10; 
         }
+
+        
+        // НАСТАВНИК (Физические часы минус Весь Резерв)
+        
+        // 1. Берем полный резерв (обычный st.resHours + праздничный holidayResHours)
+        // (holidayResHours мы добавили в начале функции, он уже посчитан)
+        let totalResHours = st.resHours + holidayResHours;
+
+        // 2. Берем st.totalFactHours (это ФИЗИЧЕСКИЕ часы, где переработка = 1.0)
+        //    и вычитаем ВЕСЬ резерв.
+        let mentorHoursBase = Math.max(0, st.totalFactHours - totalResHours);
+        
+        // 3. Считаем 15% от ставки
+        st.sumMentor = mentorHoursBase * settings.rate * 0.15;
+        
+        // 4. Выводим красивые цифры в сводку
+        st.mentorHours = mentorHoursBase;
+        const elMenHours = document.getElementById('st_mentor_hours');
+        const elMenMoney = document.getElementById('st_mentor_money');
+        if (elMenHours) elMenHours.innerText = st.mentorHours.toFixed(1) + 'ч'; 
+        if (elMenMoney) elMenMoney.innerText = '+' + fmtMoney(st.sumMentor);
+        
 
         let premBase = fullBaseMoney + st.sumClass + st.sumSen + st.sumSenior + st.sumMentor;
         let premP = (usedPrems.size > 0) ? Math.max(...usedPrems) : settings.premP;
