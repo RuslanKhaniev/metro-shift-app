@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -325,39 +325,14 @@
     <div id="tab-settings" class="page">
         <div class="card">
             <h3 style="margin-top:0; color:var(--primary)">⚙️ Профиль</h3>
-            
-            <label>Тариф (Основной)</label>
-            <input type="text" inputmode="decimal" id="set_rate" oninput="saveAll()" placeholder="Например: 546.18">
-            
-            <label>Класс квалификации</label>
-            <select id="set_class" onchange="saveAll()">
-                <option value="0">Без класса</option>
-                <option value="30">1 класс (30%)</option>
-                <option value="20">2 класс (20%)</option>
-                <option value="10">3 класс (10%)</option>
-            </select>
-            
-            <label>Дата трудоустройства</label>
-            <input type="date" id="set_start_date" oninput="saveAll()">
+            <label>Тариф (Основной)</label><input type="text" inputmode="decimal" id="set_rate" onchange="saveAll()">
+            <label>Класс квалификации</label><select id="set_class" onchange="saveAll()"><option value="0">Без класса</option><option value="30">1 класс (30%)</option><option value="20">2 класс (20%)</option><option value="10">3 класс (10%)</option></select>
+            <label>Дата трудоустройства</label><input type="date" id="set_start_date" onchange="saveAll()">
             <div style="font-size:13px; color:var(--primary); margin-top:8px; text-align:right; font-weight:600;" id="set_exp_text"></div>
-            
-            <label>Премия (%)</label>
-            <input type="text" inputmode="decimal" id="set_prem" oninput="saveAll()" placeholder="Например: 35">
-            
-            <div style="margin-top:25px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;">
-                <input type="checkbox" id="set_mentor" style="width:24px; height:24px; margin:0;" onchange="saveAll()">
-                <span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Наставник (+15%)</span>
-            </div>
-            
-            <div style="margin-top:10px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;">
-                <input type="checkbox" id="set_senior" style="width:24px; height:24px; margin:0;" onchange="saveAll()">
-                <span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Ст. машинист (+10%)</span>
-            </div>
-            
-            <div style="margin-top:10px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;">
-                <input type="checkbox" id="set_union" style="width:24px; height:24px; margin:0;" onchange="saveAll()">
-                <span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Член профсоюза (-1%)</span>
-            </div>
+            <label>Премия (%)</label><input type="text" inputmode="decimal" id="set_prem" onchange="saveAll()">
+            <div style="margin-top:25px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;"><input type="checkbox" id="set_mentor" style="width:24px; height:24px; margin:0;" onchange="saveAll()"><span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Наставник (+15%)</span></div>
+            <div style="margin-top:10px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;"><input type="checkbox" id="set_senior" style="width:24px; height:24px; margin:0;" onchange="saveAll()"><span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Ст. машинист (+10%)</span></div>
+            <div style="margin-top:10px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;"><input type="checkbox" id="set_union" style="width:24px; height:24px; margin:0;" onchange="saveAll()"><span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Член профсоюза (-1%)</span></div>
             
             <div style="margin-top:30px; padding:15px; background:#fff3e0; border-radius:12px; text-align:center;">
                 <div id="cloudStatus" style="font-size:12px; font-weight:bold; color:#f57c00; margin-bottom:10px;">Статус облака: Проверка...</div>
@@ -365,17 +340,16 @@
                 <div style="font-size:10px; color:#8d6e63; margin-top:5px;">Нажми, если данные на телефоне есть, а на ПК нет.</div>
             </div>
         </div>
-        
         <div class="card" style="background: linear-gradient(135deg, #263238 0%, #37474f 100%); color: white; text-align: center; margin-top: 15px;">
-            <h3 style="margin-top:0; margin-bottom: 8px; color:white; font-size: 16px;">🤝 Развитие проекта</h3>
-            <div style="font-size:12px; opacity:0.8; margin-bottom:15px; line-height: 1.4;">
-                Приложение бесплатное. Если оно помогает в работе — буду благодарен за поддержку.
-            </div>
-            <button onclick="openDonation()" style="background: var(--accent); color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 800; width: 100%; font-size: 14px; box-shadow: 0 4px 15px rgba(255, 171, 0, 0.3);">
-                Поддержать
-            </button>
-        </div>
-        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">ГрафикБро v1.2 (Test 1)</div>
+    <h3 style="margin-top:0; margin-bottom: 8px; color:white; font-size: 16px;">🤝 Развитие проекта</h3>
+    <div style="font-size:12px; opacity:0.8; margin-bottom:15px; line-height: 1.4;">
+        Приложение бесплатное. Если оно помогает в работе — буду благодарен за поддержку (оплата сервера и обновлений).
+    </div>
+    <button onclick="openDonation()" style="background: var(--accent); color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 800; width: 100%; font-size: 14px; box-shadow: 0 4px 15px rgba(255, 171, 0, 0.3);">
+        Поддержать
+    </button>
+</div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">ГрафикБро v1.2 (Clean)</div>
     </div>
 
     
@@ -485,23 +459,6 @@
     rate: 546.18, classP: false, premP: 35, mentor: false, senior: false, 
     startDate: "", union: true, sickData: {}, sickPercent: 100 
     };
-    
-// --- НОВАЯ ФУНКЦИЯ: ЯДРО СТАВОК (STEP 1) ---
-function getRates(inputRate) {
-    // Защита от дурака
-    let lineRate = (inputRate > 0) ? inputRate : 546.18; // Стандарт, если 0
-
-    // Математика из Блока 2 [cite: 28, 29]
-    let surfaceRate = lineRate / 1.12;       // Базовая (Поверхность)
-    let reserveRate = surfaceRate * 1.08;    // Резерв
-
-    return {
-        line: lineRate,
-        surface: surfaceRate,
-        reserve: reserveRate
-    };
-}
-
     // --- 1. НОВАЯ ПЕРЕМЕННАЯ ДЛЯ МЕТАДАННЫХ ---
 let syncMeta = JSON.parse(localStorage.getItem('metro_sync_meta')) || {};
 
@@ -543,37 +500,15 @@ function getMonthKey(dateStr) {
     }
     
     function saveSettings() {
-        // 1. Читаем СТАВКУ
-        let rawRate = document.getElementById('set_rate').value;
-        // safeFloat превратит "546,18" в 546.18
-        settings.rate = safeFloat(rawRate);
-
-        // 2. Читаем КЛАСС
+        settings.rate = safeFloat(document.getElementById('set_rate').value);
         settings.classP = parseInt(document.getElementById('set_class').value);
-
-        // 3. Читаем ПРЕМИЮ
-        let rawPrem = document.getElementById('set_prem').value;
-        settings.premP = safeFloat(rawPrem);
-
-        // 4. Читаем ЧЕКБОКСЫ
+        settings.premP = safeFloat(document.getElementById('set_prem').value);
         settings.mentor = document.getElementById('set_mentor').checked;
         settings.senior = document.getElementById('set_senior').checked;
-        settings.union = document.getElementById('set_union').checked;
-
-        // 5. Читаем ДАТУ
         settings.startDate = document.getElementById('set_start_date').value;
-
-        // 6. ОБНОВЛЯЕМ ВРЕМЯ ИЗМЕНЕНИЯ (Для облака)
+        settings.union = document.getElementById('set_union').checked;
         touchMeta('metro_settings');
-        
-        // 7. СОХРАНЯЕМ В ПАМЯТЬ ТЕЛЕФОНА НЕМЕДЛЕННО
-        localStorage.setItem('metro_settings', JSON.stringify(settings));
-        
-        // Обновляем отображение стажа
         calcExpDisplay();
-        
-        // Пробуем отправить в облако (в тихом режиме)
-        saveAllToCloud();
     }
 
     let touchStartX = 0;
@@ -750,9 +685,9 @@ function getMonthKey(dateStr) {
             localStorage.setItem('metro_shifts', JSON.stringify(shifts));
         }
 
-        normalizeShifts();
-        updateUI();
+        normalizeShifts(); 
         render(); 
+        updateUI(); 
         tg.ready(); 
         tg.expand();
         if (typeof ym !== 'undefined' && tg.initDataUnsafe && tg.initDataUnsafe.user) {
@@ -1077,31 +1012,13 @@ function saveAll() {
     function normalizeShifts() { shifts = shifts.map(s => normalizeOne(s)); }
 
     function updateUI() {
-        // 1. Восстанавливаем СТАВКУ
-        // Если ставки нет или она 0 — показываем пустоту или 546.18, если это дефолт
-        let showRate = settings.rate;
-        if (!showRate) showRate = ''; 
-        // Заменяем точку на запятую для красоты
-        document.getElementById('set_rate').value = String(showRate).replace('.', ',');
-
-        // 2. Восстанавливаем КЛАСС
-        // Если настройки нет, ставим 0
-        document.getElementById('set_class').value = settings.classP || 0;
-
-        // 3. Восстанавливаем ПРЕМИЮ
-        let showPrem = settings.premP;
-        if (!showPrem && showPrem !== 0) showPrem = ''; // Если undefined, делаем пустой строкой
-        document.getElementById('set_prem').value = String(showPrem).replace('.', ',');
-
-        // 4. Восстанавливаем ЧЕКБОКСЫ
-        document.getElementById('set_mentor').checked = (settings.mentor === true);
-        document.getElementById('set_senior').checked = (settings.senior === true);
-        document.getElementById('set_union').checked = (settings.union !== false); // По умолчанию true
-
-        // 5. Восстанавливаем ДАТУ ТРУДОУСТРОЙСТВА
+        document.getElementById('set_rate').value = String(settings.rate).replace('.',',');
+        document.getElementById('set_class').value = settings.classP;
+        document.getElementById('set_prem').value = String(settings.premP).replace('.',',');
+        document.getElementById('set_mentor').checked = settings.mentor;
+        document.getElementById('set_senior').checked = settings.senior || false;
         document.getElementById('set_start_date').value = settings.startDate || "";
-        
-        // Обновляем текст стажа
+        document.getElementById('set_union').checked = settings.union !== false;
         calcExpDisplay();
     }
 
@@ -1729,31 +1646,20 @@ function isOnlyStateHoliday(dateObj) {
         const timeData = getShiftTimeData(text, isPostTrip);
         if (!timeData) return null; 
 
-        // === STEP 1: НОВАЯ ЛОГИКА СТАВОК ===
-        // Получаем введенную ставку (Линия)
-        let inputRate = (shift.customRate !== undefined) ? safeFloat(shift.customRate) : settings.rate;
+        // 1. СТРАТЕГИЯ СТАВОК
+        let profileRate = (shift.customRate !== undefined) ? safeFloat(shift.customRate) : settings.rate;
+        if (profileRate === 0) profileRate = 546.18;
         
-        // Считаем все три тарифа через новую функцию [cite: 4]
-        const rates = getRates(inputRate);
-
-        // Определяем ставку для ТЕКУЩЕЙ смены (Принцип соответствия )
-        let mainRate = rates.line; // По умолчанию - Линия
-
-        if (isMedical) {
-            // Отстранение/Мед -> Поверхность (База) [cite: 6]
-            mainRate = rates.surface; 
-        } else if (text.includes('рез')) {
-            // Резерв -> Ставка Резерва [cite: 6]
-            mainRate = rates.reserve;
-        } else {
-            // Линия -> Ставка Линии [cite: 5]
-            mainRate = rates.line;
-        }
+        let bareRate = profileRate / 1.12;       
+        let reserveRate = bareRate * 1.08;       
         
-        // Сохраняем "голую" ставку и профильную для совместимости с остальным кодом
-        let bareRate = rates.surface; 
-        let profileRate = rates.line;
-        // ==================================== 
+        // ЛОГИКА СТАВКИ:
+        // Если это Отстранение - берем ГОЛУЮ ставку (bareRate).
+        // Если обычный резерв - берем ставку резерва (reserveRate).
+        let effectiveResRate = isMedical ? bareRate : reserveRate;
+        
+        // Применяем ставку
+        let mainRate = isRes ? effectiveResRate : profileRate; 
 
         // 2. АНАЛИЗ ВРЕМЕНИ
         let segTP = getSegmentBonusHours(shift.tpStart, shift.tpEnd);
@@ -1848,7 +1754,7 @@ function isOnlyStateHoliday(dateObj) {
         let tariffForPrem = isWorkHoliday ? (nakedTariff / 2) : nakedTariff;
 
         // 2. Собираем базу, на которую накрутится 35%
-        let baseForPremShift = tariffForPrem + bonuses.class + bonuses.senior + bonuses.split;
+        let baseForPremShift = tariffForPrem + bonuses.class + bonuses.sen + bonuses.senior + bonuses.mentor + bonuses.split;
         
         // 3. Считаем саму премию
         bonuses.premPercent = (shift.customPrem !== undefined) ? safeFloat(shift.customPrem) : settings.premP;
@@ -1861,21 +1767,19 @@ function isOnlyStateHoliday(dateObj) {
         }
 
         // 4. ИТОГО (ГРЯЗНЫМИ)
+        // Формула: (База премии) + (Премия) + (Доплата за праздник, которой нет в базе) + (Ночные/Вечерние/Прочее)
         
-        // Сначала берем Базу (Зеленую зону) и Премию с неё
+        // Сначала берем Базу и Премию
         let finalDirty = baseForPremShift + actualPremium;
         
-        // Если это праздник, возвращаем вторую половинку тарифа (доплату)
+        // Если это праздник, то в baseForPremShift лежит только половина тарифа.
+        // Вторую половину (доплату) нужно вернуть в итоговую сумму руками:
         if (isWorkHoliday) {
             finalDirty += (nakedTariff / 2);
         }
 
-        // Докидываем остальные надбавки (Ночные, Вечерние, Тех.учебу)
+        // Докидываем остальные надбавки
         finalDirty += evMoney + nightMoney + bonuses.tech + nyMoney;
-
-        // !!! ВАЖНО: ВОЗВРАЩАЕМ КРАСНУЮ ЗОНУ !!!
-        // Мы исключили их из базы премии, но в зарплату они должны войти!
-        finalDirty += bonuses.sen + bonuses.mentor;
 
         let finalForAvg = finalDirty;
         if (isAvgCalc && isWorkHoliday) {
@@ -2181,83 +2085,99 @@ function isOnlyStateHoliday(dateObj) {
             }
         }
 
-        // === STEP 2 (ИСПРАВЛЕННЫЙ): ФИНАЛЬНЫЙ РАСЧЕТ (ЗЕЛЕНАЯ И КРАСНАЯ ЗОНЫ) ===
-        
-        // 1. ПЕРЕРАБОТКА (Золотое правило: всегда Ставка Линии)
-        let lineRate = settings.rate; // Ставка Линии (546.18)
-        let premPercent = (usedPrems.size > 0) ? Math.max(...usedPrems) : settings.premP;
-
-        // Считаем часы переработки (Код 0720 / 0730)
+        // --- 1. ФИНАЛЬНЫЙ РАСЧЕТ ЧАСОВ ПО ТАРИФУ (Код 0030) ---
+        // Логика: (Отработано без праздников) - (Часы резерва) - (Часы переработки) = Чистый Тариф
         let hoursForTariff = st.hours - st.resHours; 
-        if (overtime > 0) hoursForTariff -= overtime; // Вынимаем переработку из тарифа
-        st.tariffHours = hoursForTariff; 
-
-        // Расчет денег за переработку
         if (overtime > 0) {
-            if (overtime <= 2) {
-                st.ot15Hours = overtime;
-                st.ot15Money = overtime * lineRate * 1.5; 
-            } else {
-                st.ot15Hours = 2;
-                st.ot15Money = 2 * lineRate * 1.5;
-                st.ot20Hours = overtime - 2;
-                st.ot20Money = st.ot20Hours * lineRate * 2.0; 
-            }
+            hoursForTariff -= overtime;
+        }
+        st.tariffHours = hoursForTariff; // Записываем результат (должно получиться 133.90)
+
+        st.sumNakedTariff = st.tariffHours * settings.rate;
+        // --- ФИНАЛЬНАЯ ФИКСАЦИЯ НАДБАВОК (ПЕРЕОПРЕДЕЛЕНИЕ) ---
+
+        // 1. Объявляем часы для пересчета (OT Total = 16.6 ч)
+        const OT_TOTAL_HOURS = st.ot15Hours + st.ot20Hours; 
+        const OT_BASE_0720 = OT_TOTAL_HOURS; // Код 0720 = OT Total (16.6ч)
+
+        // 2. Считаем БАЗУ В ЧАСАХ (173.83 ч) по формуле, которую ты вычислил:
+        const BONUS_HOURS_BASE = st.tariffHours + st.resHours + OT_TOTAL_HOURS + OT_BASE_0720 + st.holidayHours - 1; 
+
+        // 3. Считаем БАЗУ В ДЕНЬГАХ (90,421.20 ₽)
+        const BONUS_BASE_MONEY = BONUS_HOURS_BASE * settings.rate; 
+
+        // 4. ПЕРЕОПРЕДЕЛЯЕМ ФИНАЛЬНЫЕ СУММЫ (OVERRIDE)
+        let pClass = settings.classP;
+        let pSen = getSeniorityPercent(settings.startDate);
+        let hasSenior = settings.senior || false; 
+
+        st.sumClass = BONUS_BASE_MONEY * (pClass / 100);    
+        st.sumSen = BONUS_BASE_MONEY * (pSen / 100);        
+        st.sumSenior = hasSenior ? (BONUS_BASE_MONEY * 0.10) : 0;
+
+        // ========================================================================
+        // ФИНАЛЬНЫЙ ПЕРЕСЧЕТ (Fix v2.0)
+        // Логика: Пересчитываем надбавки от Полной Базы, чтобы не штрафовать за Резерв
+        // ========================================================================
+        
+        // 1. Считаем Базу Часов по твоей формуле
+        let totalOvertime = st.ot15Hours + st.ot20Hours;
+        
+        // Формула переработки для базы: "Часы + Часы - 1"
+        let otPartForBase = 0;
+        if (totalOvertime > 0) {
+            otPartForBase = totalOvertime + totalOvertime - 1;
         }
 
-        // 2. СБОРКА ЗЕЛЕНОЙ ЗОНЫ (БАЗА ДЛЯ ПРЕМИИ 35%)
-        // Сюда входит только то, что перечислено в Зеленой зоне ТЗ
-        
-        // А. Тарифная часть
-        let baseTariffSum = st.sumNakedTariff + st.sumRes;
-        
-        // Б. Условия труда
-        let conditionsSum = st.splitBonus + st.evBonus + st.nightBonus;
-        
-        // В. Квалификация (0250) и Руководство (0190)
-        // Важно: Считаем от полной базы часов по ставке линии
-        let fullBaseMoney = (st.tariffHours + st.resHours + st.ot15Hours + st.ot20Hours + st.holidayHours) * lineRate;
-        
-        let pClass = (usedClasses.size > 0) ? Math.max(...usedClasses) : settings.classP;
-        st.sumClass = fullBaseMoney * (pClass / 100);
+        // Собираем часы: Линия + Резерв + Праздники + Переработка(по хитрой формуле)
+        let bonusBaseHours = st.tariffHours + st.resHours + st.holidayHours + otPartForBase;
 
+        // 2. Считаем БАЗУ В ДЕНЬГАХ (Используем ставку 12% из профиля)
+        let fullBaseMoney = bonusBaseHours * settings.rate;
+
+        // 3. ПЕРЕЗАПИСЫВАЕМ БОНУСЫ (Используем знак =, чтобы не задвоилось)
+        
+        // Классность
+        if (usedClasses.size > 0) {
+             let maxClass = Math.max(...usedClasses); 
+             st.sumClass = fullBaseMoney * (maxClass / 100);
+        } else if (settings.classP > 0) {
+             st.sumClass = fullBaseMoney * (settings.classP / 100);
+        }
+
+        // Выслуга
+        let userSen = getSeniorityPercent(settings.startDate);
+        st.sumSen = fullBaseMoney * (userSen / 100);
+
+        // Ст. Машинист
         let isSeniorTotal = settings.senior || hasSeniorShift;
-        st.sumSenior = isSeniorTotal ? (fullBaseMoney * 0.10) : 0;
-
-        // ВЫСЛУГУ ЗДЕСЬ НЕ СЧИТАЕМ В БАЗУ! ОНА В КРАСНОЙ ЗОНЕ.
-        let pSen = (usedSens.size > 0) ? Math.max(...usedSens) : getSeniorityPercent(settings.startDate);
-        st.sumSen = fullBaseMoney * (pSen / 100);
-
-        // Г. Переработка (Входит в базу премии ПОЛНОСТЬЮ! Коды 0700, 0720, 0730)
-        let overtimeSum = st.ot15Money + st.ot20Money;
-
-        // Д. Праздники (Только одинарная часть - код 0750)
-        let holidaySinglePart = st.holidayHours * lineRate;
-
-        // == ИТОГО БАЗА ПРЕМИИ (ЗЕЛЕНАЯ ЗОНА) ==
-        // Убрали st.sumSen отсюда!
-        let greenZoneBase = baseTariffSum + conditionsSum + st.sumClass + st.sumSenior + overtimeSum + holidaySinglePart;
-        
-        // 3. РАСЧЕТ ПРЕМИИ
-        st.sumPrem = greenZoneBase * (premPercent / 100);
-
-        // 4. КРАСНАЯ ЗОНА (ИСКЛЮЧЕНИЯ)
-        // Эти суммы просто прибавляются к зарплате, премия на них НЕ идет
-        let redZoneSum = 
-            st.sumSen +         // <--- ВЫСЛУГА ТЕПЕРЬ ТУТ (Код 0770)
-            st.sumMentor +      // Наставничество (Код 0540)
-            st.techBonus +      // Тех. учеба (Код 0270)
-            st.holidayMoney +   // Доплата за праздники (Вторая половина, код 0760)
-            st.sickMoney + st.vacationMoney + st.donorMoney + st.medMoney + st.studyMoney;
-
-        // 5. ФИНАЛЬНАЯ СУММА
-        st.dirty = greenZoneBase + st.sumPrem + redZoneSum;
-        
-        // Коррекция для праздников (вычитаем одинарную часть, так как она уже в greenZoneBase, 
-        // а в st.holidayMoney лежит полная двойная сумма)
-        if (st.holidayHours > 0) {
-             st.dirty -= holidaySinglePart; 
+        if (isSeniorTotal) {
+             st.sumSenior = fullBaseMoney * 0.10;
         }
+        
+        // Наставник (не трогаем, он считается только от факта езды)
+        // st.sumMentor остается как был
+
+        // 4. ПЕРЕСЧИТЫВАЕМ ПРЕМИЮ
+        // ИСПРАВЛЕНИЕ: Берем не st.holidayMoney (грязные), а чистую базу (Часы * Ставка)
+        let holidayBaseForPrem = st.holidayHours * settings.rate;
+
+
+        let realTariffSum = st.sumNakedTariff + st.sumRes + st.ot15Money + st.ot20Money + holidayBaseForPrem;
+        
+        let premBase = realTariffSum + st.sumClass + st.sumSen + st.sumSenior + st.sumMentor;
+        
+        let premP = (usedPrems.size > 0) ? Math.max(...usedPrems) : settings.premP;
+        st.sumPrem = premBase * (premP / 100);
+
+        // 5. ПЕРЕСЧИТЫВАЕМ ИТОГОВОЕ НАЧИСЛЕНИЕ (DIRTY)
+        // Собираем всё заново, чтобы старые расчеты стерлись
+        st.dirty = premBase + st.sumPrem + 
+                   st.evBonus + st.nightBonus + st.splitBonus + st.techBonus + 
+                   st.sickMoney + st.vacationMoney + st.donorMoney + st.medMoney + st.studyMoney;
+
+        // ========================================================================
+
         // --- КОНЕЦ ПЕРЕСЧЕТА ---
 
         let yearlyIncomeBefore = 0;
@@ -2322,7 +2242,7 @@ function isOnlyStateHoliday(dateObj) {
                         txt.includes('псих') || txt.includes('освид')) {
                         deduction = r.dirty;
                     } else {
-                        deduction = (r.valSen || 0);
+                        deduction = (r.valSen || 0) + (r.techBonus || 0);
                     }
                     cumulativeBase += (r.dirty - deduction);
                 }
@@ -2626,7 +2546,7 @@ function render(targetDate = null) {
         let n = document.getElementById('inpNote').value; 
         let low = t.trim().toLowerCase();
 
-        // Автозамены (твои стандартные)
+        // Автозамены
         if (low === 'отп') t = 'отпуск';
         if (low.includes('охр')) t = 'Охрана труда';
         else if (low.includes('корп')) t = 'Корпоративный университет';
@@ -2636,7 +2556,7 @@ function render(targetDate = null) {
         else if (low === 'упц') t = 'УПЦ';
         else if (low.includes('мед.ком') || low.includes('мед ком') || low.includes('медком')) t = 'Мед. комиссия';
         
-        // Обработка БЛ (сохранение среднего заработка)
+        // БОЛЬНИЧНЫЙ
         if (t.toLowerCase().includes('бл') || t.toLowerCase().includes('больничный')) {
             const years = getSickYears(d);
             const inc1 = safeFloat(document.getElementById('sickInc1').value);
@@ -2650,7 +2570,6 @@ function render(targetDate = null) {
             touchMeta('metro_settings');
         }
 
-        // Забираем данные из формы
         let sRate = safeFloat(document.getElementById('shiftRate').value); 
         let sPrem = safeFloat(document.getElementById('shiftPrem').value); 
         let sMentor = document.getElementById('shiftMentor').checked; 
@@ -2664,16 +2583,19 @@ function render(targetDate = null) {
         let sTpStart = document.getElementById('tpStart').value;
         let sTpEnd = document.getElementById('tpEnd').value;
 
-        // Защита Терапевтического пункта
+        // === ИСПРАВЛЕНИЕ: ЗАЩИТА ТЕРАПЕВТИЧЕСКОГО ПУНКТА ===
+        // Если время не указано ИЛИ Начало == Конец (например 00:00 - 00:00)
+        // То мы принудительно стираем эти данные.
         if (!sTpStart || !sTpEnd || sTpStart === sTpEnd) {
             sTpStart = null;
             sTpEnd = null;
         }
+        // ====================================================
 
         let lStart = document.getElementById('lineStart').value; 
         let lEnd = document.getElementById('lineEnd').value; 
 
-        // Защита Выезда
+        // ЗАЩИТА ВЫЕЗДА (которую мы делали раньше)
         if (!t.toLowerCase().includes('рез')) {
             lStart = null;
             lEnd = null;
@@ -2684,71 +2606,55 @@ function render(targetDate = null) {
             }
         }
 
-        // Если это спец. тип (отпуск/больничный), снимаем лишние галочки
         let checkText = t.toLowerCase();
-        let isSpecialShift = checkText.includes('отпуск') || checkText.includes('отп') || 
-                             checkText.includes('бл') || checkText.includes('больничный') || 
-                             checkText.includes('донор');
-        
-        if (isSpecialShift) {
+        if (checkText.includes('отпуск') || checkText.includes('отп') || 
+            checkText.includes('бл') || checkText.includes('больничный') || 
+            checkText.includes('донор')) {
             sFullMed = false; 
         }
         
         if(d && t) { 
             preventRender = true; 
-            // Удаляем старую версию этой смены (чтобы перезаписать)
             shifts = shifts.filter(s => s.date !== d); 
-            
-            // Добавляем обновленную смену
             shifts.push({ 
                 date:d, text:t, note: n, 
                 customRate: sRate, customMentor: sMentor, 
                 customSenior: sSenior, customClass: sClass, customSen: sSen, 
                 customPrem: sPrem, 
-                lineStart: lStart, lineEnd: lEnd,     
+                
+                lineStart: lStart, 
+                lineEnd: lEnd,     
+                
                 isTech: sTech, isPostTrip: sPost,
-                tpStart: sTpStart, tpEnd: sTpEnd, 
+                
+                // Теперь sTpStart будет null, если он пустой или кривой
+                tpStart: sTpStart, 
+                tpEnd: sTpEnd, 
                 isFullMedical: sFullMed
             });
 
-            // =================================================================
-            // 🔥 НОВЫЙ БЛОК: СИНХРОНИЗАЦИЯ ПРЕМИИ И СТАВКИ ДЛЯ ВСЕГО МЕСЯЦА 🔥
-            // =================================================================
-            // Если это рабочая смена, распространяем её Ставку и Премию на соседей
-            if (!isSpecialShift && sRate > 0) {
-                
-                // 1. Обновляем глобальные настройки (чтобы новые смены создавались правильными)
+            const targetDate = new Date(d);
+            const targetMonth = targetDate.getMonth();
+            const targetYear = targetDate.getFullYear();
+            const lowerText = t.toLowerCase();
+            const isSpecialType = lowerText.includes('бл') || lowerText.includes('отпуск') || lowerText.includes('донор');
+            if (!isSpecialType && sRate > 0) {
                 settings.rate = sRate;
                 settings.premP = sPrem;
-
-                const targetDate = new Date(d);
-                const targetMonth = targetDate.getMonth();
-                const targetYear = targetDate.getFullYear();
-
-                // 2. Пробегаем по ВСЕМ сменам
                 shifts.forEach(s => {
                     const sd = new Date(s.date);
-                    
-                    // Если смена в ТОМ ЖЕ ГОДУ и ТОМ ЖЕ МЕСЯЦЕ
                     if (sd.getMonth() === targetMonth && sd.getFullYear() === targetYear) {
                         const sTxt = s.text.toLowerCase();
-                        // И если это НЕ больничный/отпуск/донор
                         if (!sTxt.includes('бл') && !sTxt.includes('больничный') && 
-                            !sTxt.includes('отпуск') && !sTxt.includes('отп') && 
-                            !sTxt.includes('донор')) {
-                            
-                            // === ПРИМЕНЯЕМ НОВЫЕ ЗНАЧЕНИЯ ===
-                            s.customPrem = sPrem; // Меняем премию
-                            s.customRate = sRate; // Меняем ставку (на всякий случай)
+                            !sTxt.includes('отпуск') && !sTxt.includes('донор')) {
+                            s.customRate = sRate;
+                            s.customPrem = sPrem;
                         }
                     }
                 });
             }
-            // =================================================================
-
             touchMeta(getMonthKey(d));
             saveData(); 
-            
             if(document.getElementById('calendarModal').classList.contains('open')) {
                 renderCalendar();
                 renderStats();
@@ -2765,63 +2671,63 @@ function render(targetDate = null) {
     }
     
     function openModal() {
-        // 1. Сбрасываем лишние детали интерфейса
+        // Закрываем детали, если были открыты
         const detailsBox = document.getElementById('shiftDetailsBox');
-        if (detailsBox) detailsBox.open = false; // Закрываем "выпадашку" параметров
-        
+        if (detailsBox) detailsBox.open = false;
+
         document.body.classList.add('modal-open');
         document.getElementById('addModal').classList.add('open');
         setAutoDate();
         
-        // 2. Очищаем текстовые поля
+        // Очищаем поля
         document.getElementById('inpText').value = '';
         document.getElementById('inpNote').value = '';
         document.getElementById('modalTitle').innerText = 'Новая смена';
         document.getElementById('btnSaveShift').innerText = 'Добавить';
         document.getElementById('btnDeleteShift').style.display = 'none';
         
-        // 3. ЗАГРУЖАЕМ НАСТРОЙКИ ИЗ ПРОФИЛЯ (ГЛАВНОЕ ИСПРАВЛЕНИЕ)
-        // Берем ставку из настроек. Если там 0, ставим стандарт 546.18
-        let defaultRate = (settings.rate > 0) ? settings.rate : 546.18;
-        document.getElementById('shiftRate').value = String(defaultRate).replace('.', ',');
+        // Ставка
+        let showRate = (settings.rate > 0) ? settings.rate : 546.18;
+        document.getElementById('shiftRate').value = String(showRate).replace('.', ',');
 
-        // Берем чекбоксы из настроек
+        // Чекбоксы
         document.getElementById('shiftMentor').checked = settings.mentor;
         document.getElementById('shiftSenior').checked = settings.senior || false;
-        
-        // Сбрасываем разовые галочки (Тех.учеба и Послерейсовый по умолчанию выключены)
         document.getElementById('shiftTech').checked = false;
         document.getElementById('shiftPostTrip').checked = false;
-        document.getElementById('shiftFullMedical').checked = false;
-        
-        // Очищаем поля времени для ТП и Выезда
         document.getElementById('tpStart').value = '';
         document.getElementById('tpEnd').value = '';
-
-        // Разблокируем чекбоксы (на случай если они были заблокированы в режиме просмотра)
+        document.getElementById('shiftFullMedical').checked = false;
+        
+        // Разблокировка
         document.getElementById('shiftMentor').disabled = false;
         document.getElementById('shiftSenior').disabled = false;
         document.getElementById('shiftPostTrip').disabled = false;
 
-        // 4. КЛАСС И ПРЕМИЯ
-        // Ставим Класс как в профиле
-        let defaultClass = (settings.classP === false) ? 0 : settings.classP;
-        document.getElementById('shiftClassSelect').value = defaultClass;
+        // Класс
+        document.getElementById('shiftClassSelect').value = (settings.classP === false) ? 0 : settings.classP;
 
-        // Ставим Премию как в профиле
-        let defaultPrem = settings.premP;
-        
-        // ЛОГИКА "УМНОЙ ПРЕМИИ":
-        // Если в профиле премия ПУСТАЯ или 0, пробуем найти, какую премию ты ставил в последней смене.
-        // Но если в профиле четко написано "35", мы поставим 35.
-        if (!defaultPrem || parseFloat(defaultPrem) === 0) {
+        // === ГЛАВНОЕ ИСПРАВЛЕНИЕ: УМНАЯ ПРЕМИЯ ===
+        let showPrem = settings.premP;
+
+        // Если в настройках 0 или пусто — ищем в истории смен последнюю непустую премию
+        if (!showPrem || parseFloat(showPrem) === 0) {
+            // Ищем с конца списка (последнюю добавленную)
             const lastShift = [...shifts].reverse().find(s => s.customPrem && parseFloat(s.customPrem) > 0);
-            if (lastShift) defaultPrem = lastShift.customPrem;
+            
+            if (lastShift) {
+                showPrem = lastShift.customPrem; // Нашли! Берем её.
+            } else {
+                // Если истории нет вообще (совсем новый пользователь), можно оставить пусто
+                // или поставить 35 (как стандарт). Давай оставим пусто, если совсем ничего нет.
+                showPrem = ''; 
+            }
         }
         
-        document.getElementById('shiftPrem').value = defaultPrem ? String(defaultPrem).replace('.', ',') : '';
+        // Вставляем значение в поле
+        document.getElementById('shiftPrem').value = showPrem ? String(showPrem).replace('.', ',') : '';
+        // ===========================================
 
-        // Запускаем проверку текста (на случай если там что-то осталось, хотя мы чистили)
         checkShiftText();
         document.getElementById('inpText').focus();
     }
