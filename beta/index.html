@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ГрафикБро v1.10</title>
+    <title>ГрафикБро v1.11</title>
 
     <script type="text/javascript" >
        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
@@ -350,7 +350,7 @@
         Поддержать
     </button>
 </div>
-        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">ГрафикБро v1.10 (Clean)</div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">ГрафикБро v1.11 (Clean)</div>
     </div>
 
     
@@ -2081,7 +2081,7 @@ function isOnlyStateHoliday(dateObj) {
         st.sumClass = totalHoursForClass * settings.rate * (classPercent / 100);
 
         let userSen = getSeniorityPercent(settings.startDate);
-        st.sumSen = fullBaseMoney * (userSen / 100);
+        st.sumSen = totalHoursForClass * settings.rate * (userSen / 100);
 
         let isSeniorTotal = settings.senior || hasSeniorShift;
         if (isSeniorTotal) { st.sumSenior = fullBaseMoney * 0.10; }
@@ -2181,7 +2181,8 @@ function isOnlyStateHoliday(dateObj) {
         document.getElementById('lbl_senior').innerText = `Ст. машинист (${seniorPercent}%):`;
 
         document.getElementById('st_class_money').innerText = '+' + fmtMoney(st.sumClass); 
-        document.getElementById('st_sen_money').innerHTML = `<span style="color:#90a4ae; font-size:13px; font-weight:600; margin-right:8px;">${st.totalFactHours.toFixed(2)}ч</span>` + '+' + fmtMoney(st.sumSen); 
+        document.getElementById('st_sen_money').innerHTML = 
+            `<span style="color:#90a4ae; font-size:13px; font-weight:600; margin-right:8px;">${totalHoursForClass.toFixed(1)}ч</span>` + '+' + fmtMoney(st.sumSen); 
         document.getElementById('st_prem_money').innerText = '+' + fmtMoney(st.sumPrem);
         document.getElementById('st_tech_money').innerText = '+' + fmtMoney(st.techBonus);
         document.getElementById('st_senior_money').innerText = '+' + fmtMoney(st.sumSenior);
