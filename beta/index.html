@@ -325,14 +325,39 @@
     <div id="tab-settings" class="page">
         <div class="card">
             <h3 style="margin-top:0; color:var(--primary)">⚙️ Профиль</h3>
-            <label>Тариф (Основной)</label><input type="text" inputmode="decimal" id="set_rate" onchange="saveAll()">
-            <label>Класс квалификации</label><select id="set_class" onchange="saveAll()"><option value="0">Без класса</option><option value="30">1 класс (30%)</option><option value="20">2 класс (20%)</option><option value="10">3 класс (10%)</option></select>
-            <label>Дата трудоустройства</label><input type="date" id="set_start_date" onchange="saveAll()">
+            
+            <label>Тариф (Основной)</label>
+            <input type="text" inputmode="decimal" id="set_rate" oninput="saveAll()" placeholder="Например: 546.18">
+            
+            <label>Класс квалификации</label>
+            <select id="set_class" onchange="saveAll()">
+                <option value="0">Без класса</option>
+                <option value="30">1 класс (30%)</option>
+                <option value="20">2 класс (20%)</option>
+                <option value="10">3 класс (10%)</option>
+            </select>
+            
+            <label>Дата трудоустройства</label>
+            <input type="date" id="set_start_date" oninput="saveAll()">
             <div style="font-size:13px; color:var(--primary); margin-top:8px; text-align:right; font-weight:600;" id="set_exp_text"></div>
-            <label>Премия (%)</label><input type="text" inputmode="decimal" id="set_prem" onchange="saveAll()">
-            <div style="margin-top:25px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;"><input type="checkbox" id="set_mentor" style="width:24px; height:24px; margin:0;" onchange="saveAll()"><span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Наставник (+15%)</span></div>
-            <div style="margin-top:10px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;"><input type="checkbox" id="set_senior" style="width:24px; height:24px; margin:0;" onchange="saveAll()"><span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Ст. машинист (+10%)</span></div>
-            <div style="margin-top:10px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;"><input type="checkbox" id="set_union" style="width:24px; height:24px; margin:0;" onchange="saveAll()"><span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Член профсоюза (-1%)</span></div>
+            
+            <label>Премия (%)</label>
+            <input type="text" inputmode="decimal" id="set_prem" oninput="saveAll()" placeholder="Например: 35">
+            
+            <div style="margin-top:25px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;">
+                <input type="checkbox" id="set_mentor" style="width:24px; height:24px; margin:0;" onchange="saveAll()">
+                <span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Наставник (+15%)</span>
+            </div>
+            
+            <div style="margin-top:10px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;">
+                <input type="checkbox" id="set_senior" style="width:24px; height:24px; margin:0;" onchange="saveAll()">
+                <span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Ст. машинист (+10%)</span>
+            </div>
+            
+            <div style="margin-top:10px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;">
+                <input type="checkbox" id="set_union" style="width:24px; height:24px; margin:0;" onchange="saveAll()">
+                <span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Член профсоюза (-1%)</span>
+            </div>
             
             <div style="margin-top:30px; padding:15px; background:#fff3e0; border-radius:12px; text-align:center;">
                 <div id="cloudStatus" style="font-size:12px; font-weight:bold; color:#f57c00; margin-bottom:10px;">Статус облака: Проверка...</div>
@@ -340,16 +365,17 @@
                 <div style="font-size:10px; color:#8d6e63; margin-top:5px;">Нажми, если данные на телефоне есть, а на ПК нет.</div>
             </div>
         </div>
+        
         <div class="card" style="background: linear-gradient(135deg, #263238 0%, #37474f 100%); color: white; text-align: center; margin-top: 15px;">
-    <h3 style="margin-top:0; margin-bottom: 8px; color:white; font-size: 16px;">🤝 Развитие проекта</h3>
-    <div style="font-size:12px; opacity:0.8; margin-bottom:15px; line-height: 1.4;">
-        Приложение бесплатное. Если оно помогает в работе — буду благодарен за поддержку (оплата сервера и обновлений).
-    </div>
-    <button onclick="openDonation()" style="background: var(--accent); color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 800; width: 100%; font-size: 14px; box-shadow: 0 4px 15px rgba(255, 171, 0, 0.3);">
-        Поддержать
-    </button>
-</div>
-        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">ГрафикБро v1.1 (Clean)</div>
+            <h3 style="margin-top:0; margin-bottom: 8px; color:white; font-size: 16px;">🤝 Развитие проекта</h3>
+            <div style="font-size:12px; opacity:0.8; margin-bottom:15px; line-height: 1.4;">
+                Приложение бесплатное. Если оно помогает в работе — буду благодарен за поддержку.
+            </div>
+            <button onclick="openDonation()" style="background: var(--accent); color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 800; width: 100%; font-size: 14px; box-shadow: 0 4px 15px rgba(255, 171, 0, 0.3);">
+                Поддержать
+            </button>
+        </div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">ГрафикБро v1.1 (Stable)</div>
     </div>
 
     
@@ -2560,7 +2586,7 @@ function render(targetDate = null) {
         let n = document.getElementById('inpNote').value; 
         let low = t.trim().toLowerCase();
 
-        // Автозамены
+        // Автозамены (твои стандартные)
         if (low === 'отп') t = 'отпуск';
         if (low.includes('охр')) t = 'Охрана труда';
         else if (low.includes('корп')) t = 'Корпоративный университет';
@@ -2570,7 +2596,7 @@ function render(targetDate = null) {
         else if (low === 'упц') t = 'УПЦ';
         else if (low.includes('мед.ком') || low.includes('мед ком') || low.includes('медком')) t = 'Мед. комиссия';
         
-        // БОЛЬНИЧНЫЙ
+        // Обработка БЛ (сохранение среднего заработка)
         if (t.toLowerCase().includes('бл') || t.toLowerCase().includes('больничный')) {
             const years = getSickYears(d);
             const inc1 = safeFloat(document.getElementById('sickInc1').value);
@@ -2584,6 +2610,7 @@ function render(targetDate = null) {
             touchMeta('metro_settings');
         }
 
+        // Забираем данные из формы
         let sRate = safeFloat(document.getElementById('shiftRate').value); 
         let sPrem = safeFloat(document.getElementById('shiftPrem').value); 
         let sMentor = document.getElementById('shiftMentor').checked; 
@@ -2597,19 +2624,16 @@ function render(targetDate = null) {
         let sTpStart = document.getElementById('tpStart').value;
         let sTpEnd = document.getElementById('tpEnd').value;
 
-        // === ИСПРАВЛЕНИЕ: ЗАЩИТА ТЕРАПЕВТИЧЕСКОГО ПУНКТА ===
-        // Если время не указано ИЛИ Начало == Конец (например 00:00 - 00:00)
-        // То мы принудительно стираем эти данные.
+        // Защита Терапевтического пункта
         if (!sTpStart || !sTpEnd || sTpStart === sTpEnd) {
             sTpStart = null;
             sTpEnd = null;
         }
-        // ====================================================
 
         let lStart = document.getElementById('lineStart').value; 
         let lEnd = document.getElementById('lineEnd').value; 
 
-        // ЗАЩИТА ВЫЕЗДА (которую мы делали раньше)
+        // Защита Выезда
         if (!t.toLowerCase().includes('рез')) {
             lStart = null;
             lEnd = null;
@@ -2620,55 +2644,71 @@ function render(targetDate = null) {
             }
         }
 
+        // Если это спец. тип (отпуск/больничный), снимаем лишние галочки
         let checkText = t.toLowerCase();
-        if (checkText.includes('отпуск') || checkText.includes('отп') || 
-            checkText.includes('бл') || checkText.includes('больничный') || 
-            checkText.includes('донор')) {
+        let isSpecialShift = checkText.includes('отпуск') || checkText.includes('отп') || 
+                             checkText.includes('бл') || checkText.includes('больничный') || 
+                             checkText.includes('донор');
+        
+        if (isSpecialShift) {
             sFullMed = false; 
         }
         
         if(d && t) { 
             preventRender = true; 
+            // Удаляем старую версию этой смены (чтобы перезаписать)
             shifts = shifts.filter(s => s.date !== d); 
+            
+            // Добавляем обновленную смену
             shifts.push({ 
                 date:d, text:t, note: n, 
                 customRate: sRate, customMentor: sMentor, 
                 customSenior: sSenior, customClass: sClass, customSen: sSen, 
                 customPrem: sPrem, 
-                
-                lineStart: lStart, 
-                lineEnd: lEnd,     
-                
+                lineStart: lStart, lineEnd: lEnd,     
                 isTech: sTech, isPostTrip: sPost,
-                
-                // Теперь sTpStart будет null, если он пустой или кривой
-                tpStart: sTpStart, 
-                tpEnd: sTpEnd, 
+                tpStart: sTpStart, tpEnd: sTpEnd, 
                 isFullMedical: sFullMed
             });
 
-            const targetDate = new Date(d);
-            const targetMonth = targetDate.getMonth();
-            const targetYear = targetDate.getFullYear();
-            const lowerText = t.toLowerCase();
-            const isSpecialType = lowerText.includes('бл') || lowerText.includes('отпуск') || lowerText.includes('донор');
-            if (!isSpecialType && sRate > 0) {
+            // =================================================================
+            // 🔥 НОВЫЙ БЛОК: СИНХРОНИЗАЦИЯ ПРЕМИИ И СТАВКИ ДЛЯ ВСЕГО МЕСЯЦА 🔥
+            // =================================================================
+            // Если это рабочая смена, распространяем её Ставку и Премию на соседей
+            if (!isSpecialShift && sRate > 0) {
+                
+                // 1. Обновляем глобальные настройки (чтобы новые смены создавались правильными)
                 settings.rate = sRate;
                 settings.premP = sPrem;
+
+                const targetDate = new Date(d);
+                const targetMonth = targetDate.getMonth();
+                const targetYear = targetDate.getFullYear();
+
+                // 2. Пробегаем по ВСЕМ сменам
                 shifts.forEach(s => {
                     const sd = new Date(s.date);
+                    
+                    // Если смена в ТОМ ЖЕ ГОДУ и ТОМ ЖЕ МЕСЯЦЕ
                     if (sd.getMonth() === targetMonth && sd.getFullYear() === targetYear) {
                         const sTxt = s.text.toLowerCase();
+                        // И если это НЕ больничный/отпуск/донор
                         if (!sTxt.includes('бл') && !sTxt.includes('больничный') && 
-                            !sTxt.includes('отпуск') && !sTxt.includes('донор')) {
-                            s.customRate = sRate;
-                            s.customPrem = sPrem;
+                            !sTxt.includes('отпуск') && !sTxt.includes('отп') && 
+                            !sTxt.includes('донор')) {
+                            
+                            // === ПРИМЕНЯЕМ НОВЫЕ ЗНАЧЕНИЯ ===
+                            s.customPrem = sPrem; // Меняем премию
+                            s.customRate = sRate; // Меняем ставку (на всякий случай)
                         }
                     }
                 });
             }
+            // =================================================================
+
             touchMeta(getMonthKey(d));
             saveData(); 
+            
             if(document.getElementById('calendarModal').classList.contains('open')) {
                 renderCalendar();
                 renderStats();
@@ -2685,63 +2725,63 @@ function render(targetDate = null) {
     }
     
     function openModal() {
-        // Закрываем детали, если были открыты
+        // 1. Сбрасываем лишние детали интерфейса
         const detailsBox = document.getElementById('shiftDetailsBox');
-        if (detailsBox) detailsBox.open = false;
-
+        if (detailsBox) detailsBox.open = false; // Закрываем "выпадашку" параметров
+        
         document.body.classList.add('modal-open');
         document.getElementById('addModal').classList.add('open');
         setAutoDate();
         
-        // Очищаем поля
+        // 2. Очищаем текстовые поля
         document.getElementById('inpText').value = '';
         document.getElementById('inpNote').value = '';
         document.getElementById('modalTitle').innerText = 'Новая смена';
         document.getElementById('btnSaveShift').innerText = 'Добавить';
         document.getElementById('btnDeleteShift').style.display = 'none';
         
-        // Ставка
-        let showRate = (settings.rate > 0) ? settings.rate : 546.18;
-        document.getElementById('shiftRate').value = String(showRate).replace('.', ',');
+        // 3. ЗАГРУЖАЕМ НАСТРОЙКИ ИЗ ПРОФИЛЯ (ГЛАВНОЕ ИСПРАВЛЕНИЕ)
+        // Берем ставку из настроек. Если там 0, ставим стандарт 546.18
+        let defaultRate = (settings.rate > 0) ? settings.rate : 546.18;
+        document.getElementById('shiftRate').value = String(defaultRate).replace('.', ',');
 
-        // Чекбоксы
+        // Берем чекбоксы из настроек
         document.getElementById('shiftMentor').checked = settings.mentor;
         document.getElementById('shiftSenior').checked = settings.senior || false;
+        
+        // Сбрасываем разовые галочки (Тех.учеба и Послерейсовый по умолчанию выключены)
         document.getElementById('shiftTech').checked = false;
         document.getElementById('shiftPostTrip').checked = false;
-        document.getElementById('tpStart').value = '';
-        document.getElementById('tpEnd').value = '';
         document.getElementById('shiftFullMedical').checked = false;
         
-        // Разблокировка
+        // Очищаем поля времени для ТП и Выезда
+        document.getElementById('tpStart').value = '';
+        document.getElementById('tpEnd').value = '';
+
+        // Разблокируем чекбоксы (на случай если они были заблокированы в режиме просмотра)
         document.getElementById('shiftMentor').disabled = false;
         document.getElementById('shiftSenior').disabled = false;
         document.getElementById('shiftPostTrip').disabled = false;
 
-        // Класс
-        document.getElementById('shiftClassSelect').value = (settings.classP === false) ? 0 : settings.classP;
+        // 4. КЛАСС И ПРЕМИЯ
+        // Ставим Класс как в профиле
+        let defaultClass = (settings.classP === false) ? 0 : settings.classP;
+        document.getElementById('shiftClassSelect').value = defaultClass;
 
-        // === ГЛАВНОЕ ИСПРАВЛЕНИЕ: УМНАЯ ПРЕМИЯ ===
-        let showPrem = settings.premP;
-
-        // Если в настройках 0 или пусто — ищем в истории смен последнюю непустую премию
-        if (!showPrem || parseFloat(showPrem) === 0) {
-            // Ищем с конца списка (последнюю добавленную)
+        // Ставим Премию как в профиле
+        let defaultPrem = settings.premP;
+        
+        // ЛОГИКА "УМНОЙ ПРЕМИИ":
+        // Если в профиле премия ПУСТАЯ или 0, пробуем найти, какую премию ты ставил в последней смене.
+        // Но если в профиле четко написано "35", мы поставим 35.
+        if (!defaultPrem || parseFloat(defaultPrem) === 0) {
             const lastShift = [...shifts].reverse().find(s => s.customPrem && parseFloat(s.customPrem) > 0);
-            
-            if (lastShift) {
-                showPrem = lastShift.customPrem; // Нашли! Берем её.
-            } else {
-                // Если истории нет вообще (совсем новый пользователь), можно оставить пусто
-                // или поставить 35 (как стандарт). Давай оставим пусто, если совсем ничего нет.
-                showPrem = ''; 
-            }
+            if (lastShift) defaultPrem = lastShift.customPrem;
         }
         
-        // Вставляем значение в поле
-        document.getElementById('shiftPrem').value = showPrem ? String(showPrem).replace('.', ',') : '';
-        // ===========================================
+        document.getElementById('shiftPrem').value = defaultPrem ? String(defaultPrem).replace('.', ',') : '';
 
+        // Запускаем проверку текста (на случай если там что-то осталось, хотя мы чистили)
         checkShiftText();
         document.getElementById('inpText').focus();
     }
