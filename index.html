@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ГрафикБро v1.17</title>
+    <title>ГрафикБро v1.18</title>
 
     <script type="text/javascript" >
        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
@@ -350,7 +350,7 @@
         Поддержать
     </button>
 </div>
-        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">ГрафикБро v1.17 (Clean)</div>
+        <div style="text-align:center; font-size:11px; color:#b0bec5; margin-top:20px;">ГрафикБро v1.18</div>
     </div>
 
     
@@ -2119,12 +2119,32 @@ function isOnlyStateHoliday(dateObj) {
         let premP = (usedPrems.size > 0) ? Math.max(...usedPrems) : settings.premP;
         st.sumPrem = premBase * (premP / 100);
 
-        st.dirty = premBase + st.sumPrem + 
-                   st.evBonus + st.nightBonus + st.splitBonus + st.techBonus + 
-                   st.sickMoney + st.vacationMoney + st.donorMoney + st.medMoney + st.studyMoney +
-                   (st.ot15Money - (st.ot15Hours * settings.rate)) + 
-                   (st.ot20Money - (st.ot20Hours * settings.rate)) + 
-                   (st.holidayMoney - holidayBaseForPrem); 
+        st.dirty = 0;
+        st.dirty += st.sumNakedTariff; // Тариф
+        st.dirty += st.sumRes;         // Резерв
+        
+        st.dirty += st.sumClass;       // Классность
+        st.dirty += st.sumSenior;      // Ст. машинист
+        st.dirty += st.sumSen;         // Выслуга
+        st.dirty += st.sumMentor;      // Наставник
+        
+        st.dirty += st.nightBonus;     // Ночные
+        st.dirty += st.evBonus;        // Вечерние
+        st.dirty += st.splitBonus;     // Разрывные
+        st.dirty += st.techBonus;      // Тех. учеба
+        
+        st.dirty += st.ot15Money;      // Переработка 1.5 (вся сумма)
+        st.dirty += st.ot20Money;      // Переработка 2.0 (вся сумма)
+        st.dirty += st.holidayMoney;   // Праздничные (вся сумма x2)
+        
+        st.dirty += st.sumPrem;        // Премия
+        
+        // Больничные и прочее
+        st.dirty += st.sickMoney;
+        st.dirty += st.vacationMoney;
+        st.dirty += st.donorMoney;
+        st.dirty += st.medMoney;
+        st.dirty += st.studyMoney;
 
         let yearlyIncomeBefore = 0;
         shifts.forEach(s => {
