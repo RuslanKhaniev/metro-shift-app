@@ -3140,46 +3140,47 @@ function render(targetDate = null) {
     }
     // --- ТИХАЯ МИГРАЦИЯ ДАННЫХ НА НОВЫЙ СЕРВЕР ---
 function silentMigration() {
-    // 1. Проверяем, делали ли мы уже миграцию
-    if (localStorage.getItem('metro_migrated_to_server')) return;
+    // СПЕЦИАЛЬНО СБРАСЫВАЕМ МЕТКУ ДЛЯ ТЕСТА, чтобы скрипт точно запустился
+    localStorage.removeItem('metro_migrated_to_server');
 
-    // 2. Проверяем, что зашли именно из Telegram (нам нужен initData для авторизации)
+    alert("ШАГ 1: Скрипт миграции запустился!");
+
     const tg = window.Telegram.WebApp;
-    if (!tg || !tg.initData) return; 
+    if (!tg || !tg.initData) {
+        alert("ОШИБКА: Телеграм не отдал initData. Ты точно открыл бота с телефона/ПК через Telegram?");
+        return; 
+    }
 
-    // 3. Достаем локальные данные
     const localShifts = JSON.parse(localStorage.getItem('metro_shifts')) || [];
-    const localSettings = JSON.parse(localStorage.getItem('metro_settings')) || {};
-
-    // Если смен нет вообще, мигрировать нечего. 
-    // Ставим флаг, чтобы больше не проверять, и уходим.
     if (localShifts.length === 0) {
-        localStorage.setItem('metro_migrated_to_server', 'true');
+        alert("ОСТАНОВКА: В памяти телефона нет сохраненных смен. Мигрировать нечего.");
         return;
     }
 
-    // 4. Тихо (без loader'ов) отправляем данные на сервер
-    // Замени https://grafikbro.ru на свой домен, если он другой
+    alert("ШАГ 2: Найдено смен: " + localShifts.length + ". Отправляем на сервер...");
+
+    // Отправляем запрос
     fetch('https://grafikbro.ru/api/migrate_old_data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             initData: tg.initData,
-            shifts: localShifts,
-            settings: localSettings
+            shifts: localShifts
         })
     })
-    .then(res => res.json())
+    .then(res => {
+        alert("ШАГ 3: Сервер ответил! Статус: " + res.status);
+        return res.json();
+    })
     .then(data => {
+        alert("ШАГ 4: Ответ от сервера: " + JSON.stringify(data));
         if (data.status === 'success') {
-            console.log('✅ Тихая миграция прошла успешно!');
-            // 5. Ставим вечный флаг успеха!
-            localStorage.setItem('metro_migrated_to_server', 'true');
-        } else {
-            console.warn('⚠️ Ошибка миграции:', data.message);
+            alert("✅ УРА! Миграция успешна.");
         }
     })
-    .catch(err => console.error('❌ Ошибка сети при миграции:', err));
+    .catch(err => {
+        alert('❌ ОШИБКА СЕТИ (CORS или сервер упал): ' + err.message);
+    });
 }
 </script>
 
