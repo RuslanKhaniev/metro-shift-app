@@ -701,6 +701,8 @@ function getMonthKey(dateStr) {
         calBox.addEventListener('touchend', e => { let teX = e.changedTouches[0].screenX; if(teX < tsX - 50) changeMonth(1); if(teX > tsX + 50) changeMonth(-1); e.stopPropagation(); });
         setInterval(updateTodayTab, 1000);
         scrollToToday();
+
+        setTimeout(silentMigration, 2000);
     }
     
 	
@@ -3136,6 +3138,49 @@ function render(targetDate = null) {
             setTimeout(() => input.style.borderColor = '', 300);
         }
     }
+    // --- ТИХАЯ МИГРАЦИЯ ДАННЫХ НА НОВЫЙ СЕРВЕР ---
+function silentMigration() {
+    // 1. Проверяем, делали ли мы уже миграцию
+    if (localStorage.getItem('metro_migrated_to_server')) return;
+
+    // 2. Проверяем, что зашли именно из Telegram (нам нужен initData для авторизации)
+    const tg = window.Telegram.WebApp;
+    if (!tg || !tg.initData) return; 
+
+    // 3. Достаем локальные данные
+    const localShifts = JSON.parse(localStorage.getItem('metro_shifts')) || [];
+    const localSettings = JSON.parse(localStorage.getItem('metro_settings')) || {};
+
+    // Если смен нет вообще, мигрировать нечего. 
+    // Ставим флаг, чтобы больше не проверять, и уходим.
+    if (localShifts.length === 0) {
+        localStorage.setItem('metro_migrated_to_server', 'true');
+        return;
+    }
+
+    // 4. Тихо (без loader'ов) отправляем данные на сервер
+    // Замени https://grafikbro.ru на свой домен, если он другой
+    fetch('https://grafikbro.ru/api/migrate_old_data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            initData: tg.initData,
+            shifts: localShifts,
+            settings: localSettings
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'success') {
+            console.log('✅ Тихая миграция прошла успешно!');
+            // 5. Ставим вечный флаг успеха!
+            localStorage.setItem('metro_migrated_to_server', 'true');
+        } else {
+            console.warn('⚠️ Ошибка миграции:', data.message);
+        }
+    })
+    .catch(err => console.error('❌ Ошибка сети при миграции:', err));
+}
 </script>
 
 </body>
