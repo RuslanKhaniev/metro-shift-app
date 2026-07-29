@@ -182,6 +182,7 @@
             transform: translate3d(0,0,0);
         }
         .btn-row { display: flex; justify-content: flex-end; margin-top: 25px; gap: 10px; }
+        .btn-theme { background: var(--card); color: var(--primary); border: 1px solid #e0e0e0; box-shadow: 0 2px 8px rgba(0,0,0,0.02); text-align: left; margin-bottom: 10px; display: flex; align-items: center; gap: 10px;}
         .btn { padding: 12px 24px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; font-size: 15px; transition: 0.2s;} .btn:active { transform: scale(0.96); }
         .btn-cancel { background: transparent; color: #78909c; } .btn-save { background: var(--primary); color: white; } .btn-delete { background: #ffebee; color: #d32f2f; }
         .btn-text { background: none; border: none; color: var(--accent); font-size: 11px; font-weight: bold; cursor: pointer; text-decoration: underline; margin-top: 5px; display: block; text-align: right;}
@@ -263,11 +264,11 @@
                     <path class="circle" stroke="#ffab00" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" id="circlePath" />
                     <path class="circle" stroke="#00c853" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" id="circlePathOver" style="display:none;" />
                 </svg>
-                <div class="chart-text-group"><span class="chart-val" id="chartValue">0</span><span class="chart-label">Часов</span></div>
+                <div class="chart-text-group"><span class="chart-val" id="chartValue">0</span><span class="chart-label" id="chartLabel">Часов</span></div>
             </div>
             <div class="stat-row"><span>Норма (36ч):</span> <span class="stat-val" id="st_norm">0</span></div>
             <div class="stat-row"><span>Отработано:</span> <span class="stat-val" id="st_hours">0</span></div>
-            <div class="stat-row" style="background:#fff3e0; margin:0 -10px; padding:10px; border-radius:8px; margin-bottom:5px;"><span>Переработка:</span> <span class="stat-val" id="st_over" style="font-size:16px;">0</span></div>
+            <div class="stat-row" id="row_over" style="background:#fff3e0; margin:0 -10px; padding:10px; border-radius:8px; margin-bottom:5px;"><span>Переработка:</span> <span class="stat-val" id="st_over" style="font-size:16px;">0</span></div>
         </div>
         <div class="card">
             <h3 style="margin-top:0; color:var(--primary)">💰 Расчет</h3>
@@ -319,7 +320,15 @@
                 <span class="stat-val" id="st_bonus_base">0 ₽</span>
             </div>
 
+            <div class="stat-row" id="row_year_bonus">
+                <span style="color:#90a4ae;" id="lbl_year_bonus_row">🎁 13-я: накоплено с начала года:</span>
+                <span class="stat-val" id="st_year_bonus">0 ₽</span>
+            </div>
+
             <div class="stat-row" style="font-size:20px; border-top:2px solid #eee; margin-top:10px; padding-top:15px"><span>На руки:</span> <span class="stat-val" id="st_net" style="color:#2e7d32">0 ₽</span></div>
+
+            <div class="stat-row" id="row_advance"><span id="lbl_advance">💳 Аванс (~20-го):</span> <span class="stat-val" id="st_advance">0 ₽</span></div>
+            <div class="stat-row" id="row_rest"><span id="lbl_rest">💰 Остаток:</span> <span class="stat-val" id="st_rest">0 ₽</span></div>
         </div>
     </div>
 
@@ -331,6 +340,8 @@
             <label>Дата трудоустройства</label><input type="date" id="set_start_date" onchange="saveAll()">
             <div style="font-size:13px; color:var(--primary); margin-top:8px; text-align:right; font-weight:600;" id="set_exp_text"></div>
             <label>Премия (%)</label><input type="text" inputmode="decimal" id="set_prem" onchange="saveAll()">
+            <label id="lbl_year_bonus">13-я за прошлый год, ₽ (код 0530 в декабрьском квитке — участвует в отпускных и донорских)</label><input type="text" inputmode="decimal" id="set_year_bonus" placeholder="Например: 275343,80" onchange="saveAll()">
+            <label id="lbl_kv">Коэффициент 13-й (Кв), коп./руб.</label><input type="text" inputmode="decimal" id="set_kv" placeholder="6,8" onchange="saveAll()">
             <div style="margin-top:25px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;"><input type="checkbox" id="set_mentor" style="width:24px; height:24px; margin:0;" onchange="saveAll()"><span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Наставник (+15%)</span></div>
             <div style="margin-top:10px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;"><input type="checkbox" id="set_senior" style="width:24px; height:24px; margin:0;" onchange="saveAll()"><span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Ст. машинист (+10%)</span></div>
             <div style="margin-top:10px; display:flex; align-items:center; padding:12px; background:#e3f2fd; border-radius:12px;"><input type="checkbox" id="set_union" style="width:24px; height:24px; margin:0;" onchange="saveAll()"><span style="margin-left:12px; font-weight:700; color:#1565c0; font-size:14px;">Член профсоюза (-1%)</span></div>
@@ -456,9 +467,13 @@
     
 
     let shifts = JSON.parse(localStorage.getItem('metro_shifts')) || [];
-    let settings = JSON.parse(localStorage.getItem('metro_settings')) || { 
-    rate: 546.18, classP: false, premP: 35, mentor: false, senior: false, 
-    startDate: "", union: true, sickData: {}, sickPercent: 100 
+    // Значения по умолчанию подмешиваются к сохраненным: у тех, кто пользовался
+    // приложением раньше, в памяти нет yearBonus/kvGodP — без этого 13-я не считалась бы.
+    let storedSettings = JSON.parse(localStorage.getItem('metro_settings')) || {};
+    let settings = {
+    rate: 546.18, classP: false, premP: 35, mentor: false, senior: false,
+    startDate: "", union: true, sickData: {}, sickPercent: 100,
+    yearBonus: {}, kvGodP: 6.8, ...storedSettings
     };
     // --- 1. НОВАЯ ПЕРЕМЕННАЯ ДЛЯ МЕТАДАННЫХ ---
 let syncMeta = JSON.parse(localStorage.getItem('metro_sync_meta')) || {};
@@ -508,6 +523,16 @@ function getMonthKey(dateStr) {
         settings.senior = document.getElementById('set_senior').checked;
         settings.startDate = document.getElementById('set_start_date').value;
         settings.union = document.getElementById('set_union').checked;
+
+        // 13-я зарплата: сумма за прошлый год (для среднего) и коэффициент Кв (для прогноза)
+        const ybEl = document.getElementById('set_year_bonus');
+        if (ybEl) {
+            if (!settings.yearBonus) settings.yearBonus = {};
+            settings.yearBonus[new Date().getFullYear() - 1] = safeFloat(ybEl.value);
+        }
+        const kvEl = document.getElementById('set_kv');
+        if (kvEl) settings.kvGodP = safeFloat(kvEl.value) || 6.8;
+
         touchMeta('metro_settings');
         calcExpDisplay();
     }
@@ -764,8 +789,10 @@ function getMonthKey(dateStr) {
                 
                 if (cloudTime > localTime) {
                     // Облако новее -> Берем из облака
-                    try { 
-                        settings = JSON.parse(values['metro_settings']); 
+                    try {
+                        // Дефолты подмешиваем и здесь: в облаке у давних пользователей
+                        // лежат настройки без yearBonus/kvGodP, простая замена их бы потеряла
+                        settings = { yearBonus: {}, kvGodP: 6.8, ...JSON.parse(values['metro_settings']) };
                         syncMeta['metro_settings'] = cloudTime; // Синхронизируем время
                         hasChanges = true;
                     } catch(e){}
@@ -1041,6 +1068,38 @@ function saveAll() {
         document.getElementById('set_senior').checked = settings.senior || false;
         document.getElementById('set_start_date').value = settings.startDate || "";
         document.getElementById('set_union').checked = settings.union !== false;
+
+        const ybEl = document.getElementById('set_year_bonus');
+        if (ybEl) {
+            const prevYear = new Date().getFullYear() - 1;
+
+            // Подпись поля с явным годом
+            const ybLbl = document.getElementById('lbl_year_bonus');
+            if (ybLbl) ybLbl.innerText = `13-я за ${prevYear} год, ₽ (код 0530 в декабрьском квитке — участвует в отпускных и донорских)`;
+
+            if (!settings.yearBonus) settings.yearBonus = {};
+
+            // Автозаполнение: если сумма за прошлый год не введена, но записи есть
+            // за все 12 месяцев — подставляем собственный прогноз приложения
+            // (уточняется вручную по декабрьскому квитку)
+            if (!safeFloat(settings.yearBonus[prevYear])) {
+                const est = computeYearBonusEstimate(prevYear);
+                if (est > 0) {
+                    settings.yearBonus[prevYear] = Math.round(est * 100) / 100;
+                    localStorage.setItem('metro_settings', JSON.stringify(settings));
+                }
+            }
+
+            const yb = settings.yearBonus[prevYear];
+            ybEl.value = yb ? String(yb).replace('.', ',') : "";
+        }
+        const kvEl = document.getElementById('set_kv');
+        if (kvEl) {
+            const kvLbl = document.getElementById('lbl_kv');
+            if (kvLbl) kvLbl.innerText = `Коэффициент 13-й (Кв) на ${new Date().getFullYear()} год, коп./руб. — объявляют в депо в конце года`;
+            kvEl.value = String(settings.kvGodP != null ? settings.kvGodP : 6.8).replace('.', ',');
+        }
+
         calcExpDisplay();
     }
 
@@ -1074,7 +1133,8 @@ function saveAll() {
         if(!document.getElementById('tab-today').classList.contains('active')) return;
         const now = new Date(); const nowTs = now.getTime();
         let currentShift = null, nextShift = null, prevShiftEnd = 0;
-        const sorted = [...shifts].sort((a,b) => new Date(a.date) - new Date(b.date));
+        const sorted = shifts;
+        
         for (let i = 0; i < sorted.length; i++) {
             const s = sorted[i]; let times = [...s.text.matchAll(/(\d{1,2}[:\.]\d{2})/g)]; if (times.length < 2) continue;
             const baseDate = new Date(s.date); const [sh, sm] = times[0][0].replace('.',':').split(':').map(Number); const [eh, em] = times[1][0].replace('.',':').split(':').map(Number);
@@ -1083,19 +1143,213 @@ function saveAll() {
             if (!currentShift && !nextShift && startDate.getTime() > nowTs) { nextShift = { data: s, start: startDate }; }
             if (endDate.getTime() < nowTs) { prevShiftEnd = endDate.getTime(); }
         }
+        
         const container = document.getElementById('todayContent'); let html = '';
+        
         if (currentShift) {
-            const totalMs = currentShift.end - currentShift.start; const elapsedMs = now - currentShift.start; const percent = Math.min(100, (elapsedMs / totalMs) * 100);
-            const res = calcShift(currentShift.data); let unionFee = settings.union ? (res.dirty * 0.01) : 0; let tax = res.dirty * 0.13; let netTotal = res.dirty - tax - unionFee; const currentEarned = (elapsedMs / totalMs) * netTotal;
-            html = `<div class="hero-widget theme-work"><div class="widget-header"><div class="widget-title">СЕЙЧАС НА СМЕНЕ</div><div class="widget-icon">🚅</div></div><div class="widget-main-value">${Math.floor(currentEarned)} ₽</div><div class="widget-sub-value">из ${Math.round(netTotal)} ₽</div><div class="progress-track"><div class="progress-fill" style="width: ${percent}%"></div></div><div class="progress-labels"><span>${currentShift.start.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span><span>Конец: ${currentShift.end.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span></div></div><div class="info-grid"><div class="info-card"><div class="info-label">Маршрут</div><div class="info-val">${currentShift.data.text.split(' ')[0]}</div></div><div class="info-card"><div class="info-label">Осталось</div><div class="info-val">${msToTime(currentShift.end - now)}</div></div></div>`;
-        } else {
-            let restText = "Н/Д", percentRest = 0, label = "ОТДЫХ", fullRestDesc = "";
-            if (prevShiftEnd > 0) {
-                if (nextShift) { label = "МЕЖСМЕННЫЙ ОТДЫХ"; const totalRestMs = nextShift.start.getTime() - prevShiftEnd; const passedRestMs = nowTs - prevShiftEnd; percentRest = Math.min(100, (passedRestMs / totalRestMs) * 100); restText = msToTime(totalRestMs); const prevEndDate = new Date(prevShiftEnd); const prevEndStr = prevEndDate.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) + ` (${prevEndDate.getDate()}.${prevEndDate.getMonth()+1})`; const nextStartStr = nextShift.start.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) + ` (${nextShift.start.getDate()}.${nextShift.start.getMonth()+1})`; fullRestDesc = `<div class="widget-sub-value" style="font-size:13px; margin-top:10px;">С ${prevEndStr}</div><div class="widget-sub-value" style="font-size:13px;">До ${nextStartStr}</div><div style="margin-top:20px; font-size:12px; opacity:0.8">Уже прошло: ${msToTime(passedRestMs)}</div>`; } 
-                else { const passed = nowTs - prevShiftEnd; restText = msToTime(passed); fullRestDesc = `<div class="widget-sub-value">прошло с прошлой смены</div>`; }
+            // === СЕЙЧАС НА СМЕНЕ (ОБНОВЛЕННЫЙ ДИЗАЙН) ===
+            const totalMs = currentShift.end - currentShift.start; 
+            const elapsedMs = now - currentShift.start; 
+            const percent = Math.min(100, (elapsedMs / totalMs) * 100);
+            
+            const res = calcShift(currentShift.data); 
+            let unionFee = settings.union ? (res.dirty * 0.01) : 0; 
+            let tax = res.dirty * 0.13; 
+            let netTotal = res.dirty - tax - unionFee; 
+            const currentEarned = (elapsedMs / totalMs) * netTotal;
+
+            // Парсим маршрут и место окончания смены
+            let textStr = String(currentShift.data.text).trim();
+            let routeText = textStr.split(' ')[0] || "—";
+            let endTimeStr = currentShift.end.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+            let placeEndText = "";
+
+            let timesMatch = [...textStr.matchAll(/(\d{1,2}[:\.]\d{2})/g)];
+            let remainingText = textStr.replace(routeText, '').replace(timesMatch[0]?.[0] || '', '');
+            if (timesMatch.length >= 2) remainingText = remainingText.replace(timesMatch[1][0], '');
+            remainingText = remainingText.replace(/-/g, ' ').replace(/\s{2,}/g, ' ').trim();
+
+            if (remainingText) {
+                let words = remainingText.split(' ');
+                if (words.length > 1) {
+                    placeEndText = words.slice(1).join(' '); 
+                } else {
+                    placeEndText = words[0]; 
+                }
             }
-            html = `<div class="hero-widget theme-rest"><div class="widget-header"><div class="widget-title">${label}</div><div class="widget-icon">🛋️</div></div><div class="widget-main-value">${restText}</div>${fullRestDesc}${nextShift ? `<div class="progress-track"><div class="progress-fill" style="width: ${percentRest}%"></div></div>` : ''}</div>`;
-            if (nextShift) { const timeToStart = nextShift.start - now; html += `<div class="info-grid"><div class="info-card"><div class="info-label">Следующая</div><div class="info-val">${nextShift.start.getDate()}.${nextShift.start.getMonth()+1}</div></div><div class="info-card"><div class="info-label">До смены</div><div class="info-val" style="color:var(--accent)">${msToTime(timeToStart)}</div></div></div>`; }
+            if (!placeEndText && currentShift.data.note) {
+                placeEndText = String(currentShift.data.note).trim();
+            }
+
+            let placeEndHtml = placeEndText ? `<div style="font-size: 13px; font-weight: 700; color: var(--primary); margin-top: 4px;">${placeEndText}</div>` : '';
+
+            html = `
+                <div class="hero-widget theme-work">
+                    <div class="widget-header">
+                        <div class="widget-title">СЕЙЧАС НА СМЕНЕ</div>
+                        <div class="widget-icon">🚅</div>
+                    </div>
+                    <div class="widget-main-value">${Math.floor(currentEarned)} ₽</div>
+                    <div class="widget-sub-value">из ${Math.round(netTotal)} ₽</div>
+                    <div class="progress-track">
+                        <div class="progress-fill" style="width: ${percent}%"></div>
+                    </div>
+                    <div class="progress-labels">
+                        <span>${currentShift.start.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span>
+                        <span>Конец: ${endTimeStr}</span>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 25px;">
+                    <div class="info-label" style="text-align: left; margin-bottom: 12px; margin-left: 5px; font-size: 11px; letter-spacing: 0.5px;">ДЕТАЛИ ТЕКУЩЕЙ СМЕНЫ</div>
+                    
+                    <div class="info-grid" style="margin-bottom: 15px;">
+                        <div class="info-card" style="padding: 15px;">
+                            <div class="info-label">МАРШРУТ</div>
+                            <div class="info-val" style="font-size: 22px;">${routeText}</div>
+                        </div>
+                        <div class="info-card" style="padding: 15px;">
+                            <div class="info-label">ОСТАЛОСЬ</div>
+                            <div class="info-val" style="font-size: 22px; color: var(--accent);">${msToTime(currentShift.end - now)}</div>
+                        </div>
+                    </div>
+
+                    <div class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px;">
+                        <div>
+                            <div style="font-size: 10px; font-weight: 800; color: #90a4ae; display: flex; align-items: center; gap: 5px; text-transform:uppercase;"><span>🏁</span> ОКОНЧАНИЕ СМЕНЫ</div>
+                            ${placeEndHtml}
+                        </div>
+                        <div style="font-weight: 900; font-size: 24px; color: var(--primary);">${endTimeStr}</div>
+                    </div>
+                </div>
+            `;
+        } else {
+            // === МЕЖСМЕННЫЙ ОТДЫХ (НОВЫЙ ДИЗАЙН) ===
+            let restText = "Н/Д", percentRest = 0, label = "МЕЖСМЕННЫЙ ОТДЫХ", fullRestDesc = "";
+            let bottomWidgetsHtml = "";
+
+            if (nextShift) {
+                const timeToStartMs = nextShift.start.getTime() - nowTs;
+                restText = msToTime(timeToStartMs);
+
+                const getDayLabel = (dateObj) => {
+                    const today = new Date();
+                    const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
+                    if (dateObj.getDate() === today.getDate() && dateObj.getMonth() === today.getMonth()) return "Сегодня";
+                    if (dateObj.getDate() === tomorrow.getDate() && dateObj.getMonth() === tomorrow.getMonth()) return "Завтра";
+                    return `${dateObj.getDate()} ` + ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'][dateObj.getMonth()];
+                };
+
+                const startStr = `${getDayLabel(nextShift.start)} в ${nextShift.start.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}`;
+                fullRestDesc = `<div class="widget-sub-value" style="font-size:14px; margin-top:5px; font-weight:700; border-radius: 8px;">Начало: ${startStr}</div>`;
+
+                if (prevShiftEnd > 0) {
+                    const totalRestMs = nextShift.start.getTime() - prevShiftEnd;
+                    const passedRestMs = nowTs - prevShiftEnd;
+                    percentRest = Math.min(100, (passedRestMs / totalRestMs) * 100);
+                    
+                    fullRestDesc += `
+                        <div class="progress-labels" style="margin-top:15px; margin-bottom:-5px; opacity: 0.9;">
+                            <span>Прошло: ${msToTime(passedRestMs)}</span>
+                            <span>Всего: ${msToTime(totalRestMs)}</span>
+                        </div>
+                    `;
+                }
+
+                let routeText = "—";
+                let startTimeStr = nextShift.start.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+                let endTimeStr = "—";
+                let placeStartText = "";
+                let placeEndText = "";
+
+                if (nextShift.data.text) {
+                    const textStr = String(nextShift.data.text).trim();
+                    const parts = textStr.split(' ');
+                    routeText = parts[0] || "—"; 
+
+                    let times = [...textStr.matchAll(/(\d{1,2}[:\.]\d{2})/g)];
+                    if (times.length >= 2) {
+                        endTimeStr = times[1][0].replace('.', ':');
+                    }
+
+                    let remainingText = textStr.replace(routeText, '').replace(times[0]?.[0] || '', '');
+                    if (times.length >= 2) remainingText = remainingText.replace(times[1][0], '');
+                    remainingText = remainingText.replace(/-/g, ' ').replace(/\s{2,}/g, ' ').trim();
+
+                    if (remainingText) {
+                        let words = remainingText.split(' ');
+                        if (words.length > 1) {
+                            placeStartText = words[0];
+                            placeEndText = words.slice(1).join(' ');
+                        } else {
+                            placeStartText = remainingText;
+                        }
+                    }
+                    
+                    if (!placeStartText && nextShift.data.note) {
+                        placeStartText = String(nextShift.data.note).trim();
+                    }
+                }
+
+                const headerDateStr = `${nextShift.start.getDate()} ` + ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'][nextShift.start.getMonth()];
+                
+                let placeStartHtml = placeStartText ? `<div style="font-size: 12px; font-weight: 600; color: #546e7a; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${placeStartText}</div>` : '';
+                let placeEndHtml = placeEndText ? `<div style="font-size: 12px; font-weight: 600; color: #546e7a; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${placeEndText}</div>` : '';
+
+                bottomWidgetsHtml = `
+                    <div style="margin-top: 25px;">
+                        <div class="info-label" style="text-align: left; margin-bottom: 12px; margin-left: 5px; font-size: 11px; letter-spacing: 0.5px;">ДЕТАЛИ СЛЕДУЮЩЕЙ СМЕНЫ (${headerDateStr})</div>
+
+                        <div class="card" style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; padding: 15px 20px;">
+                            <div style="font-weight: 800; font-size: 14px; color: #78909c; display:flex; align-items:center; gap:8px;"><span>🚇</span> МАРШРУТ</div>
+                            <div style="font-weight: 900; font-size: 22px; color: var(--primary);">${routeText}</div>
+                        </div>
+
+                        <div class="info-grid">
+                            <div class="info-card" style="text-align: left; padding: 15px;">
+                                <div style="font-size: 10px; font-weight: 800; color: #90a4ae; margin-bottom: 8px; display: flex; align-items: center; gap: 5px; text-transform:uppercase;"><span>🚩</span> Заступление</div>
+                                <div style="font-size: 22px; font-weight: 900; color: var(--primary); line-height: 1;">${startTimeStr}</div>
+                                ${placeStartHtml}
+                            </div>
+                            <div class="info-card" style="text-align: left; padding: 15px;">
+                                <div style="font-size: 10px; font-weight: 800; color: #90a4ae; margin-bottom: 8px; display: flex; align-items: center; gap: 5px; text-transform:uppercase;"><span>🏁</span> Сдача</div>
+                                <div style="font-size: 22px; font-weight: 900; color: var(--primary); line-height: 1;">${endTimeStr}</div>
+                                ${placeEndHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+            } else if (prevShiftEnd > 0) {
+                const passed = nowTs - prevShiftEnd;
+                restText = msToTime(passed);
+                fullRestDesc = `<div class="widget-sub-value" style="font-size:14px; margin-top:5px;">С момента прошлой смены</div>`;
+                bottomWidgetsHtml = `
+                    <div class="card" style="margin-top: 25px; text-align: center; padding: 20px; color: #78909c;">
+                        <div style="font-size: 30px; margin-bottom: 10px;">📅</div>
+                        <div style="font-size: 14px; font-weight: 600;">Следующая смена не добавлена</div>
+                        <button class="btn btn-theme" style="margin-top: 15px; justify-content: center;" onclick="switchTab('home'); openModal()">Добавить смену</button>
+                    </div>
+                `;
+            } else {
+                restText = "—";
+                fullRestDesc = `<div class="widget-sub-value" style="font-size:14px; margin-top:5px;">Нет данных о сменах</div>`;
+            }
+
+            let progressHtml = (nextShift && prevShiftEnd > 0) ? `<div class="progress-track" style="margin-top: 12px;"><div class="progress-fill" style="width: ${percentRest}%"></div></div>` : '';
+
+            html = `<div class="hero-widget theme-rest">
+                        <div class="widget-header">
+                            <div class="widget-title">${label}</div>
+                            <div class="widget-icon">🛋️</div>
+                        </div>
+                        <div style="font-size: 12px; font-weight: 700; opacity: 0.9; margin-bottom: 2px;">ДО СМЕНЫ ОСТАЛОСЬ:</div>
+                        <div class="widget-main-value">${restText}</div>
+                        ${fullRestDesc}
+                        ${progressHtml}
+                    </div>`;
+
+            if (bottomWidgetsHtml) html += bottomWidgetsHtml;
         }
         container.innerHTML = html;
     }
@@ -2531,8 +2785,35 @@ function isOnlyStateHoliday(dateObj) {
         toggleRow('row_mentor', st.sumMentor);
     }
 
+// === СВОРАЧИВАНИЕ МЕСЯЦЕВ В СПИСКЕ СМЕН ===
+    // Прошлые месяцы по умолчанию свернуты в строку-заголовок с итогом;
+    // тап по заголовку раскрывает/сворачивает, выбор запоминается.
+    let collapsedMonths = {};
+    try { collapsedMonths = JSON.parse(localStorage.getItem('metro_collapsed_months') || '{}'); } catch (e) { collapsedMonths = {}; }
+
+    function isMonthCollapsed(monthKey) {
+        if (collapsedMonths[monthKey] !== undefined) return collapsedMonths[monthKey];
+        return monthKey < getIsoDate(new Date()).slice(0, 7); // прошлое — свернуто
+    }
+
+    function toggleMonthCollapse(monthKey) {
+        collapsedMonths[monthKey] = !isMonthCollapsed(monthKey);
+        localStorage.setItem('metro_collapsed_months', JSON.stringify(collapsedMonths));
+        render();
+    }
+
 function render(targetDate = null) {
         if (preventRender && !targetDate) return;
+
+        // Если нужно показать конкретную дату (после правки смены) —
+        // разворачиваем её месяц, иначе карточки не будет в списке
+        if (targetDate) {
+            const tKey = String(targetDate).slice(0, 7);
+            if (isMonthCollapsed(tKey)) {
+                collapsedMonths[tKey] = false;
+                localStorage.setItem('metro_collapsed_months', JSON.stringify(collapsedMonths));
+            }
+        }
 
         const list = document.getElementById('shiftList');
         if(list.offsetHeight > 0) list.style.minHeight = list.offsetHeight + 'px';
@@ -2544,23 +2825,54 @@ function render(targetDate = null) {
         
         const todayStr = getIsoDate(new Date());
         let currentMonthStr = "";
+        let monthCollapsed = false;
 
         shifts.forEach((s) => {
-            if (!s.text) s.text = ""; 
+            if (!s.text) s.text = "";
 
-            const shiftDate = new Date(s.date); 
-            const monthYear = shiftDate.toLocaleString('ru', { month: 'long', year: 'numeric' }); 
+            const shiftDate = new Date(s.date);
+            const monthYear = shiftDate.toLocaleString('ru', { month: 'long', year: 'numeric' });
             const monthYearCap = monthYear.charAt(0).toUpperCase() + monthYear.slice(1);
-            
-            if(monthYearCap !== currentMonthStr) { 
-                currentMonthStr = monthYearCap; 
-                const divider = document.createElement('div'); 
-                divider.className = 'month-header'; 
-                divider.innerText = currentMonthStr; 
-                fragment.appendChild(divider); 
+
+            if(monthYearCap !== currentMonthStr) {
+                currentMonthStr = monthYearCap;
+                const monthKey = String(s.date).slice(0, 7);
+                monthCollapsed = isMonthCollapsed(monthKey);
+
+                if (monthCollapsed) {
+                    // Свернутый месяц — компактная карточка в стиле карточек смен
+                    const stM = computeMonthStats(shiftDate.getFullYear(), shiftDate.getMonth());
+                    const netApprox = stM.dirty * (0.87 - (settings.union ? 0.01 : 0));
+                    const monAbbr = shiftDate.toLocaleString('ru', { month: 'short' }).replace('.', '').toUpperCase();
+                    const monName = shiftDate.toLocaleString('ru', { month: 'long' });
+                    const monNameCap = monName.charAt(0).toUpperCase() + monName.slice(1);
+                    const hoursStr = stM.totalFactHours > 0.01
+                        ? stM.totalFactHours.toFixed(2).replace('.', ',') + ' ч'
+                        : '';
+                    const moneyHTML = netApprox > 1 ? `<div class="money-val">+${fmtMoney(netApprox)}</div>` : '';
+
+                    const mCard = document.createElement('div');
+                    mCard.className = 'shift-card';
+                    mCard.style.background = '#f7f9fc';
+                    mCard.innerHTML =
+                        `<div class="date-box" style="background:#e8edf2;"><span class="date-day" style="font-size:13px;">${monAbbr}</span><span class="date-dow">${shiftDate.getFullYear()}</span></div>` +
+                        `<div class="shift-info"><div class="shift-title">${monNameCap}</div><div class="shift-sub">${hoursStr}</div></div>` +
+                        `<div style="text-align:right; display:flex; align-items:center; gap:10px;">${moneyHTML}<span style="color:#b0bec5; font-size:18px;">›</span></div>`;
+                    mCard.onclick = () => toggleMonthCollapse(monthKey);
+                    fragment.appendChild(mCard);
+                } else {
+                    const divider = document.createElement('div');
+                    divider.className = 'month-header';
+                    divider.style.cursor = 'pointer';
+                    divider.innerText = `${currentMonthStr} ▾`;
+                    divider.onclick = () => toggleMonthCollapse(monthKey);
+                    fragment.appendChild(divider);
+                }
             }
 
-            let res = calcShift(s); 
+            if (monthCollapsed) return; // карточки свернутого месяца не рендерим
+
+            let res = calcShift(s);
             
             // РАЗДЕЛЯЕМ ТЕКСТ
             let title = s.text.split(' ')[0]; 
@@ -2776,9 +3088,23 @@ function render(targetDate = null) {
             sFullMed = false; 
         }
         
-        if(d && t) { 
-            preventRender = true; 
-            shifts = shifts.filter(s => s.date !== d); 
+        if(d && t) {
+            preventRender = true;
+
+            // Ставку/премию считаем изменёнными, только если их реально поправили в окне.
+            // Окно подставляет ставку САМОЙ СМЕНЫ (старую), поэтому обычное сохранение
+            // раньше возвращало её в настройки — после индексации новая ставка «слетала».
+            const prevShift = shifts.find(s => s.date === d);
+            const prevRate = (prevShift && prevShift.customRate !== undefined) ? safeFloat(prevShift.customRate) : null;
+            const prevPrem = (prevShift && prevShift.customPrem !== undefined) ? safeFloat(prevShift.customPrem) : null;
+            const rateChanged = (prevRate === null)
+                ? (Math.abs(sRate - safeFloat(settings.rate)) > 0.001)
+                : (Math.abs(sRate - prevRate) > 0.001);
+            const premChanged = (prevPrem === null)
+                ? (Math.abs(sPrem - safeFloat(settings.premP)) > 0.001)
+                : (Math.abs(sPrem - prevPrem) > 0.001);
+
+            shifts = shifts.filter(s => s.date !== d);
             shifts.push({ 
                 date:d, text:t, note: n, 
                 customRate: sRate, customMentor: sMentor, 
@@ -2801,9 +3127,17 @@ function render(targetDate = null) {
             const targetYear = targetDate.getFullYear();
             const lowerText = t.toLowerCase();
             const isSpecialType = lowerText.includes('бл') || lowerText.includes('отпуск') || lowerText.includes('донор');
-            if (!isSpecialType && sRate > 0) {
-                settings.rate = sRate;
-                settings.premP = sPrem;
+            if (!isSpecialType && sRate > 0 && (rateChanged || premChanged)) {
+                // Ставка в настройках — это ТЕКУЩАЯ ставка, поэтому правка смены
+                // прошлого месяца (например, старой сменой до индексации) её не трогает,
+                // иначе весь текущий месяц пересчитался бы по старому тарифу
+                const nowD = new Date();
+                const isPastMonthEdit = (targetYear < nowD.getFullYear()) ||
+                                        (targetYear === nowD.getFullYear() && targetMonth < nowD.getMonth());
+                if (!isPastMonthEdit) {
+                    settings.rate = sRate;
+                    settings.premP = sPrem;
+                }
                 shifts.forEach(s => {
                     const sd = new Date(s.date);
                     if (sd.getMonth() === targetMonth && sd.getFullYear() === targetYear) {
@@ -2817,7 +3151,8 @@ function render(targetDate = null) {
                 });
             }
             touchMeta(getMonthKey(d));
-            saveData(); 
+            saveData();
+
             if(document.getElementById('calendarModal').classList.contains('open')) {
                 renderCalendar();
                 renderStats();
@@ -3034,10 +3369,34 @@ function render(targetDate = null) {
         } else {
             if(sickBox) sickBox.style.display = 'none';
             
-            if (txt.includes('вых') || txt.includes('донор') || txt.includes('отпуск') || txt.includes('отп')) {
+            const isDayOff = txt.includes('вых') || txt.includes('выходной');
+            const isSpecialType = txt.includes('донор') || txt.includes('отпуск') || txt.includes('отп');
+            
+            // Получаем все внутренние блоки параметров
+            const allDetailRows = details ? details.querySelectorAll('.detail-row, #lineWorkContainer, div[style*="background:#e3f2fd"]') : [];
+
+            if (isSpecialType) {
                 if(details) details.style.display = 'none';
+            } else if (isDayOff) {
+                if(details) {
+                    details.style.display = 'block'; // Показываем саму панель
+                    // Прячем всё, кроме строчки с галочкой "Тех. учеба"
+                    allDetailRows.forEach(row => {
+                        if (row.querySelector('#shiftTech')) {
+                            row.style.display = 'flex'; 
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                }
             } else {
-                if(details) details.style.display = 'block';
+                if(details) {
+                    details.style.display = 'block';
+                    // Возвращаем все элементы для обычной смены
+                    allDetailRows.forEach(row => {
+                        row.style.display = ''; 
+                    });
+                }
             }
             
             if (txt.includes('рез')) {
@@ -3250,95 +3609,107 @@ function render(targetDate = null) {
     }
     
     function renderCalendar() {
-        const grid = document.getElementById('calGrid');
-        grid.innerHTML = '';
-        ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'].forEach(d => grid.innerHTML += `<div class="cal-day-name">${d}</div>`);
-        const year = calDate.getFullYear();
-        const month = calDate.getMonth();
-        const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
-        document.getElementById('calTitle').innerText = `${monthNames[month]} ${year}`;
-        let firstDay = new Date(year, month, 1).getDay();
-        firstDay = (firstDay === 0 ? 6 : firstDay - 1);
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        const todayStr = getIsoDate(new Date());
-        for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div class="cal-cell empty"></div>`;
-        for (let d = 1; d <= daysInMonth; d++) {
-            const currentIso = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-            const shift = shifts.find(s => s.date === currentIso);
-            const dateObj = new Date(currentIso);
+    const grid = document.getElementById('calGrid');
+    let htmlBuffer = ''; // Создаем буфер, чтобы не мучить процессор телефона
+
+    ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'].forEach(d => {
+        htmlBuffer += `<div class="cal-day-name">${d}</div>`;
+    });
+    
+    const year = calDate.getFullYear();
+    const month = calDate.getMonth();
+    const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+    document.getElementById('calTitle').innerText = `${monthNames[month]} ${year}`;
+    
+    let firstDay = new Date(year, month, 1).getDay();
+    firstDay = (firstDay === 0 ? 6 : firstDay - 1);
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const todayStr = getIsoDate(new Date());
+    
+    for (let i = 0; i < firstDay; i++) {
+        htmlBuffer += `<div class="cal-cell empty"></div>`;
+    }
+    
+    for (let d = 1; d <= daysInMonth; d++) {
+        const currentIso = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const shift = shifts.find(s => s.date === currentIso);
+        const dateObj = new Date(currentIso);
+        
+        // 1. Проверяем, Сб/Вс ли это
+        const isWknd = (dateObj.getDay() === 0 || dateObj.getDay() === 6);
+        
+        // 2. Проверяем, ГОС. ПРАЗДНИК ли это (используем твою новую точную функцию!)
+        const isStateHol = isOnlyStateHoliday(dateObj); 
+        
+        let cellClass = '';
+
+        // Если Сб/Вс ИЛИ Праздник - делаем цифру красной (класс weekend)
+        if (isWknd || isStateHol) cellClass += ' weekend';
+
+        // Если это ИМЕННО Праздник (1 мая, 9 мая и т.д.) - добавляем спец. класс для фона
+        if (isStateHol) cellClass += ' state-holiday';
+
+        let content = `<div class="cal-num">${d}</div>`;
+        
+        if (shift) {
+            let text = shift.text.toLowerCase();
+            let typeClass = 'type-work';
             
-            // 1. Проверяем, Сб/Вс ли это
-            const isWknd = (dateObj.getDay() === 0 || dateObj.getDay() === 6);
+            // Если ОТСТРАНЕНИЕ — красим как больничный (желтый фон)
+            if (shift.isFullMedical) typeClass = 'type-sick';
             
-            // 2. Проверяем, ГОС. ПРАЗДНИК ли это (используем твою новую точную функцию!)
-            const isStateHol = isOnlyStateHoliday(dateObj); 
+            else if (text.includes('бл')) typeClass = 'type-sick';
+            else if (text.includes('донор')) typeClass = 'type-donor';
+            else if (text.includes('отпуск') || text.includes('отп')) typeClass = 'type-vacation';
+            else if (text.includes('вых')) typeClass = 'type-off';
+            else if (text.includes('упц') || text.includes('учеба') || text.includes('обучение')) typeClass = 'type-train';
             
-            let cellClass = '';
-
-            // Если Сб/Вс ИЛИ Праздник - делаем цифру красной (класс weekend)
-            if (isWknd || isStateHol) cellClass += ' weekend';
-
-            // Если это ИМЕННО Праздник (1 мая, 9 мая и т.д.) - добавляем спец. класс для фона
-            if (isStateHol) cellClass += ' state-holiday';
-
-            let content = `<div class="cal-num">${d}</div>`;
+            cellClass += ` has-shift ${typeClass}`;
             
-           if (shift) {
-                let text = shift.text.toLowerCase();
-                let typeClass = 'type-work';
-                
-                // Если ОТСТРАНЕНИЕ — красим как больничный (желтый фон)
-                if (shift.isFullMedical) typeClass = 'type-sick';
-                
-                else if (text.includes('бл')) typeClass = 'type-sick';
-                else if (text.includes('донор')) typeClass = 'type-donor';
-                else if (text.includes('отпуск') || text.includes('отп')) typeClass = 'type-vacation';
-                else if (text.includes('вых')) typeClass = 'type-off';
-                else if (text.includes('упц') || text.includes('учеба') || text.includes('обучение')) typeClass = 'type-train';
-                
-                cellClass += ` has-shift ${typeClass}`;
-                
-                if (shift.note && shift.note.trim() !== "") {
-                    cellClass += ' has-note';
-                }
-                
-                if (shift.isTech) {
-                    content += `<div style="position:absolute; top:3px; left:4px; font-size:10px; line-height:1;" title="Тех. учеба">🎓</div>`;
-                }
-
-                let fullText = shift.text.toLowerCase();
-                let title = "";
-
-                // Словарь замен (можешь добавить свои)
-                if (fullText.includes("охрана") || fullText.includes("охр")) title = "ОХР";
-                else if (fullText.includes("мед.") || fullText.includes("комисс")) title = "МЕД";
-                else if (fullText.includes("упц")) title = "УПЦ";
-                else if (fullText.includes("тех.") || fullText.includes("тех учеба")) title = "ТЕХ";
-                else if (fullText.includes("корпоратив") || fullText.includes("корп")) title = "КОРП";
-                else if (fullText.includes("повышение") || fullText.includes("квалиф")) title = "ПОВ";
-                else if (fullText.includes("псих") || fullText.includes("освид")) title = "ПСИХ";
-                else if (fullText.includes("выходной") || fullText.includes("вых")) title = "ВЫХ";
-                else if (fullText.includes("отпуск") || fullText.includes("отп")) title = "ОТП";
-                else if (fullText.includes("больничный") || fullText.includes("бл")) title = "БЛ";
-                else if (fullText.includes("донор")) title = "ДОН";
-                else {
-                    // Если не нашли в словаре - берем первое слово
-                    let firstWord = shift.text.split(' ')[0];
-                    // Если это маршрут (м70, п2) - оставляем как есть
-                    // Если длинное слово - режем аккуратнее (до 5 букв без точки)
-                    if (firstWord.length > 6) title = firstWord.substr(0, 5); 
-                    else title = firstWord;
-                }
-
-                content += `<div class="cal-shift">${title}</div>`;
+            if (shift.note && shift.note.trim() !== "") {
+                cellClass += ' has-note';
             }
             
-            if (currentIso === todayStr) cellClass += ' today';
-            
-            // ВАЖНО: Добавил обработку свайпа внутрь onclick, чтобы не мешал
-            grid.innerHTML += `<div class="cal-cell ${cellClass}" onclick="openDayModal('${currentIso}')">${content}</div>`;
+            if (shift.isTech) {
+                content += `<div style="position:absolute; top:3px; left:4px; font-size:10px; line-height:1;" title="Тех. учеба">🎓</div>`;
+            }
+
+            let fullText = shift.text.toLowerCase();
+            let title = "";
+
+            // Словарь замен (можешь добавить свои)
+            if (fullText.includes("охрана") || fullText.includes("охр")) title = "ОХР";
+            else if (fullText.includes("мед.") || fullText.includes("комисс")) title = "МЕД";
+            else if (fullText.includes("упц")) title = "УПЦ";
+            else if (fullText.includes("тех.") || fullText.includes("тех учеба")) title = "ТЕХ";
+            else if (fullText.includes("корпоратив") || fullText.includes("корп")) title = "КОРП";
+            else if (fullText.includes("повышение") || fullText.includes("квалиф")) title = "ПОВ";
+            else if (fullText.includes("псих") || fullText.includes("освид")) title = "ПСИХ";
+            else if (fullText.includes("выходной") || fullText.includes("вых")) title = "ВЫХ";
+            else if (fullText.includes("отпуск") || fullText.includes("отп")) title = "ОТП";
+            else if (fullText.includes("больничный") || fullText.includes("бл")) title = "БЛ";
+            else if (fullText.includes("донор")) title = "ДОН";
+            else {
+                // Если не нашли в словаре - берем первое слово
+                let firstWord = shift.text.split(' ')[0];
+                // Если это маршрут (м70, п2) - оставляем как есть
+                // Если длинное слово - режем аккуратнее (до 5 букв без точки)
+                if (firstWord.length > 6) title = firstWord.substr(0, 5); 
+                else title = firstWord;
+            }
+
+            content += `<div class="cal-shift">${title}</div>`;
         }
+        
+        if (currentIso === todayStr) cellClass += ' today';
+        
+        // ВАЖНО: Добавил обработку свайпа внутрь onclick, чтобы не мешал. И пишем в буфер!
+        htmlBuffer += `<div class="cal-cell ${cellClass}" onclick="openDayModal('${currentIso}')">${content}</div>`;
     }
+
+    // Выгружаем готовый HTML в страницу ровно один раз!
+    grid.innerHTML = htmlBuffer;
+}
     
     function changeMonth(dir) { calDate.setMonth(calDate.getMonth() + dir); renderCalendar(); }
     function openCalendarModal() { document.body.classList.add('modal-open'); document.getElementById('calendarModal').classList.add('open'); renderCalendar(); }
