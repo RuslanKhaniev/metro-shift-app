@@ -2536,6 +2536,30 @@ function isOnlyStateHoliday(dateObj) {
         return (prev > 0 && cur > prev) ? (cur / prev) : 1;
     }
 
+    // Плановая смена по календарю шестидневки: любой день, кроме воскресенья
+    // и праздника (ст. 112 ТК). Так метро считает «План» в шапке квитка.
+    function isPlannedShiftDay(dateObj) {
+        return dateObj.getDay() !== 0 && !isOnlyStateHoliday(dateObj);
+    }
+
+    function plannedShiftsInMonth(year, month) {
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        let count = 0;
+        for (let day = 1; day <= daysInMonth; day++) {
+            if (isPlannedShiftDay(new Date(year, month, day))) count++;
+        }
+        return count;
+    }
+
+    // Сколько нормы снимает один день отпуска/БЛ/донора: норма месяца ÷
+    // плановые смены, а в воскресенье и праздник — ничего (для карточки смены)
+    function absenceNormHours(dateObj) {
+        if (!isPlannedShiftDay(dateObj)) return 0;
+        const y = dateObj.getFullYear(), m = dateObj.getMonth();
+        const plan = plannedShiftsInMonth(y, m);
+        return plan > 0 ? getMonthNorm(y, m) / plan : 0;
+    }
+
     // === ЧИСТЫЙ РАСЧЕТ МЕСЯЦА (вынесен из Сводки, без DOM) ===
     // forAvg=true — режим базы среднего заработка (Положение 922):
     // отпускные/больничные/донорские исключаются (calcShift в avg-режиме
@@ -2597,7 +2621,7 @@ function isOnlyStateHoliday(dateObj) {
             // 1. ВЫЧЕТЫ ИЗ НОРМЫ
             // Отпуск, БЛ и донорские снижают норму по ПЛАНОВЫМ СМЕНАМ (считается
             // после цикла): плановая смена — любой день, кроме воскресенья и праздника
-            const isPlannedDay = d.getDay() !== 0 && !isOnlyStateHoliday(d);
+            const isPlannedDay = isPlannedShiftDay(d);
             if (text.includes('отпуск') || text.includes('отп')) {
                 if (isPlannedDay) missedPlanned++;
             }
@@ -2737,12 +2761,7 @@ function isOnlyStateHoliday(dateObj) {
         // медкомиссия 6), ноя 2025 28,29/28,22. Прежние способы (7,2 за будний день
         // и оценка по выходным человека) ошибались до 9 ч в месяц.
         if (missedPlanned > 0) {
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            let plannedShifts = 0;
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dd = new Date(year, month, day);
-                if (dd.getDay() !== 0 && !isOnlyStateHoliday(dd)) plannedShifts++;
-            }
+            const plannedShifts = plannedShiftsInMonth(year, month);
             if (plannedShifts > 0) {
                 st.sickDeduction += st.fullNorm * missedPlanned / plannedShifts;
             }
@@ -3288,9 +3307,11 @@ function render(targetDate = null) {
 
             // 2. РУЧНОЕ ФОРМИРОВАНИЕ ОПИСАНИЯ ДЛЯ СПЕЦ. ТИПОВ
             if (isSpecialType) {
-                // Если выходной/праздник — 0 часов вычета. Если будни — 7.2.
-                let val = !isHoliday(new Date(s.date)) ? 7.2 : 0;
-                let hoursInfo = `(${val}ч)`;
+                // Сколько нормы снимает этот день: норма месяца ÷ плановые смены
+                // (календарь шестидневки, суббота тоже считается), в воскресенье
+                // и праздник — 0. Так же считается норма в «Сводке»
+                const val = absenceNormHours(new Date(s.date));
+                let hoursInfo = `(${val > 0 ? val.toFixed(2) : 0}ч)`;
                 
                 if(details) details += ` ${hoursInfo}`;
                 else details = hoursInfo;
