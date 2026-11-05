@@ -2268,15 +2268,19 @@ function isOnlyStateHoliday(dateObj) {
         if (!monthRate) monthRate = 546.18;
         st.rate = monthRate;
 
+        let missedPlanned = 0;   // дни отпуска/БЛ/донора, выпавшие на плановые смены (см. ниже)
+
         monthlyShifts.forEach(s => {
             let text = s.text.toLowerCase();
             const d = new Date(s.date);
 
             // 1. ВЫЧЕТЫ ИЗ НОРМЫ
+            // Отпуск, БЛ и донорские снижают норму по ПЛАНОВЫМ СМЕНАМ (считается
+            // после цикла): плановая смена — любой день, кроме воскресенья и праздника
             if (text.includes('бл') || text.includes('больничный') ||
                 text.includes('отпуск') || text.includes('отп') ||
                 text.includes('донор') || text.includes('кровь')) {
-                if (!isHoliday(d)) { st.sickDeduction += 7.2; }
+                if (d.getDay() !== 0 && !isOnlyStateHoliday(d)) missedPlanned++;
                 if (text.includes('бл') || text.includes('больничный')) st.sick++;
                 if (text.includes('донор') || text.includes('кровь')) st.donor++;
             }
@@ -2400,8 +2404,28 @@ function isOnlyStateHoliday(dateObj) {
         });
 
         st.fullNorm = getMonthNorm(year, month);
+
+        // ОТПУСК, БЛ И ДОНОРСКИЕ СНИЖАЮТ НОРМУ ПО ПЛАНОВЫМ СМЕНАМ.
+        // В шапке квитка «План: 27,00/158,40» первое число — плановые смены месяца,
+        // и это не личный график, а календарь шестидневки: все дни месяца, кроме
+        // воскресений и праздников (ст. 112 ТК; переносы выходных не в счёт).
+        // Норма снижается на (норма ÷ плановые смены) за каждый день отсутствия,
+        // выпавший на плановую смену. Сверено с квитками до сотых (окт 2025 — окт 2026),
+        // прежний способ (7,2 за будний день) ошибался до 9 ч в месяц.
+        if (missedPlanned > 0) {
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            let plannedShifts = 0;
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dd = new Date(year, month, day);
+                if (dd.getDay() !== 0 && !isOnlyStateHoliday(dd)) plannedShifts++;
+            }
+            if (plannedShifts > 0) {
+                st.sickDeduction += st.fullNorm * missedPlanned / plannedShifts;
+            }
+        }
+
         let norm = st.fullNorm;
-        if (st.sickDeduction > 0) { norm = parseFloat((norm - st.sickDeduction).toFixed(1)); }
+        if (st.sickDeduction > 0) { norm = parseFloat((norm - st.sickDeduction).toFixed(2)); }
         st.norm = norm;
         st.overtime = st.hours - norm;
 
